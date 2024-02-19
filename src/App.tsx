@@ -1,11 +1,18 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
-
+import { db } from "./firebase.ts";
+import { ref, set, get, child, push, remove, update, limitToLast, query } from "firebase/database"
 
 function App() {
   const [count, setCount] = useState(0)
+
+  useEffect(() => {
+    set(ref(db, "root"), { "hello": "world" }).then(success => {
+      console.log("wrote in db")
+    })
+  })
 
   return (
     <>
