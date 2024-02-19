@@ -11,8 +11,7 @@ export default function Navbar() {
   const location = useLocation();
 
   useEffect(() => {
-    console.log("locatin:", location.pathname);
-  }, [location])
+  })
 
   return (
     <header>
@@ -62,7 +61,7 @@ export default function Navbar() {
                 <li>
                   <Link
                     to={`${NAV_LINKS.PROFILE}/${0}`}
-                    className={`${location.pathname === NAV_LINKS.PROFILE ? "nav-link active": "nav-link"}`}
+                    className={`${location.pathname.includes(NAV_LINKS.PROFILE) ? "nav-link active": "nav-link"}`}
                   >
                     Profile
                   </Link>
