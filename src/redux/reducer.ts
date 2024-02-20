@@ -19,6 +19,7 @@ export const reducer = (state = initialState, action: any) => {
 
     case USER_ACTIONS.SIGNUP:
       console.log("@user signup");
+      console.log("action.user:", action.user);
       return {
         ...state,
         user: action.user

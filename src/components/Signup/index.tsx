@@ -7,7 +7,9 @@ import { auth } from "../../../firebase.ts";
 
 import Alert from "../Alert/index.js";
 import LoadingSpinner from "../LoadingSpinner/index.jsx";
-import { doesUsernameExist } from "../../utils/rtdb.ts";
+import { addUser, doesUsernameExist } from "../../utils/rtdb.ts";
+import { useAppDispatch } from "../../redux/hooks.ts";
+import { USER_ACTIONS } from "../../redux/reducer.ts";
 
 enum ALERT_TYPE {
   INVALID_SIGNUP_USERNAME = "invalid_signup_username",
@@ -15,6 +17,9 @@ enum ALERT_TYPE {
 }
 
 export default function Signup() {
+
+  const navigate = useNavigate();
+  const dispatch = useAppDispatch();
 
   const [loadingSpinner, setLoadingSpinner] = useState<Modal | null>(null);
 
@@ -36,8 +41,6 @@ export default function Signup() {
 
   const [timeoutId, setTimeoutId] = useState<number | null>(null);
 
-
-  const navigate = useNavigate();
 
   useEffect(() => {
     // Initialize bootstrap modals 
@@ -152,11 +155,17 @@ export default function Signup() {
       }
 
       // console.log("auth.currentUser:", auth.currentUser.uid);
+      const uid = auth.currentUser.uid;
+      const newUser = await addUser(uid, signupEmail, signupUsername);
+      dispatch({
+        type: USER_ACTIONS.SIGNUP,
+        user: newUser
+      })
 
-      toggleLoadingSpinner(); // Stop spinner after store is updated
+      // Stop spinner after store is updated
+      toggleLoadingSpinner();
 
-      // Redirect the user to the /characters page and force a refresh.
-      // window.location.href = ROUTES.CHARACTERS;
+      // Redirect the user to the home page and force a refresh.
       navigate("/");
     } catch (error) {
       console.log("couldn't sign up");

@@ -4,11 +4,11 @@ import { Link, useLocation } from "react-router-dom";
 import { useAppSelector } from "../../redux/hooks";
 
 export default function Navbar() {
-  const NAV_LINKS = {
-    HOME: "/",
-    PROFILE: "/profile",
-    LOGIN: "/login",
-  };
+  enum NAV_LINKS {
+    HOME = "/",
+    PROFILE = "/profile",
+    LOGIN = "/login",
+  }
 
   const user = useAppSelector(state => state.user);
 
@@ -72,7 +72,7 @@ export default function Navbar() {
                 </li>
 
                 <li>
-                  {user?.id ?
+                  {user?.email ?
                     <a href={NAV_LINKS.HOME} type="button" className="nav-link">Logout</a> :
                     <Link
                       to={NAV_LINKS.LOGIN}
