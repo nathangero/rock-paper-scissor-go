@@ -1,4 +1,3 @@
-/* eslint-disable react/no-unescaped-entities */
 
 import { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import { Modal } from "bootstrap";
@@ -8,6 +7,7 @@ import { auth } from "../../firebase.ts";
 import Alert from "../components/Alert/index.js";
 import Signup from "../components/Signup/index.tsx";
 import LoadingSpinner from "../components/LoadingSpinner/index.js";
+import { useNavigate } from "react-router-dom";
 // import { FirebaseError } from "@firebase/util";
 // import Logo from "../components/Logo/index.jsx";
 
@@ -18,6 +18,8 @@ const ALERT_TYPE = {
 }
 
 export default function Login() {
+
+  const navigate = useNavigate();
 
   const [loadingSpinner, setLoadingSpinner] = useState<Modal | null>(null);
 
@@ -109,6 +111,8 @@ export default function Login() {
       toggleLoadingSpinner();
 
       if (!auth.currentUser) throw ("couldn't login");
+
+      navigate("/");
     } catch (error: any) {
       console.log("couldn't login");
       console.error(error);
