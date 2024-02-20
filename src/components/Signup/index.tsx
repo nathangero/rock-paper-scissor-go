@@ -7,11 +7,11 @@ import { auth } from "../../../firebase.ts";
 
 import Alert from "../Alert/index.js";
 import LoadingSpinner from "../LoadingSpinner/index.jsx";
-import { getUsername } from "../../utils/rtdb.ts";
+import { doesUsernameExist } from "../../utils/rtdb.ts";
 
-const ALERT_TYPE = {
-  INVALID_SIGNUP_USERNAME: "invalid_signup_username",
-  INVALID_SIGNUP_EMAIL: "invalid_signup_email",
+enum ALERT_TYPE {
+  INVALID_SIGNUP_USERNAME = "invalid_signup_username",
+  INVALID_SIGNUP_EMAIL = "invalid_signup_email",
 }
 
 export default function Signup() {
@@ -63,7 +63,7 @@ export default function Signup() {
    */
   const checkUsernameAvailability = async (username: string) => {
     try {
-      const isAvailable = await getUsername(username);
+      const isAvailable = await doesUsernameExist(username);
       // console.log("isAvailable:", isAvailable);
       setIsCheckingUsernameAvailablility(false);
 
@@ -97,7 +97,6 @@ export default function Signup() {
     setIsCheckingUsernameAvailablility(true);
     if (timeoutId) clearTimeout(timeoutId); // Prevents timer from triggering until user has completely stopped typing
     const id = window.setTimeout(async () => {
-      console.log("checking username availability")
       await checkUsernameAvailability(username);
     }, 500)
     setTimeoutId(id);
@@ -121,7 +120,7 @@ export default function Signup() {
     setShowSignupPassword(!showSignupPassword);
   }
 
-  const toggleModalError = (alertType: string) => {
+  const toggleModalError = (alertType: ALERT_TYPE) => {
     switch (alertType) {
       case ALERT_TYPE.INVALID_SIGNUP_EMAIL:
         setAlertTitle("Invalid Sign Up");
