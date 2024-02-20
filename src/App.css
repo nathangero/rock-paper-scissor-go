@@ -4,10 +4,13 @@
   --button-positive-hover: #003f7a;
   --button-negative: #A30000;
   --button-negative-hover: #870101;
+
+  --a-color: #004E98;
+  --text-danger: #BD1E1E;
 }
 
 body {
-  /* background-color: var(--background) !important; */
+  background-color: var(--background) !important;
   height: auto !important;
   min-height: 100vh;
 }
@@ -35,6 +38,9 @@ main {
   background-color: var(--button-negative-hover);
 }
 
+.container-password input {
+  border-radius: 5px 0 0 5px;
+}
 
 .container-password button {
   color: var(--button-positive);
@@ -46,9 +52,17 @@ main {
   margin: 0 auto;
 }
 
+.page-login a {
+  color: var(--a-color);
+}
+
 .page-login label {
   display: block;
   text-align: start;
+}
+
+p.text-danger {
+  color: var(--text-danger) !important;
 }
 
 @media screen and (max-width: 992px) {
