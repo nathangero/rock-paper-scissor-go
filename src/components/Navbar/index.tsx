@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import "./style.css";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../../redux/hooks";
 import { auth } from "../../../firebase";
 import { USER_ACTIONS } from "../../redux/reducer";
@@ -16,17 +16,17 @@ export default function Navbar() {
   const dispatch = useAppDispatch();
 
   const location = useLocation();
-  const navigate = useNavigate();
 
   useEffect(() => {
   })
 
-  const onClickLogout = () => {
-    auth.signOut();
+  const onClickLogout = async () => {
+    await auth.signOut();
     dispatch({
       type: USER_ACTIONS.LOGOUT
     });
-    navigate("/");
+
+    window.location.href = "/";
   }
 
   return (
@@ -74,22 +74,23 @@ export default function Navbar() {
                   </Link>
                 </li>
 
-                <li>
-                  <Link
-                    to={`${NAV_LINKS.PROFILE}/${0}`}
-                    className={`${location.pathname.includes(NAV_LINKS.PROFILE) ? "nav-link active" : "nav-link"}`}
-                  >
-                    Profile
-                  </Link>
-                </li>
+                {!user?.email ? null :
+                  <li>
+                    <Link
+                      to={`${NAV_LINKS.PROFILE}/${0}`}
+                      className={`${location.pathname.includes(NAV_LINKS.PROFILE) ? "nav-link active" : "nav-link"}`}
+                    >
+                      Profile
+                    </Link>
+                  </li>
+                }
 
                 <li>
                   {user?.email ?
-                    <a href={NAV_LINKS.HOME} type="button" className="nav-link">Logout</a> :
+                    <a type="button" className="nav-link" onClick={() => onClickLogout()}>Logout</a> :
                     <Link
                       to={NAV_LINKS.LOGIN}
                       className={`${location.pathname === NAV_LINKS.LOGIN ? "nav-link active" : "nav-link"}`}
-                      onClick={() => onClickLogout()}
                     >
                       Login
                     </Link>
