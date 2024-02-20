@@ -1,4 +1,3 @@
-/* eslint-disable react/no-unescaped-entities */
 
 import { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -8,6 +7,7 @@ import { auth } from "../../../firebase.ts";
 
 import Alert from "../Alert/index.js";
 import LoadingSpinner from "../LoadingSpinner/index.jsx";
+import { getUsername } from "../../utils/rtdb.ts";
 
 const ALERT_TYPE = {
   INVALID_SIGNUP_USERNAME: "invalid_signup_username",
@@ -63,22 +63,12 @@ export default function Signup() {
    */
   const checkUsernameAvailability = async (username: string) => {
     try {
-      // TODO: CREATE CHECK FOR EXISTING USERNAMES
-      console.log("username:", username);
-      // const { data } = await checkUser({
-      //   variables: { username }
-      // });
-
-      // // console.log("data?.checkUser:", data?.checkUser);
+      const isAvailable = await getUsername(username);
+      // console.log("isAvailable:", isAvailable);
       setIsCheckingUsernameAvailablility(false);
 
-      // // If the username already exists, don't let the user sign up
-      // if (data?.checkUser) {
-      //   // console.log("username already exists");
-        setIsSignupUsernameAvailable(false);
-      // } else {
-        setIsSignupUsernameAvailable(true);
-      // }
+      //If the username already exists, don't let the user sign up
+      setIsSignupUsernameAvailable(!isAvailable);
     } catch (error) {
       // This shouldn't really run
       console.log("Couldn't check db for username");
@@ -245,14 +235,14 @@ export default function Signup() {
       </form>
 
       <br />
-      
+
 
       <div className="alert-modal-error">
         <Alert title={alertTitle} body={alertBody} />
       </div>
 
       <div className="loading-spinner">
-        <LoadingSpinner spinnerText={"Signing up..."}/>
+        <LoadingSpinner spinnerText={"Signing up..."} />
       </div>
     </>
   )
