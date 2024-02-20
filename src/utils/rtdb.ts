@@ -1,8 +1,6 @@
-// import { ref, set, get, child, push, remove, update, limitToLast, query } from "firebase/database"
-import { child, equalTo, get, orderByKey, query, ref, set, update } from "firebase/database"
+import { child, get, ref, update } from "firebase/database"
 import { db } from "../../firebase";
 import { DB_DOC_KEYS, USERNAME_KEYS, USER_KEYS } from "./db-keys";
-import { User } from "../models/user";
 
 
 /**

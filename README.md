@@ -6,4 +6,6 @@
 
 ### Resources
 
+[Color Scheme](https://coolors.co/ffbc42-004e98-a30000)
+
 [React Redux with TypeScript](https://react-redux.js.org/tutorials/typescript-quick-start)
