@@ -36,7 +36,7 @@ export const addUser = async (uid: string, email: string, username: string) => {
 
     return newUser;
 
-  } catch (error: any) {
+  } catch (error: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
     console.log("couldn't add user");
     console.error(error);
   }
@@ -53,7 +53,7 @@ export const getUser = async (uid: string): Promise<object> => {
 
     return value;
 
-  } catch (error: any) {
+  } catch (error: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
     console.log("couldn't add user");
     console.error(error);
     return {};
@@ -77,7 +77,7 @@ export const doesUsernameExist = async (username: string): Promise<boolean> => {
     // console.log("value:", value);
     return value ? true : false;
 
-  } catch (error: any) {
+  } catch (error: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
     console.log("couldn't search for username");
     console.error(error);
     return false;

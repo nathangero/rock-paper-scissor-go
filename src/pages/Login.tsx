@@ -124,7 +124,7 @@ export default function Login() {
       })
 
       navigate("/");
-    } catch (error: any) {
+    } catch (error: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
       console.log("couldn't login");
       console.error(error);
       toggleLoadingSpinner();
