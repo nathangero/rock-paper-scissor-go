@@ -1,11 +1,13 @@
 :root {
   --background: #FFBC42;
   --button-positive: #004E98;
+  --button-positive-hover: #003f7a;
   --button-negative: #A30000;
+  --button-negative-hover: #870101;
 }
 
 body {
-  background-color: var(--background) !important;
+  /* background-color: var(--background) !important; */
   height: auto !important;
   min-height: 100vh;
 }
@@ -15,7 +17,31 @@ main {
 }
 
 
-.theme-button {
+.btn.button-positive {
   color: white;
   background-color: var(--button-positive);
+}
+.btn.button-positive:hover {
+  color: white;
+  background-color: var(--button-positive-hover);
+}
+
+.btn.button-negative {
+  color: white;
+  background-color: var(--button-negative);
+}
+.btn.button-negative:hover {
+  color: white;
+  background-color: var(--button-negative-hover);
+}
+
+/* .container-password {
+  border: 2px solid black !important;
+  border-radius: 10px;
+} */
+
+
+.container-password button {
+  color: var(--button-positive);
+  border-radius: 0  5px  5px 0;
 }

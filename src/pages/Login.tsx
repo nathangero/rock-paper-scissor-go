@@ -156,7 +156,7 @@ export default function Login() {
           <br />
 
           <p className="fs-5 mb-0">Password:</p>
-          <div className="container-fluid d-inline-flex border rounded px-0">
+          <div className="container-fluid d-inline-flex border rounded px-0 container-password">
             <input
               id="login-password"
               type={showLoginPassword ? "text" : "password"}
@@ -165,17 +165,17 @@ export default function Login() {
               onChange={onChangeLoginPassword}
               placeholder="******"
             />
-            <button className="btn mx-0" onClick={toggleLoginPassword} type="button" aria-label={showLoginPassword ? "Hide password" : "Show password"}><i className={showLoginPassword ? "bi bi-eye-fill" : "bi bi-eye-slash-fill"}></i></button>
+            <button className="btn mx-0 border" onClick={toggleLoginPassword} type="button" aria-label={showLoginPassword ? "Hide password" : "Show password"}><i className={showLoginPassword ? "bi bi-eye-fill" : "bi bi-eye-slash-fill"}></i></button>
           </div>
 
           <div className="text-center mt-3">
-            <button className="btn theme-button fs-4 px-3" type="submit">Login</button>
+            <button className="btn button-positive fs-4 px-3" type="submit">Login</button>
           </div>
         </form>
 
         <br />
-        <p className="text-center fs-5">Need an account? <button className="button-link" onClick={toggleSignup} type="button">Sign up here</button></p>
-        <p className="text-center fs-5">Forgot your password? <button className="button-link" onClick={toggleModalResetPassword} type="button">Click here</button></p>
+        <p className="text-center fs-5">Need an account? <a className="button-link" onClick={toggleSignup} type="button">Sign up here</a></p>
+        <p className="text-center fs-5">Forgot your password? <a className="button-link" onClick={toggleModalResetPassword} type="button">Click here</a></p>
 
       </>
     )
@@ -230,7 +230,7 @@ export default function Login() {
             <>
               <Signup />
 
-              <p className="text-center">Already have an account? <button className="button-link" onClick={toggleSignup} type="button">Login here</button></p>
+              <p className="text-center fs-5">Already have an account? <a className="button-link" onClick={toggleSignup} type="button">Login here</a></p>
             </>
 
           }

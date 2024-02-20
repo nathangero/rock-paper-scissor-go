@@ -77,7 +77,7 @@ export default function Signup() {
       //   // console.log("username already exists");
         setIsSignupUsernameAvailable(false);
       // } else {
-        // setIsSignupUsernameAvailable(true);
+        setIsSignupUsernameAvailable(true);
       // }
     } catch (error) {
       // This shouldn't really run
@@ -223,7 +223,7 @@ export default function Signup() {
         }
 
         <p className="fs-5 mb-0">Password:</p>
-        <div className="container-fluid d-inline-flex border rounded px-0">
+        <div className="container-fluid d-inline-flex px-0 border rounded container-password">
           <input
             id="signup-password"
             type={showSignupPassword ? "text" : "password"}
@@ -233,14 +233,14 @@ export default function Signup() {
             placeholder="******"
             autoComplete="new-password"
           />
-          <button className="btn mx-0" onClick={toggleSignupPassword} type="button"><i className={showSignupPassword ? "bi bi-eye-fill" : "bi bi-eye-slash-fill"}></i></button>
+          <button className="btn mx-0 border" onClick={toggleSignupPassword} type="button"><i className={showSignupPassword ? "bi bi-eye-fill" : "bi bi-eye-slash-fill"}></i></button>
         </div>
         {!isSignupPasswordValid ?
           <p className="text-danger">*Password must have at least 6 characters</p> : null
         }
 
         <div className="text-center mt-3">
-          <button className="btn theme-button fs-4 px-3 button-signup" type="submit" disabled>Sign Up</button>
+          <button className="btn button-positive fs-4 px-3 button-signup" type="submit" disabled>Sign Up</button>
         </div>
       </form>
 
