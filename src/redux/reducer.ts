@@ -1,6 +1,5 @@
 export const USER_ACTIONS = {
   LOGIN: "LOGIN",
-  SIGNUP: "SIGNUP",
   LOGOUT: "LOGOUT",
 }
 
@@ -12,13 +11,7 @@ const initialState = {
 export const reducer = (state = initialState, action: any) => {
   switch (action.type) {
     case USER_ACTIONS.LOGIN:
-      return {
-        ...state,
-        user: action.user
-      }
-
-    case USER_ACTIONS.SIGNUP:
-      console.log("@user signup");
+      console.log("@user login");
       console.log("action.user:", action.user);
       return {
         ...state,

@@ -158,7 +158,7 @@ export default function Signup() {
       const uid = auth.currentUser.uid;
       const newUser = await addUser(uid, signupEmail, signupUsername);
       dispatch({
-        type: USER_ACTIONS.SIGNUP,
+        type: USER_ACTIONS.LOGIN,
         user: newUser
       })
 

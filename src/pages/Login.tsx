@@ -8,6 +8,9 @@ import Alert from "../components/Alert/index.js";
 import Signup from "../components/Signup/index.tsx";
 import LoadingSpinner from "../components/LoadingSpinner/index.js";
 import { useNavigate } from "react-router-dom";
+import { getUser } from "../utils/rtdb.ts";
+import { useAppDispatch } from "../redux/hooks.ts";
+import { USER_ACTIONS } from "../redux/reducer.ts";
 // import { FirebaseError } from "@firebase/util";
 // import Logo from "../components/Logo/index.jsx";
 
@@ -20,6 +23,7 @@ const ALERT_TYPE = {
 export default function Login() {
 
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
 
   const [loadingSpinner, setLoadingSpinner] = useState<Modal | null>(null);
 
@@ -111,6 +115,13 @@ export default function Login() {
       toggleLoadingSpinner();
 
       if (!auth.currentUser) throw ("couldn't login");
+
+      const user = await getUser(auth.currentUser.uid);
+      console.log("user from getUser:", user);
+      dispatch({
+        type: USER_ACTIONS.LOGIN,
+        user: user
+      })
 
       navigate("/");
     } catch (error: any) {

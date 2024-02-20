@@ -2,6 +2,7 @@
 import { child, equalTo, get, orderByKey, query, ref, set, update } from "firebase/database"
 import { db } from "../../firebase";
 import { DB_DOC_KEYS, USERNAME_KEYS, USER_KEYS } from "./db-keys";
+import { User } from "../models/user";
 
 
 /**
@@ -40,6 +41,24 @@ export const addUser = async (uid: string, email: string, username: string) => {
   } catch (error: any) {
     console.log("couldn't add user");
     console.error(error);
+  }
+}
+
+
+export const getUser = async (uid: string): Promise<object> => {
+  try {
+    const userRef = `${DB_DOC_KEYS.USERS}/${uid}`;
+
+    const snapshot = await get(child(ref(db), userRef));
+    const value = snapshot.val();
+    // console.log("value:", value);
+
+    return value;
+
+  } catch (error: any) {
+    console.log("couldn't add user");
+    console.error(error);
+    return {};
   }
 }
 
