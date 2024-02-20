@@ -1,3 +1,73 @@
+:root {
+  --background: #FFBC42;
+  --button-positive: #004E98;
+  --button-positive-hover: #003f7a;
+  --button-negative: #A30000;
+  --button-negative-hover: #870101;
+
+  --a-color: #004E98;
+  --text-danger: #9E2B25;
+}
+
+body {
+  background-color: var(--background) !important;
+  height: auto !important;
+  min-height: 100vh;
+}
+
 main {
   text-align: center;
+}
+
+
+.btn.button-positive {
+  color: white;
+  background-color: var(--button-positive);
+}
+.btn.button-positive:hover {
+  color: white;
+  background-color: var(--button-positive-hover);
+}
+
+.btn.button-negative {
+  color: white;
+  background-color: var(--button-negative);
+}
+.btn.button-negative:hover {
+  color: white;
+  background-color: var(--button-negative-hover);
+}
+
+.container-password input {
+  border-radius: 5px 0 0 5px;
+}
+
+.container-password button {
+  color: var(--button-positive);
+  border-radius: 0  5px  5px 0;
+}
+
+.page-login {
+  width: 50%;
+  margin: 0 auto;
+}
+
+.page-login a {
+  color: var(--a-color);
+}
+
+.page-login label {
+  display: block;
+  text-align: start;
+}
+
+p.text-danger {
+  color: var(--text-danger) !important;
+}
+
+@media screen and (max-width: 992px) {
+  .page-login {
+    width: 90%;
+    margin: 0 auto;
+  }
 }
