@@ -11,6 +11,7 @@ import Home from "./pages/Home.tsx";
 import Error from "./pages/Error.tsx";
 import Profile from "./components/Profile/index.tsx";
 import StoreProvider from "./redux/GlobalState.tsx";
+import Login from "./pages/Login.tsx";
 
 const router = createBrowserRouter([
   {
@@ -25,7 +26,11 @@ const router = createBrowserRouter([
       {
         path: "/profile/:id",
         element: <Profile />
-      }
+      },
+      {
+        path: "/login",
+        element: <Login />
+      },
     ]
   }
 ])
