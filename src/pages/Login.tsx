@@ -1,6 +1,6 @@
 /* eslint-disable react/no-unescaped-entities */
 
-import { ChangeEvent, FormEvent, FormEventHandler, useEffect, useState } from "react";
+import { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import { Modal } from "bootstrap";
 import { signInWithEmailAndPassword, sendPasswordResetEmail } from "firebase/auth";
 import { auth } from "../../firebase.ts";
@@ -228,7 +228,7 @@ export default function Login() {
           {!showSignup ?
             renderLogin() :
             <>
-              {/* <Signup /> */}
+              <Signup />
 
               <p className="text-center">Already have an account? <button className="button-link" onClick={toggleSignup} type="button">Login here</button></p>
             </>

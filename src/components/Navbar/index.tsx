@@ -72,18 +72,21 @@ export default function Navbar() {
                 </li>
 
                 <li>
-                  <Link
-                    to={NAV_LINKS.LOGIN}
-                    className={`${location.pathname === NAV_LINKS.LOGIN ? "nav-link active" : "nav-link"}`}
-                  >
-                    Login
-                  </Link>
+                  {user?.id ?
+                    <a href={NAV_LINKS.HOME} type="button" className="nav-link">Logout</a> :
+                    <Link
+                      to={NAV_LINKS.LOGIN}
+                      className={`${location.pathname === NAV_LINKS.LOGIN ? "nav-link active" : "nav-link"}`}
+                    >
+                      Login
+                    </Link>
+                  }
                 </li>
               </ul>
             </div>
           </div>
         </div>
       </nav>
-    </header>
+    </header >
   )
 }

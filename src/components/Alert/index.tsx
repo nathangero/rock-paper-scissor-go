@@ -31,4 +31,4 @@ interface AlertProps {
   title: string,
   body: string,
   centered?: boolean,
-};
+}

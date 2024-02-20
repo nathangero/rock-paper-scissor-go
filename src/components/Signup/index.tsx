@@ -1,6 +1,6 @@
 /* eslint-disable react/no-unescaped-entities */
 
-import { useEffect, useState } from "react";
+import { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Modal } from "bootstrap";
 import { createUserWithEmailAndPassword } from "firebase/auth";
@@ -16,9 +16,9 @@ const ALERT_TYPE = {
 
 export default function Signup() {
 
-  const [loadingSpinner, setLoadingSpinner] = useState(false);
+  const [loadingSpinner, setLoadingSpinner] = useState<Modal | null>(null);
 
-  const [modalAlert, setModalAlert] = useState(null);
+  const [modalAlert, setModalAlert] = useState<Modal | null>(null);
   const [alertTitle, setAlertTitle] = useState('');
   const [alertBody, setAlertBody] = useState('');
 
@@ -34,25 +34,25 @@ export default function Signup() {
   const [isSignupEmailValid, setIsSignupEmailValid] = useState(false);
   const [isSignupPasswordValid, setIsSignupPasswordValid] = useState(false);
 
-  const [timeoutId, setTimeoutId] = useState(null);
+  const [timeoutId, setTimeoutId] = useState<number | null>(null);
 
 
   const navigate = useNavigate();
 
   useEffect(() => {
     // Initialize bootstrap modals 
-    const modalError = document.querySelector(".alert-modal-error").querySelector("#alertModal");
-    setModalAlert(new Modal(modalError));
+    const modalError = document.querySelector<HTMLDivElement>(".alert-modal-error")?.querySelector<HTMLDivElement>("#alertModal");
+    if (modalError) setModalAlert(new Modal(modalError));
 
-    const loadingSpinner = document.querySelector(".loading-spinner").querySelector("#modal-loading-spinner");
-    setLoadingSpinner(new Modal(loadingSpinner));
+    const loadingSpinner = document.querySelector<HTMLDivElement>(".loading-spinner")?.querySelector<HTMLDivElement>("#modal-loading-spinner");
+    if (loadingSpinner) setLoadingSpinner(new Modal(loadingSpinner));
   }, []);
 
   // Disables Sign Up button if username and password criteria all pass
   useEffect(() => {
-    let signupButton = document.querySelector(".button-signup");
+    const signupButton = document.querySelector(".button-signup");
     if (signupButton && isSignupUsernameValid && !isCheckingUsernameAvailablility && isSignupUsernameAvailable && isSignupEmailValid && isSignupPasswordValid) signupButton.removeAttribute("disabled");
-    else if (signupButton) signupButton.setAttribute("disabled", null);
+    else if (signupButton) signupButton.setAttribute("disabled", "");
   }, [isSignupUsernameValid, isCheckingUsernameAvailablility, isSignupUsernameAvailable, isSignupEmailValid, isSignupPasswordValid]);
 
   /**
@@ -61,22 +61,24 @@ export default function Signup() {
    * else the username is taken already.
    * @param {String} username 
    */
-  const checkUsernameAvailability = async (username) => {
+  const checkUsernameAvailability = async (username: string) => {
     try {
-      const { data } = await checkUser({
-        variables: { username }
-      });
+      // TODO: CREATE CHECK FOR EXISTING USERNAMES
+      console.log("username:", username);
+      // const { data } = await checkUser({
+      //   variables: { username }
+      // });
 
-      // console.log("data?.checkUser:", data?.checkUser);
+      // // console.log("data?.checkUser:", data?.checkUser);
       setIsCheckingUsernameAvailablility(false);
 
-      // If the username already exists, don't let the user sign up
-      if (data?.checkUser) {
-        // console.log("username already exists");
+      // // If the username already exists, don't let the user sign up
+      // if (data?.checkUser) {
+      //   // console.log("username already exists");
         setIsSignupUsernameAvailable(false);
-      } else {
-        setIsSignupUsernameAvailable(true);
-      }
+      // } else {
+        // setIsSignupUsernameAvailable(true);
+      // }
     } catch (error) {
       // This shouldn't really run
       console.log("Couldn't check db for username");
@@ -90,7 +92,7 @@ export default function Signup() {
    * @param {Event} event 
    * @returns null if username isn't valid
    */
-  const onChangeSignupUsername = ({ target }) => {
+  const onChangeSignupUsername = ({ target }: ChangeEvent<HTMLInputElement>) => {
     const username = target.value;
     setSignupUsername(username);
 
@@ -103,22 +105,23 @@ export default function Signup() {
 
     // Check username availability after user stops typing
     setIsCheckingUsernameAvailablility(true);
-    setTimeoutId(clearTimeout(timeoutId)); // Prevents timer from triggering until user has completely stopped typing
-    setTimeoutId(setTimeout(async () => {
+    if (timeoutId) clearTimeout(timeoutId); // Prevents timer from triggering until user has completely stopped typing
+    const id = window.setTimeout(async () => {
+      console.log("checking username availability")
       await checkUsernameAvailability(username);
     }, 500)
-    );
+    setTimeoutId(id);
   }
 
-  const onChangeSignupEmail = ({ target }) => {
+  const onChangeSignupEmail = ({ target }: ChangeEvent<HTMLInputElement>) => {
     setSignupEmail(target.value);
 
     // Checks if the email entered is valid
-    var regex = /^([+\w-]+(?:\.[\w-]+)*)@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$/i;
+    const regex = /^([+\w-]+(?:\.[\w-]+)*)@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$/i;
     setIsSignupEmailValid(regex.test(target.value));
   }
 
-  const onChangeSignupPassword = ({ target }) => {
+  const onChangeSignupPassword = ({ target }: ChangeEvent<HTMLInputElement>) => {
     setSignupPassword(target.value);
     if (target.value.length >= 6) setIsSignupPasswordValid(true);
     else setIsSignupPasswordValid(false);
@@ -128,13 +131,8 @@ export default function Signup() {
     setShowSignupPassword(!showSignupPassword);
   }
 
-  const toggleModalError = (alertType) => {
+  const toggleModalError = (alertType: string) => {
     switch (alertType) {
-      case ALERT_TYPE.INVALID_LOGIN:
-        setAlertTitle("Invalid Login");
-        setAlertBody("Email or password is invalid. Please check your credentials and try again.");
-        break;
-
       case ALERT_TYPE.INVALID_SIGNUP_EMAIL:
         setAlertTitle("Invalid Sign Up");
         setAlertBody("Email already in use.");
@@ -153,7 +151,7 @@ export default function Signup() {
     loadingSpinner?.toggle();
   }
 
-  const onSubmitSignup = async (e) => {
+  const onSubmitSignup = async (e: FormEvent) => {
     e.preventDefault();
 
     try {

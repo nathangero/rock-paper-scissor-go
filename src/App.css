@@ -1,3 +1,21 @@
+:root {
+  --background: #FFBC42;
+  --button-positive: #004E98;
+  --button-negative: #A30000;
+}
+
+body {
+  background-color: var(--background) !important;
+  height: auto !important;
+  min-height: 100vh;
+}
+
 main {
   text-align: center;
+}
+
+
+.theme-button {
+  color: white;
+  background-color: var(--button-positive);
 }

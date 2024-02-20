@@ -48,4 +48,4 @@ export default function LoadingSpinner({ spinnerText, useModal = true, }: Loadin
 interface LoadingSpinner {
   spinnerText: string,
   useModal?: boolean,
-};
+}
