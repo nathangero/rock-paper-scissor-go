@@ -178,6 +178,20 @@ export default function Signup() {
   return (
     <>
       <form id="signup-form" className="" onSubmit={onSubmitSignup}>
+      <label htmlFor="signup-email" className="text-start fs-5">Email:</label>
+        <input
+          type="email"
+          id="signup-email"
+          className="form-control"
+          value={signupEmail}
+          onChange={onChangeSignupEmail}
+          placeholder="test@example.com"
+          autoComplete="new-password"
+        />
+        {!isSignupEmailValid || signupEmail.length === 0 ?
+          <p className="text-danger">*Enter a valid email</p> : <br />
+        }
+
         <label htmlFor="signup-username" className="text-start fs-5">Username:</label>
         <input
           id="signup-username"
@@ -205,20 +219,6 @@ export default function Signup() {
 
           }
         </div>
-
-        <label htmlFor="signup-email" className="text-start fs-5">Email:</label>
-        <input
-          type="email"
-          id="signup-email"
-          className="form-control"
-          value={signupEmail}
-          onChange={onChangeSignupEmail}
-          placeholder="test@example.com"
-          autoComplete="new-password"
-        />
-        {!isSignupEmailValid || signupEmail.length === 0 ?
-          <p className="text-danger">*Enter a valid email</p> : <br />
-        }
 
         <label htmlFor="signup-password" className="fs-5 mb-0">Password:</label>
         <div className="container-fluid d-inline-flex px-0 border rounded container-password">
