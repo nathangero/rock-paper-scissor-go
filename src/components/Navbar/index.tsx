@@ -1,7 +1,9 @@
 import { useEffect } from "react";
 import "./style.css";
-import { Link, useLocation } from "react-router-dom";
-import { useAppSelector } from "../../redux/hooks";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useAppDispatch, useAppSelector } from "../../redux/hooks";
+import { auth } from "../../../firebase";
+import { USER_ACTIONS } from "../../redux/reducer";
 
 export default function Navbar() {
   enum NAV_LINKS {
@@ -11,11 +13,21 @@ export default function Navbar() {
   }
 
   const user = useAppSelector(state => state.user);
+  const dispatch = useAppDispatch();
 
   const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
   })
+
+  const onClickLogout = () => {
+    auth.signOut();
+    dispatch({
+      type: USER_ACTIONS.LOGOUT
+    });
+    navigate("/");
+  }
 
   return (
     <header>
@@ -77,6 +89,7 @@ export default function Navbar() {
                     <Link
                       to={NAV_LINKS.LOGIN}
                       className={`${location.pathname === NAV_LINKS.LOGIN ? "nav-link active" : "nav-link"}`}
+                      onClick={() => onClickLogout()}
                     >
                       Login
                     </Link>
