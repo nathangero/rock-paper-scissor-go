@@ -5,9 +5,9 @@ import { Modal } from "bootstrap";
 import { signInWithEmailAndPassword, sendPasswordResetEmail } from "firebase/auth";
 import { auth } from "../../firebase.ts";
 
-import Alert from "../components/Alert/index.jsx";
+import Alert from "../components/Alert/index.js";
 import Signup from "../components/Signup/index.tsx";
-import LoadingSpinner from "../components/LoadingSpinner/index.jsx";
+import LoadingSpinner from "../components/LoadingSpinner/index.js";
 // import { FirebaseError } from "@firebase/util";
 // import Logo from "../components/Logo/index.jsx";
 
@@ -144,7 +144,7 @@ export default function Login() {
     return (
       <>
         <form id="login-form" onSubmit={onSubmitLogin}>
-          <label htmlFor="login-email" className="fs-5">Email:</label>
+          <label htmlFor="login-email" className="text-start fs-5">Email:</label>
           <input
             id="login-email"
             type="email"
@@ -155,7 +155,7 @@ export default function Login() {
           />
           <br />
 
-          <p className="fs-5 mb-0">Password:</p>
+          <label htmlFor="login-password" className="fs-5 mb-0">Password:</label>
           <div className="container-fluid d-inline-flex border rounded px-0 container-password">
             <input
               id="login-password"
@@ -220,7 +220,7 @@ export default function Login() {
   }
 
   return (
-    <>
+    <section className="page-login">
       <div className="d-flex flex-column align-items-center">
         {/* <Logo /> */}
         {/* <img src="/icons8-dungeons-and-dragons-48.svg" width={200} height={200} className="img-fluid" alt="dungeons and dragons image provided by icons8"/> */}
@@ -263,6 +263,6 @@ export default function Login() {
       <div className="loading-spinner">
         <LoadingSpinner spinnerText={"Logging in..."} />
       </div>
-    </>
+    </section>
   )
 }

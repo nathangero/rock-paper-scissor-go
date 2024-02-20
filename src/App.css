@@ -35,13 +35,25 @@ main {
   background-color: var(--button-negative-hover);
 }
 
-/* .container-password {
-  border: 2px solid black !important;
-  border-radius: 10px;
-} */
-
 
 .container-password button {
   color: var(--button-positive);
   border-radius: 0  5px  5px 0;
+}
+
+.page-login {
+  width: 50%;
+  margin: 0 auto;
+}
+
+.page-login label {
+  display: block;
+  text-align: start;
+}
+
+@media screen and (max-width: 992px) {
+  .page-login {
+    width: 90%;
+    margin: 0 auto;
+  }
 }
