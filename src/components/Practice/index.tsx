@@ -8,8 +8,8 @@ export default function Practice() {
   const [userAttack, setUserAttack] = useState<ATTACK_TYPES>(ATTACK_TYPES.RANDOM);
   const [opponentAttack, setOpponentAttack] = useState<ATTACK_TYPES>(ATTACK_TYPES.RANDOM);
   const [roundResult, setRoundResult] = useState("");
-  const [wins, setWins] = useState(0);
-  const [losses, setLosses] = useState(0);
+  // const [wins, setWins] = useState(0);
+  // const [losses, setLosses] = useState(0);
 
   const randomAttack = () => {
     const selection = Math.round(Math.random() * 2);
