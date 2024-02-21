@@ -8,8 +8,9 @@ export default function Practice() {
   const [userAttack, setUserAttack] = useState<ATTACK_TYPES>(ATTACK_TYPES.RANDOM);
   const [opponentAttack, setOpponentAttack] = useState<ATTACK_TYPES>(ATTACK_TYPES.RANDOM);
   const [roundResult, setRoundResult] = useState("");
-  // const [wins, setWins] = useState(0);
-  // const [losses, setLosses] = useState(0);
+  const [wins, setWins] = useState(0);
+  const [losses, setLosses] = useState(0);
+  const [draws, setDraws] = useState(0);
 
   const randomAttack = () => {
     const selection = Math.round(Math.random() * 2);
@@ -38,17 +39,31 @@ export default function Practice() {
     else return ROUND_RESULT.DRAW; // Just in case
   }
 
-  const onClickAttack = (userAttack: ATTACK_TYPES) => {
+  const calcWinLossRatio = (): string | number => {
+    if (wins === 0) return 0;
+    else if (wins > 0 && losses === 0) return 100;
+    return (wins / losses).toFixed(2);
+  }
 
+  const onClickAttack = (userAttack: ATTACK_TYPES) => {
     setUserAttack(userAttack);
     const opponentAttack = randomAttack();
     setOpponentAttack(opponentAttack);
     const result = decideWinner(userAttack, opponentAttack);
 
     // TODO: Increment win/loss record
-    if (result === ROUND_RESULT.DRAW) setRoundResult("Draw! Go Again");
-    else if (result === ROUND_RESULT.WIN) setRoundResult("** You Win! **");
-    else if (result === ROUND_RESULT.LOSE) setRoundResult("You Lose");
+    if (result === ROUND_RESULT.DRAW) {
+      setRoundResult("Draw! Go Again");
+      setDraws(draws + 1);
+    }
+    else if (result === ROUND_RESULT.WIN) {
+      setRoundResult("** You Win! **");
+      setWins(wins + 1);
+    }
+    else if (result === ROUND_RESULT.LOSE) {
+      setRoundResult("You Lose");
+      setLosses(losses + 1);
+    }
   }
 
   return (
@@ -63,8 +78,6 @@ export default function Practice() {
         <h2>Practice Mode</h2>
       </div>
 
-      <br /><br />
-
       <h3 className="round-result">{roundResult}</h3>
       <br />
 
@@ -78,13 +91,43 @@ export default function Practice() {
         <br />
 
         {!roundResult ? null :
-          <>
-            <h4>You chose: {userAttack}</h4>
-            <h4>Opponent chose: {opponentAttack}</h4>
-          </>
-        }
-      </div>
+          <div className="container-table">
+            <div className="two-column-spacing">
+              <h4>You:</h4>
+              <h4><b>{userAttack}</b></h4>
+            </div>
 
+            <div className="two-column-spacing">
+              <h4>Opponent:</h4>
+              <h4><b>{opponentAttack}</b></h4>
+            </div>
+          </div>
+        }
+
+        <hr />
+        <div id="practice-stats" className="container-table">
+          <div className="two-column-spacing">
+            <h4>Wins:</h4>
+            <h4><b>{wins}</b></h4>
+          </div>
+          <div className="two-column-spacing">
+            <h4>Losses:</h4>
+            <h4><b>{losses}</b></h4>
+          </div>
+          <div className="two-column-spacing">
+            <h4>Draws:</h4>
+            <h4><b>{draws}</b></h4>
+          </div>
+          <div className="two-column-spacing">
+            <h4>Win rate:</h4>
+            <h4><b>{calcWinLossRatio()}%</b></h4>
+          </div>
+          <div className="two-column-spacing">
+            <h4>Total rounds:</h4>
+            <h4><b>{wins + losses + draws}</b></h4>
+          </div>
+        </div>
+      </div>
     </section>
   )
 }

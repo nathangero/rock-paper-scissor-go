@@ -1,14 +1,43 @@
 .attack-selection img {
   width: 100px;
-  margin: 0 30px;
+  margin: 5px 30px;
   padding: 10px;
   cursor: pointer;
 }
+
 .attack-selection img:hover {
   box-shadow: 0px 0px 20px 5px var(--button-positive);
   border-radius: 10px;
 }
 
+.attack-selection img:active {
+  width: 90px;
+}
+
+.container-table {
+  width: 25%;
+  margin: 0 auto;
+}
+
+.two-column-spacing {
+  display: flex;
+  justify-content: space-between;
+}
+
 .round-result {
   font-size: 3rem;
+}
+
+@media screen and (max-width: 992px) {
+  .container-table {
+    width: 50%;
+    margin: 0 auto;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .container-table {
+    width: 60%;
+    margin: 0 auto;
+  }
 }
