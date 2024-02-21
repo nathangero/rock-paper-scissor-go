@@ -2,8 +2,10 @@
   --background: #FFBC42;
   --button-positive: #004E98;
   --button-positive-hover: #003f7a;
+  --button-positive-click: #002a51;
   --button-negative: #A30000;
   --button-negative-hover: #870101;
+  --button-negative-click: #660000;
 
   --a-color: #004E98;
   --text-danger: #9E2B25;
@@ -28,6 +30,11 @@ main {
   color: white;
   background-color: var(--button-positive-hover);
 }
+.btn.button-positive:active {
+  color: white !important;
+  background-color: var(--button-positive-click) !important;
+  border-color: var(--button-positive-click) !important;
+}
 
 .btn.button-negative {
   color: white;
@@ -36,6 +43,11 @@ main {
 .btn.button-negative:hover {
   color: white;
   background-color: var(--button-negative-hover);
+}
+.btn.button-negative:active {
+  color: white !important;
+  background-color: var(--button-negative-click) !important;
+  border-color: var(--button-negative-click) !important;
 }
 
 .container-password input {

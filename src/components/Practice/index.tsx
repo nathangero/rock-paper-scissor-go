@@ -2,12 +2,13 @@ import { Link } from "react-router-dom";
 import "./style.css";
 import { ATTACK_TYPES, ROUND_RESULT } from "../../utils/enums";
 import { useState } from "react";
+import AttackSelection from "../AttackSelection";
 
 export default function Practice() {
 
   const [userAttack, setUserAttack] = useState<ATTACK_TYPES>(ATTACK_TYPES.RANDOM);
   const [opponentAttack, setOpponentAttack] = useState<ATTACK_TYPES>(ATTACK_TYPES.RANDOM);
-  const [roundResult, setRoundResult] = useState("");
+  const [roundResult, setRoundResult] = useState("Waiting...");
   const [wins, setWins] = useState(0);
   const [losses, setLosses] = useState(0);
   const [draws, setDraws] = useState(0);
@@ -62,6 +63,10 @@ export default function Practice() {
     }
   }
 
+  const onClickEmulateRound = () => {
+    console.log("starting round")
+  }
+
   const onClickAttack = (userAttack: ATTACK_TYPES) => {
     updateAttackCount(userAttack);
     setUserAttack(userAttack);
@@ -97,12 +102,8 @@ export default function Practice() {
   const renderAttack = () => {
     return (
       <>
-        <h3>Make your choice</h3>
-        <div className="attack-selection">
-          <img src="assets/rock-svgrepo-com.svg" onClick={() => onClickAttack(ATTACK_TYPES.ROCK)} alt="rock icon" />
-          <img src="assets/paper-svgrepo-com.svg" onClick={() => onClickAttack(ATTACK_TYPES.PAPER)} alt="paper icon" />
-          <img src="assets/scissors-9-svgrepo-com.svg" onClick={() => onClickAttack(ATTACK_TYPES.SCISSORS)} alt="scissors icon" />
-        </div>
+        <AttackSelection onClickAttack={onClickAttack} />
+        
         <br />
 
         {!roundResult ? null :
@@ -169,6 +170,8 @@ export default function Practice() {
   return (
     <section id="mode-practice">
       <div className="">
+        <h2>Practice Mode</h2>
+
         <div>
           <Link
             to={"/"}
@@ -177,9 +180,9 @@ export default function Practice() {
             <i className="bi bi-arrow-left"></i> <label>Home</label>
           </Link>
 
+          <button className="btn button-positive mx-2" onClick={() => onClickEmulateRound()}>Emulate Round</button>
           <button className="btn button-negative mx-2" onClick={() => onClickResetStats()}>Reset Stats</button>
         </div>
-        <h2>Practice Mode</h2>
       </div>
 
       <h3 className="round-result">{roundResult}</h3>
