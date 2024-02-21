@@ -1,8 +1,9 @@
 import { Link } from "react-router-dom";
 import "./style.css";
 import { ATTACK_TYPES, ROUND_RESULT } from "../../utils/enums";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import AttackSelection from "../AttackSelection";
+import Round from "../Round";
 
 export default function Practice() {
 
@@ -15,6 +16,34 @@ export default function Practice() {
   const [rockCount, setRockCount] = useState(0);
   const [paperCount, setPaperCount] = useState(0);
   const [scissorsCount, setScissorsCount] = useState(0);
+
+  const [isPracticeRound, setIsPracticeRound] = useState(false);
+  const [isPracticeRoundFinished, setIsPracticeRoundFinished] = useState(false);
+  const [practiceRoundCount, setPracticeRoundCount] = useState(1);
+  const [practiceRoundMax, setPracticeRoundMax] = useState(3);
+  const [p1Wins, setP1Wins] = useState(0);
+  const [p2Wins, setP2Wins] = useState(0);
+  const [roundWinner, setRoundWinner] = useState("");
+
+
+  useEffect(() => {
+    if (!isPracticeRound) return;
+
+    const roundMajority = Math.ceil(practiceRoundMax / 2);
+    console.log("roundMajority:", roundMajority);
+    
+    if (p1Wins === roundMajority) {
+      setRoundWinner("P1 Wins!");
+      setIsPracticeRoundFinished(true);
+    }
+
+    if (p2Wins === roundMajority) {
+      setRoundWinner("P2 Wins!");
+      setIsPracticeRoundFinished(true);
+    }
+
+    console.log("roundWinner:", roundWinner);
+  }, [p1Wins, p2Wins])
 
   const randomAttack = () => {
     const selection = Math.round(Math.random() * 2);
@@ -63,18 +92,41 @@ export default function Practice() {
     }
   }
 
-  const onClickEmulateRound = () => {
-    console.log("starting round")
+  const updatePracticeRound = (result: ROUND_RESULT) => {
+    console.log("@updatePracticeRound");
+    console.log("result:", result)
+    if (result === ROUND_RESULT.DRAW) {
+      return;
+    }
+
+    if (practiceRoundCount + 1 <= practiceRoundMax) setPracticeRoundCount(practiceRoundCount + 1);
+    if (result === ROUND_RESULT.WIN) {
+      setP1Wins(p1Wins + 1);
+    }
+    else if (result === ROUND_RESULT.LOSE) {
+      setP2Wins(p2Wins + 1);
+    }
+  }
+
+  const onClickEmulateRound = (roundCount: number) => {
+    console.log("starting best of", roundCount);
+    setPracticeRoundMax(roundCount);
+    setPracticeRoundCount(1);
+    setRoundWinner("");
+    setP1Wins(0);
+    setP2Wins(0);
+    setIsPracticeRoundFinished(false);
   }
 
   const onClickAttack = (userAttack: ATTACK_TYPES) => {
+    if (isPracticeRound && isPracticeRoundFinished) return;
+
     updateAttackCount(userAttack);
     setUserAttack(userAttack);
     const opponentAttack = randomAttack();
     setOpponentAttack(opponentAttack);
     const result = decideWinner(userAttack, opponentAttack);
 
-    // TODO: Increment win/loss record
     if (result === ROUND_RESULT.DRAW) {
       setRoundResult("Draw! Go Again");
       setDraws(draws + 1);
@@ -87,6 +139,8 @@ export default function Practice() {
       setRoundResult("You Lose");
       setLosses(losses + 1);
     }
+
+    if (isPracticeRound) updatePracticeRound(result);
   }
 
   const onClickResetStats = () => {
@@ -97,28 +151,31 @@ export default function Practice() {
     setRockCount(0);
     setPaperCount(0);
     setScissorsCount(0);
+    setP1Wins(0);
+    setP2Wins(0);
   }
 
   const renderAttack = () => {
     return (
       <>
-        <AttackSelection onClickAttack={onClickAttack} />
-        
+        {isPracticeRound ?
+          <Round roundCount={practiceRoundCount} roundMax={practiceRoundMax} isFinished={isPracticeRoundFinished} onClickAttack={onClickAttack} /> :
+          <AttackSelection onClickAttack={onClickAttack} />
+        }
+
         <br />
 
-        {!roundResult ? null :
-          <div className="container-table">
-            <div className="two-column-spacing">
-              <h4>You:</h4>
-              <h4><b>{userAttack}</b></h4>
-            </div>
-
-            <div className="two-column-spacing">
-              <h4>Opponent:</h4>
-              <h4><b>{opponentAttack}</b></h4>
-            </div>
+        <div className="container-table">
+          <div className="two-column-spacing">
+            <h4>You:</h4>
+            <h4><b>{userAttack}</b></h4>
           </div>
-        }
+
+          <div className="two-column-spacing">
+            <h4>Opponent:</h4>
+            <h4><b>{opponentAttack}</b></h4>
+          </div>
+        </div>
       </>
     )
   }
@@ -180,13 +237,24 @@ export default function Practice() {
             <i className="bi bi-arrow-left"></i> <label>Home</label>
           </Link>
 
-          <button className="btn button-positive mx-2" onClick={() => onClickEmulateRound()}>Emulate Round</button>
+          <button className="btn button-positive mx-2" onClick={() => setIsPracticeRound(!isPracticeRound)}>{isPracticeRound ? "Stop Emulation" : "Emulate Round"}</button>
           <button className="btn button-negative mx-2" onClick={() => onClickResetStats()}>Reset Stats</button>
         </div>
+        <br />
+        {!isPracticeRound ? null :
+          <div>
+            <button className="btn button-positive mx-2" onClick={() => onClickEmulateRound(3)}>Best of 3</button>
+            <button className="btn button-positive mx-2" onClick={() => onClickEmulateRound(5)}>Best of 5</button>
+            <button className="btn button-positive mx-2" onClick={() => onClickEmulateRound(7)}>Best of 7</button>
+          </div>
+        }
       </div>
+      <hr />
 
-      <h3 className="round-result">{roundResult}</h3>
-      <br />
+      {isPracticeRound ?
+        <h3 className="round-result">{roundWinner}</h3> :
+        <h3 className="round-result">{roundResult}</h3>
+      }
 
       <div>
         {renderAttack()}
