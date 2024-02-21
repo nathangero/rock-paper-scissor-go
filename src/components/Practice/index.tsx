@@ -266,13 +266,13 @@ export default function Practice() {
         <div>
           <Link
             to={"/"}
-            className="btn button-positive mx-2"
+            className="btn button-positive m2"
           >
             <i className="bi bi-arrow-left"></i> <label>Home</label>
           </Link>
 
-          <button className="btn button-positive mx-2" onClick={() => setIsPracticeRound(!isPracticeRound)}>{isPracticeRound ? "Stop Match" : "Practice Match"}</button>
-          <button className="btn button-negative mx-2" onClick={() => onClickResetStats()}>Reset Stats</button>
+          <button className="btn button-positive m-2" onClick={() => setIsPracticeRound(!isPracticeRound)}>{isPracticeRound ? "Stop Match" : "Practice Match"}</button>
+          <button className="btn button-negative " onClick={() => onClickResetStats()}>Reset Stats</button>
         </div>
         <br />
         {!isPracticeRound ? null :
