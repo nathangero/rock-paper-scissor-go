@@ -23,6 +23,7 @@ export default function Practice() {
   const [practiceRoundMax, setPracticeRoundMax] = useState(3);
   const [p1Wins, setP1Wins] = useState(0);
   const [p2Wins, setP2Wins] = useState(0);
+  const [practiceRoundDraw, setPracticeRoundDraw] = useState(0);
   const [roundWinner, setRoundWinner] = useState("");
 
 
@@ -31,7 +32,7 @@ export default function Practice() {
 
     const roundMajority = Math.ceil(practiceRoundMax / 2);
     console.log("roundMajority:", roundMajority);
-    
+
     if (p1Wins === roundMajority) {
       setRoundWinner("P1 Wins!");
       setIsPracticeRoundFinished(true);
@@ -96,6 +97,7 @@ export default function Practice() {
     console.log("@updatePracticeRound");
     console.log("result:", result)
     if (result === ROUND_RESULT.DRAW) {
+      setPracticeRoundDraw(practiceRoundDraw + 1);
       return;
     }
 
@@ -115,6 +117,7 @@ export default function Practice() {
     setRoundWinner("");
     setP1Wins(0);
     setP2Wins(0);
+    setPracticeRoundDraw(0);
     setIsPracticeRoundFinished(false);
   }
 
@@ -153,6 +156,7 @@ export default function Practice() {
     setScissorsCount(0);
     setP1Wins(0);
     setP2Wins(0);
+    setPracticeRoundDraw(0);
   }
 
   const renderAttack = () => {
@@ -184,42 +188,64 @@ export default function Practice() {
   const renderStats = () => {
     return (
       <>
-        <div id="practice-stats" className="container-table">
-          <div className="two-column-spacing">
-            <h4>Wins:</h4>
-            <h4><b>{wins}</b></h4>
+        {isPracticeRound ?
+          <><div id="practice-stats" className="container-table">
+            <div className="two-column-spacing">
+              <h4>Wins:</h4>
+              <h4><b>{p1Wins}</b></h4>
+            </div>
+            <div className="two-column-spacing">
+              <h4>Losses:</h4>
+              <h4><b>{p2Wins}</b></h4>
+            </div>
+            <div className="two-column-spacing">
+              <h4>Draws:</h4>
+              <h4><b>{practiceRoundDraw}</b></h4>
+            </div>
+            <div className="two-column-spacing">
+              <h4>Total rounds:</h4>
+              <h4><b>{p1Wins + p2Wins + practiceRoundDraw}</b></h4>
+            </div>
           </div>
-          <div className="two-column-spacing">
-            <h4>Losses:</h4>
-            <h4><b>{losses}</b></h4>
-          </div>
-          <div className="two-column-spacing">
-            <h4>Draws:</h4>
-            <h4><b>{draws}</b></h4>
-          </div>
-          <div className="two-column-spacing">
-            <h4>Win rate:</h4>
-            <h4><b>{calcWinLossRatio()}%</b></h4>
-          </div>
-          <div className="two-column-spacing">
-            <h4>Total rounds:</h4>
-            <h4><b>{wins + losses + draws}</b></h4>
-          </div>
+          </> :
+          <div id="practice-stats" className="container-table">
+            <div className="two-column-spacing">
+              <h4>Wins:</h4>
+              <h4><b>{wins}</b></h4>
+            </div>
+            <div className="two-column-spacing">
+              <h4>Losses:</h4>
+              <h4><b>{losses}</b></h4>
+            </div>
+            <div className="two-column-spacing">
+              <h4>Draws:</h4>
+              <h4><b>{draws}</b></h4>
+            </div>
+            <div className="two-column-spacing">
+              <h4>Win rate:</h4>
+              <h4><b>{calcWinLossRatio()}%</b></h4>
+            </div>
+            <div className="two-column-spacing">
+              <h4>Total rounds:</h4>
+              <h4><b>{wins + losses + draws}</b></h4>
+            </div>
 
-          <hr />
-          <div className="two-column-spacing">
-            <h4>Rocks:</h4>
-            <h4><b>{rockCount}</b></h4>
+            <hr />
+            <div className="two-column-spacing">
+              <h4>Rocks:</h4>
+              <h4><b>{rockCount}</b></h4>
+            </div>
+            <div className="two-column-spacing">
+              <h4>Papers:</h4>
+              <h4><b>{paperCount}</b></h4>
+            </div>
+            <div className="two-column-spacing">
+              <h4>Scissors:</h4>
+              <h4><b>{scissorsCount}</b></h4>
+            </div>
           </div>
-          <div className="two-column-spacing">
-            <h4>Papers:</h4>
-            <h4><b>{paperCount}</b></h4>
-          </div>
-          <div className="two-column-spacing">
-            <h4>Scissors:</h4>
-            <h4><b>{scissorsCount}</b></h4>
-          </div>
-        </div>
+        }
+
       </>
     )
   }
