@@ -44,7 +44,15 @@ export default function Practice() {
     }
 
     console.log("roundWinner:", roundWinner);
-  }, [p1Wins, p2Wins])
+  }, [p1Wins, p2Wins]);
+
+
+  useEffect(() => {
+    if (isPracticeRound) {
+      onClickEmulateRound(practiceRoundMax);
+    }
+  }, [isPracticeRound])
+
 
   const randomAttack = () => {
     const selection = Math.round(Math.random() * 2);
@@ -263,7 +271,7 @@ export default function Practice() {
             <i className="bi bi-arrow-left"></i> <label>Home</label>
           </Link>
 
-          <button className="btn button-positive mx-2" onClick={() => setIsPracticeRound(!isPracticeRound)}>{isPracticeRound ? "Stop Emulation" : "Emulate Round"}</button>
+          <button className="btn button-positive mx-2" onClick={() => setIsPracticeRound(!isPracticeRound)}>{isPracticeRound ? "Stop Match" : "Practice Match"}</button>
           <button className="btn button-negative mx-2" onClick={() => onClickResetStats()}>Reset Stats</button>
         </div>
         <br />
