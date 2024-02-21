@@ -1,0 +1,14 @@
+.attack-selection img {
+  width: 100px;
+  margin: 0 30px;
+  padding: 10px;
+  cursor: pointer;
+}
+.attack-selection img:hover {
+  box-shadow: 0px 0px 20px 5px var(--button-positive);
+  border-radius: 10px;
+}
+
+.round-result {
+  font-size: 3rem;
+}
