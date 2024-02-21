@@ -8,7 +8,7 @@ const initialState = {
   user: null,
 }
 
-export const reducer = (state = initialState, action: any) => {
+export const reducer = (state = initialState, action: any) => { // eslint-disable-line @typescript-eslint/no-explicit-any
   switch (action.type) {
     case USER_ACTIONS.LOGIN:
       return {

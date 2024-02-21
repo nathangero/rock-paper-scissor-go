@@ -31,7 +31,7 @@ export default function Navbar() {
 
   return (
     <header>
-      <nav className="navbar navbar-expand-sm">
+      <nav className="navbar navbar-expand-sm mb-2">
         <div className="container-fluid">
           <Link to={NAV_LINKS.HOME} className="navbar-brand">ICON</Link>
 
