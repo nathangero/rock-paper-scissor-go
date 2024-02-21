@@ -31,7 +31,7 @@ export default function Practice() {
     if (!isPracticeRound) return;
 
     const roundMajority = Math.ceil(practiceRoundMax / 2);
-    console.log("roundMajority:", roundMajority);
+    // console.log("roundMajority:", roundMajority);
 
     if (p1Wins === roundMajority) {
       setRoundWinner("P1 Wins!");
@@ -43,7 +43,7 @@ export default function Practice() {
       setIsPracticeRoundFinished(true);
     }
 
-    console.log("roundWinner:", roundWinner);
+    // console.log("roundWinner:", roundWinner);
   }, [p1Wins, p2Wins]);
 
 
@@ -102,8 +102,8 @@ export default function Practice() {
   }
 
   const updatePracticeRound = (result: ROUND_RESULT) => {
-    console.log("@updatePracticeRound");
-    console.log("result:", result)
+    // console.log("@updatePracticeRound");
+    // console.log("result:", result)
     if (result === ROUND_RESULT.DRAW) {
       setPracticeRoundDraw(practiceRoundDraw + 1);
       return;
@@ -119,7 +119,7 @@ export default function Practice() {
   }
 
   const onClickEmulateRound = (roundCount: number) => {
-    console.log("starting best of", roundCount);
+    // console.log("starting best of", roundCount);
     setPracticeRoundMax(roundCount);
     setPracticeRoundCount(1);
     setRoundWinner("");
