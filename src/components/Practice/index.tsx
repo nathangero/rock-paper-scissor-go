@@ -11,6 +11,9 @@ export default function Practice() {
   const [wins, setWins] = useState(0);
   const [losses, setLosses] = useState(0);
   const [draws, setDraws] = useState(0);
+  const [rockCount, setRockCount] = useState(0);
+  const [paperCount, setPaperCount] = useState(0);
+  const [scissorsCount, setScissorsCount] = useState(0);
 
   const randomAttack = () => {
     const selection = Math.round(Math.random() * 2);
@@ -45,7 +48,22 @@ export default function Practice() {
     return (wins / losses).toFixed(2);
   }
 
+  const updateAttackCount = (userAttack: ATTACK_TYPES) => {
+    switch (userAttack) {
+      case ATTACK_TYPES.ROCK:
+        setRockCount(rockCount + 1);
+        break;
+      case ATTACK_TYPES.PAPER:
+        setPaperCount(paperCount + 1);
+        break;
+      case ATTACK_TYPES.SCISSORS:
+        setScissorsCount(scissorsCount + 1);
+        break;
+    }
+  }
+
   const onClickAttack = (userAttack: ATTACK_TYPES) => {
+    updateAttackCount(userAttack);
     setUserAttack(userAttack);
     const opponentAttack = randomAttack();
     setOpponentAttack(opponentAttack);
@@ -66,22 +84,19 @@ export default function Practice() {
     }
   }
 
-  return (
-    <section id="mode-practice">
-      <div className="">
-        <Link
-          to={"/"}
-          className="btn button-positive"
-        >
-          <i className="bi bi-arrow-left"></i> <label>Home</label>
-        </Link>
-        <h2>Practice Mode</h2>
-      </div>
+  const onClickResetStats = () => {
+    setRoundResult("Waiting...");
+    setWins(0);
+    setLosses(0);
+    setDraws(0);
+    setRockCount(0);
+    setPaperCount(0);
+    setScissorsCount(0);
+  }
 
-      <h3 className="round-result">{roundResult}</h3>
-      <br />
-
-      <div>
+  const renderAttack = () => {
+    return (
+      <>
         <h3>Make your choice</h3>
         <div className="attack-selection">
           <img src="assets/rock-svgrepo-com.svg" onClick={() => onClickAttack(ATTACK_TYPES.ROCK)} alt="rock icon" />
@@ -103,8 +118,14 @@ export default function Practice() {
             </div>
           </div>
         }
+      </>
+    )
+  }
 
-        <hr />
+
+  const renderStats = () => {
+    return (
+      <>
         <div id="practice-stats" className="container-table">
           <div className="two-column-spacing">
             <h4>Wins:</h4>
@@ -126,7 +147,50 @@ export default function Practice() {
             <h4>Total rounds:</h4>
             <h4><b>{wins + losses + draws}</b></h4>
           </div>
+
+          <hr />
+          <div className="two-column-spacing">
+            <h4>Rocks:</h4>
+            <h4><b>{rockCount}</b></h4>
+          </div>
+          <div className="two-column-spacing">
+            <h4>Papers:</h4>
+            <h4><b>{paperCount}</b></h4>
+          </div>
+          <div className="two-column-spacing">
+            <h4>Scissors:</h4>
+            <h4><b>{scissorsCount}</b></h4>
+          </div>
         </div>
+      </>
+    )
+  }
+
+  return (
+    <section id="mode-practice">
+      <div className="">
+        <div>
+          <Link
+            to={"/"}
+            className="btn button-positive mx-2"
+          >
+            <i className="bi bi-arrow-left"></i> <label>Home</label>
+          </Link>
+
+          <button className="btn button-negative mx-2" onClick={() => onClickResetStats()}>Reset Stats</button>
+        </div>
+        <h2>Practice Mode</h2>
+      </div>
+
+      <h3 className="round-result">{roundResult}</h3>
+      <br />
+
+      <div>
+        {renderAttack()}
+
+        <hr />
+
+        {renderStats()}
       </div>
     </section>
   )
