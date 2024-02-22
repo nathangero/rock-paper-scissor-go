@@ -18,7 +18,7 @@ export default function Practice() {
   const [paperCount, setPaperCount] = useState<number>(0);
   const [scissorsCount, setScissorsCount] = useState<number>(0);
 
-  const [isPracticeRound, setIsPracticeRound] = useState<boolean>(false);
+  const [isPracticeRound, setIsPracticeMatch] = useState<boolean>(false);
   const [isPracticeRoundFinished, setIsPracticeRoundFinished] = useState<boolean>(false);
   const [practiceRoundCount, setPracticeRoundCount] = useState<number>(1);
   const [practiceRoundMax, setPracticeRoundMax] = useState<number>(3);
@@ -39,6 +39,13 @@ export default function Practice() {
       onClickEmulateRound(practiceRoundMax);
     }
   }, [isPracticeRound]);
+
+  useEffect(() => {
+    if (!isShowingEpicCountdown || !isPracticeRoundFinished || isPracticeRound) {
+      // When the countdown is over, scroll to the bottom of the page to show the match stats
+      document.getElementById("practice-round-stats")?.scrollIntoView({ behavior: "instant" });
+    }
+  }, [isShowingEpicCountdown, isPracticeRoundFinished, isPracticeRound])
 
   /**
    * Determines if p1 (the user) won, lost, or had a draw with their opponent.
@@ -267,7 +274,7 @@ export default function Practice() {
         {isPracticeRound ?
           <>
             {isShowingEpicCountdown ? null :
-              <div id="practice-stats" className="container-table">
+              <div id="practice-round-stats" className="container-table">
                 <div className="two-column-spacing">
                   <h4>Wins:</h4>
                   <h4><b>{p1Wins}</b></h4>
@@ -342,7 +349,7 @@ export default function Practice() {
             <i className="bi bi-arrow-left"></i> <label>Home</label>
           </Link>
 
-          <button className="btn button-positive m-2" onClick={() => setIsPracticeRound(!isPracticeRound)}>{isPracticeRound ? "Stop Match" : "Practice Match"}</button>
+          <button className="btn button-positive m-2" onClick={() => setIsPracticeMatch(!isPracticeRound)}>{isPracticeRound ? "Stop Match" : "Practice Match"}</button>
           <button className="btn button-negative " onClick={() => onClickResetStats()}>Reset Stats</button>
         </div>
         <br />
@@ -354,7 +361,7 @@ export default function Practice() {
           </div>
         }
       </div>
-      <hr />
+      <hr className="p-0 m-0" />
 
       {isPracticeRound ?
         <h3 className="round-result">{roundWinner}</h3> :
