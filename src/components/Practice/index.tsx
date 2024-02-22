@@ -26,6 +26,9 @@ export default function Practice() {
   const [practiceRoundDraw, setPracticeRoundDraw] = useState(0);
   const [roundWinner, setRoundWinner] = useState("");
 
+  const [isShowingEpicCountdown, setIsShowingEpicCountdown] = useState(false);
+  const [epicCoundownText, setEpicCountdownText] = useState("");
+
 
   useEffect(() => {
     if (!isPracticeRound) return;
@@ -34,13 +37,11 @@ export default function Practice() {
     // console.log("roundMajority:", roundMajority);
 
     if (p1Wins === roundMajority) {
-      setRoundWinner("P1 Wins!");
-      setIsPracticeRoundFinished(true);
+      doEpicCountdown("P1 Wins!");
     }
 
     if (p2Wins === roundMajority) {
-      setRoundWinner("P2 Wins!");
-      setIsPracticeRoundFinished(true);
+      doEpicCountdown("P2 Wins!");
     }
 
     // console.log("roundWinner:", roundWinner);
@@ -52,6 +53,23 @@ export default function Practice() {
       onClickEmulateRound(practiceRoundMax);
     }
   }, [isPracticeRound])
+
+  const doEpicCountdown = (winnerText: string) => {
+    // console.log("@doEpicCountdown");
+    const text = ["SCISSORS", "PAPER", "ROCK"];
+    let countdown = text.length;
+
+    const timer = setInterval(() => {
+      setEpicCountdownText(text[--countdown]);
+      setIsShowingEpicCountdown(true);
+      setIsPracticeRoundFinished(true);
+      if (countdown < 0) {
+        clearInterval(timer);
+        setIsShowingEpicCountdown(false);
+        setRoundWinner(winnerText);
+      }
+    }, 450);
+  }
 
 
   const randomAttack = () => {
@@ -81,12 +99,20 @@ export default function Practice() {
     else return ROUND_RESULT.DRAW; // Just in case
   }
 
+  /**
+   * Calculates the win/loss ratio of the player.
+   * @returns A float with 2 decimal places
+   */
   const calcWinLossRatio = (): string | number => {
     if (wins === 0) return 0;
     else if (wins > 0 && losses === 0) return 100;
     return (wins / losses).toFixed(2);
   }
 
+  /**
+   * Updates the state variable that's related to the attack chosen.
+   * @param userAttack The attack the player picked
+   */
   const updateAttackCount = (userAttack: ATTACK_TYPES) => {
     switch (userAttack) {
       case ATTACK_TYPES.ROCK:
@@ -171,23 +197,30 @@ export default function Practice() {
     return (
       <>
         {isPracticeRound ?
-          <Round roundCount={practiceRoundCount} roundMax={practiceRoundMax} isFinished={isPracticeRoundFinished} onClickAttack={onClickAttack} /> :
+          <>
+            {isShowingEpicCountdown ?
+              <h3 className="countdown-text">{epicCoundownText}</h3> :
+              <Round roundCount={practiceRoundCount} roundMax={practiceRoundMax} isFinished={isPracticeRoundFinished} onClickAttack={onClickAttack} />
+            }
+          </> :
           <AttackSelection onClickAttack={onClickAttack} />
         }
 
         <br />
 
-        <div className="container-table">
-          <div className="two-column-spacing">
-            <h4>You:</h4>
-            <h4><b>{userAttack}</b></h4>
-          </div>
+        {isShowingEpicCountdown ? null :
+          <div className="container-table">
+            <div className="two-column-spacing">
+              <h4>You:</h4>
+              <h4><b>{userAttack}</b></h4>
+            </div>
 
-          <div className="two-column-spacing">
-            <h4>Opponent:</h4>
-            <h4><b>{opponentAttack}</b></h4>
+            <div className="two-column-spacing">
+              <h4>Opponent:</h4>
+              <h4><b>{opponentAttack}</b></h4>
+            </div>
           </div>
-        </div>
+        }
       </>
     )
   }
@@ -197,24 +230,27 @@ export default function Practice() {
     return (
       <>
         {isPracticeRound ?
-          <><div id="practice-stats" className="container-table">
-            <div className="two-column-spacing">
-              <h4>Wins:</h4>
-              <h4><b>{p1Wins}</b></h4>
-            </div>
-            <div className="two-column-spacing">
-              <h4>Losses:</h4>
-              <h4><b>{p2Wins}</b></h4>
-            </div>
-            <div className="two-column-spacing">
-              <h4>Draws:</h4>
-              <h4><b>{practiceRoundDraw}</b></h4>
-            </div>
-            <div className="two-column-spacing">
-              <h4>Total rounds:</h4>
-              <h4><b>{p1Wins + p2Wins + practiceRoundDraw}</b></h4>
-            </div>
-          </div>
+          <>
+            {isShowingEpicCountdown ? null :
+              <div id="practice-stats" className="container-table">
+                <div className="two-column-spacing">
+                  <h4>Wins:</h4>
+                  <h4><b>{p1Wins}</b></h4>
+                </div>
+                <div className="two-column-spacing">
+                  <h4>Losses:</h4>
+                  <h4><b>{p2Wins}</b></h4>
+                </div>
+                <div className="two-column-spacing">
+                  <h4>Draws:</h4>
+                  <h4><b>{practiceRoundDraw}</b></h4>
+                </div>
+                <div className="two-column-spacing">
+                  <h4>Total rounds:</h4>
+                  <h4><b>{p1Wins + p2Wins + practiceRoundDraw}</b></h4>
+                </div>
+              </div>
+            }
           </> :
           <div id="practice-stats" className="container-table">
             <div className="two-column-spacing">
@@ -293,7 +329,7 @@ export default function Practice() {
       <div>
         {renderAttack()}
 
-        <hr />
+        {isShowingEpicCountdown ? null: <hr />}
 
         {renderStats()}
       </div>

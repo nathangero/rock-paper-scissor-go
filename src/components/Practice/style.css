@@ -19,6 +19,10 @@
   margin: 0 auto;
 }
 
+.countdown-text {
+  font-size: 3rem;
+}
+
 .two-column-spacing {
   display: flex;
   justify-content: space-between;
