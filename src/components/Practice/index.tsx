@@ -32,24 +32,6 @@ export default function Practice() {
 
 
   useEffect(() => {
-    if (!isPracticeRound) return;
-
-    const roundMajority = Math.ceil(practiceRoundMax / 2);
-    // console.log("roundMajority:", roundMajority);
-
-    if (p1Wins === roundMajority) {
-      doEpicCountdown("P1 Wins!");
-    }
-
-    if (p2Wins === roundMajority) {
-      doEpicCountdown("P2 Wins!");
-    }
-
-    // console.log("roundWinner:", roundWinner);
-  }, [p1Wins, p2Wins]);
-
-
-  useEffect(() => {
     if (isPracticeRound) {
       onClickEmulateRound(practiceRoundMax);
     }
@@ -61,9 +43,9 @@ export default function Practice() {
     const text = ["SCISSORS", "PAPER", "ROCK"];
     let countdown = text.length;
 
+    setIsShowingEpicCountdown(true);
     const timer = setInterval(() => {
       setEpicCountdownText(text[--countdown]);
-      setIsShowingEpicCountdown(true);
       setIsPracticeRoundFinished(true);
       if (countdown < 0) {
         clearInterval(timer);
@@ -137,13 +119,31 @@ export default function Practice() {
       return;
     }
 
+    // Use temp variables to see if there'll be a winner
+    let updatedP1Wins = p1Wins;
+    let updatedP2Wins = p2Wins;
     if (practiceRoundCount + 1 <= practiceRoundMax) setPracticeRoundCount(practiceRoundCount + 1);
     if (result === ROUND_RESULT.WIN) {
-      setP1Wins(p1Wins + 1);
+      updatedP1Wins++;
     }
     else if (result === ROUND_RESULT.LOSE) {
-      setP2Wins(p2Wins + 1);
+      updatedP2Wins++;
     }
+    
+
+    const roundMajority = Math.ceil(practiceRoundMax / 2);
+    // console.log("roundMajority:", roundMajority);
+
+    if (updatedP1Wins === roundMajority) {
+      doEpicCountdown("You win!");
+    }
+
+    if (updatedP2Wins === roundMajority) {
+      doEpicCountdown("You lost");
+    }
+    
+    setP1Wins(updatedP1Wins);
+    setP2Wins(updatedP2Wins);
   }
 
   const onClickEmulateRound = (roundCount: number) => {
