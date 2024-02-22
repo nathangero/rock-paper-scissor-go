@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { useAppSelector } from "../redux/hooks"
+import { LOBBY_TYPES, ROUTER_LINKS } from "../utils/enums";
 
 export default function Home() {
 
@@ -16,7 +17,8 @@ export default function Home() {
 
       <div>
         <div className="mb-2">
-          <button className="btn button-positive mx-2">Play For Fun</button>
+          <Link to={`${ROUTER_LINKS.LOBBY}/${LOBBY_TYPES.CASUAL}`} className="btn button-positive mx-2">Play for Fun</Link>
+          {/* <button >Play For Fun</button> */}
           <button className="btn button-positive mx-2">Play For Rank</button>
         </div>
 

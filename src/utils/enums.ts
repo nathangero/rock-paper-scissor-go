@@ -5,6 +5,11 @@ export enum ATTACK_TYPES {
   RANDOM = "random",
 }
 
+export enum LOBBY_TYPES {
+  CASUAL = "casual",
+  RANKED = "ranked",
+}
+
 export enum PLAYER_TYPES {
   USER,
   OPPONENT,
@@ -15,4 +20,12 @@ export enum ROUND_RESULT {
   WIN = "win",
   LOSE = "lose",
   DRAW = "draw",
+}
+
+export enum ROUTER_LINKS {
+  HOME = "/",
+  LOBBY = "/lobby",
+  LOGIN = "/login",
+  PRACTICE = "/practice",
+  PROFILE = "/profile",
 }
