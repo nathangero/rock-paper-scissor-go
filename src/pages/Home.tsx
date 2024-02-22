@@ -15,12 +15,12 @@ export default function Home() {
       }
 
       <div>
-        <div>
-          <button>Play For Fun</button>
-          <button>Play For Rank</button>
+        <div className="mb-2">
+          <button className="btn button-positive mx-2">Play For Fun</button>
+          <button className="btn button-positive mx-2">Play For Rank</button>
         </div>
 
-        <Link to={"/practice"}><button>Practice</button></Link>
+        <Link to={"/practice"}><button className="btn button-positive">Practice</button></Link>
       </div>
     </>
   )

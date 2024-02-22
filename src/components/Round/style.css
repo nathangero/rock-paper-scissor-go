@@ -1,0 +1,11 @@
+.round-progress {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  min-height: 60px;
+}
+.round-progress .round-icon {
+  margin: 10px 10px;
+}
