@@ -17,3 +17,5 @@
 [Paper SVG](https://www.svgrepo.com/svg/448088/paper)
 
 [Rock SVG](https://www.svgrepo.com/svg/378869/rock)
+
+[Fist SVG](https://www.svgrepo.com/svg/307314/fist-cross-dictator-bang);

@@ -203,9 +203,7 @@ export default function Practice() {
             {isShowingEpicCountdown ?
               <>
                 <h3 className="countdown-text">{epicCoundownText}</h3>
-                <div className="gavel-animation">
-                  <img src="assets/rock-svgrepo-com.svg" width={100} className="gavel" alt="rock icon" />
-                </div>
+                <img src="assets/fist-cross-dictator-bang-svgrepo-com.svg" width={100} className="fist" alt="rock icon" />
               </> :
               <Round roundCount={practiceRoundCount} roundMax={practiceRoundMax} isFinished={isPracticeRoundFinished} onClickAttack={onClickAttack} />
             }
@@ -320,9 +318,9 @@ export default function Practice() {
         <br />
         {!isPracticeRound ? null :
           <div>
-            <button className="btn button-positive mx-2" onClick={() => onClickEmulateRound(3)}>Best of 3</button>
-            <button className="btn button-positive mx-2" onClick={() => onClickEmulateRound(5)}>Best of 5</button>
-            <button className="btn button-positive mx-2" onClick={() => onClickEmulateRound(7)}>Best of 7</button>
+            <button className="btn button-positive m-2" onClick={() => onClickEmulateRound(3)}>Best of 3</button>
+            <button className="btn button-positive m-2" onClick={() => onClickEmulateRound(5)}>Best of 5</button>
+            <button className="btn button-positive m-2" onClick={() => onClickEmulateRound(7)}>Best of 7</button>
           </div>
         }
       </div>
