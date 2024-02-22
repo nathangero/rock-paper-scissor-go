@@ -10,66 +10,35 @@ export default function Practice() {
 
   const [userAttack, setUserAttack] = useState<ATTACK_TYPES>(ATTACK_TYPES.RANDOM);
   const [opponentAttack, setOpponentAttack] = useState<ATTACK_TYPES>(ATTACK_TYPES.RANDOM);
-  const [roundResult, setRoundResult] = useState("Waiting...");
-  const [wins, setWins] = useState(0);
-  const [losses, setLosses] = useState(0);
-  const [draws, setDraws] = useState(0);
-  const [rockCount, setRockCount] = useState(0);
-  const [paperCount, setPaperCount] = useState(0);
-  const [scissorsCount, setScissorsCount] = useState(0);
+  const [roundResult, setRoundResult] = useState<string>("Waiting...");
+  const [wins, setWins] = useState<number>(0);
+  const [losses, setLosses] = useState<number>(0);
+  const [draws, setDraws] = useState<number>(0);
+  const [rockCount, setRockCount] = useState<number>(0);
+  const [paperCount, setPaperCount] = useState<number>(0);
+  const [scissorsCount, setScissorsCount] = useState<number>(0);
 
-  const [isPracticeRound, setIsPracticeRound] = useState(false);
-  const [isPracticeRoundFinished, setIsPracticeRoundFinished] = useState(false);
-  const [practiceRoundCount, setPracticeRoundCount] = useState(1);
-  const [practiceRoundMax, setPracticeRoundMax] = useState(3);
-  const [p1Wins, setP1Wins] = useState(0);
-  const [p2Wins, setP2Wins] = useState(0);
-  const [practiceRoundDraw, setPracticeRoundDraw] = useState(0);
-  const [roundWinner, setRoundWinner] = useState("");
+  const [isPracticeRound, setIsPracticeRound] = useState<boolean>(false);
+  const [isPracticeRoundFinished, setIsPracticeRoundFinished] = useState<boolean>(false);
+  const [practiceRoundCount, setPracticeRoundCount] = useState<number>(1);
+  const [practiceRoundMax, setPracticeRoundMax] = useState<number>(3);
+  const [roundMajority, setRoundMajority] = useState<number>(0); // Amount of rounds needed to win
+  const [p1Wins, setP1Wins] = useState<number>(0);
+  const [p2Wins, setP2Wins] = useState<number>(0);
+  const [practiceRoundDraw, setPracticeRoundDraw] = useState<number>(0);
+  const [roundWinner, setRoundWinner] = useState<string>("");
   const [roundProgress, setRoundProgress] = useState<any>([]); // eslint-disable-line @typescript-eslint/no-explicit-any
 
-  const [isShowingEpicCountdown, setIsShowingEpicCountdown] = useState(false);
-  const [epicCoundownText, setEpicCountdownText] = useState("");
+  const [isShowingEpicCountdown, setIsShowingEpicCountdown] = useState<boolean>(false);
+  const [epicCoundownText, setEpicCountdownText] = useState<string>("");
 
 
-  useEffect(() => {
-    // Create the round progress array with the appropriate amount of elements
-    setRoundProgress(new Array(practiceRoundMax));
-  }, [])
 
   useEffect(() => {
     if (isPracticeRound) {
       onClickEmulateRound(practiceRoundMax);
     }
-  }, [isPracticeRound])
-
-  const doEpicCountdown = (winnerText: string) => {
-    // console.log("@doEpicCountdown");
-    const countdownInterval = 600;
-    const text = ["SCISSORS", "PAPER", "ROCK"];
-    let countdown = text.length;
-
-    setIsShowingEpicCountdown(true);
-    const timer = setInterval(() => {
-      setEpicCountdownText(text[--countdown]);
-      setIsPracticeRoundFinished(true);
-      if (countdown < 0) {
-        clearInterval(timer);
-        setIsShowingEpicCountdown(false);
-        setRoundWinner(winnerText);
-      }
-    }, countdownInterval);
-  }
-
-
-  const randomAttack = () => {
-    const selection = Math.round(Math.random() * 2);
-    // console.log("selection:", selection);
-    if (selection === 0) return ATTACK_TYPES.ROCK;
-    else if (selection === 1) return ATTACK_TYPES.PAPER;
-    else if (selection === 2) return ATTACK_TYPES.SCISSORS;
-    else return ATTACK_TYPES.ROCK; // Just in case
-  }
+  }, [isPracticeRound]);
 
   /**
    * Determines if p1 (the user) won, lost, or had a draw with their opponent.
@@ -90,6 +59,42 @@ export default function Practice() {
   }
 
   /**
+   * 
+   * @param winnerText What will be displayed to the user when the match ends
+   */
+  const doEpicCountdown = (winnerText: string) => {
+    // console.log("@doEpicCountdown");
+    const countdownInterval = 600;
+    const text = ["SCISSORS", "PAPER", "ROCK"];
+    let countdown = text.length;
+
+    setIsShowingEpicCountdown(true);
+    const timer = setInterval(() => {
+      setEpicCountdownText(text[--countdown]);
+      setIsPracticeRoundFinished(true);
+      if (countdown < 0) {
+        clearInterval(timer);
+        setIsShowingEpicCountdown(false);
+        setRoundWinner(winnerText);
+      }
+    }, countdownInterval);
+  }
+
+  /**
+   * Randomly picks an attack from the `ATTACK_TYPES` enum.
+   * @returns `ATTACK_TYPES` enum
+   */
+  const randomAttack = () => {
+    const selection = Math.round(Math.random() * 2);
+    // console.log("selection:", selection);
+    if (selection === 0) return ATTACK_TYPES.ROCK;
+    else if (selection === 1) return ATTACK_TYPES.PAPER;
+    else if (selection === 2) return ATTACK_TYPES.SCISSORS;
+    else return ATTACK_TYPES.ROCK; // Just in case
+  }
+
+
+  /**
    * Calculates the win/loss ratio of the player.
    * @returns A float with 2 decimal places
    */
@@ -98,6 +103,8 @@ export default function Practice() {
     else if (wins > 0 && losses === 0) return 100;
     return (wins / losses).toFixed(2);
   }
+
+  // ************** UPDATE ************** \\
 
   /**
    * Updates the state variable that's related to the attack chosen.
@@ -129,7 +136,8 @@ export default function Practice() {
     let updatedP1Wins = p1Wins;
     let updatedP2Wins = p2Wins;
     const updatedRoundProgress = [...roundProgress];
-    if (practiceRoundCount + 1 <= practiceRoundMax) setPracticeRoundCount(practiceRoundCount + 1);
+
+    // Update the player's win count and update the round progress element
     if (result === ROUND_RESULT.WIN) {
       updatedP1Wins++;
       updatedRoundProgress[practiceRoundCount - 1] = PLAYER_TYPES.USER;
@@ -140,27 +148,31 @@ export default function Practice() {
       updatedRoundProgress[practiceRoundCount - 1] = PLAYER_TYPES.OPPONENT;
       setRoundProgress(updatedRoundProgress);
     }
-    
 
-    const roundMajority = Math.ceil(practiceRoundMax / 2);
-    // console.log("roundMajority:", roundMajority);
 
     if (updatedP1Wins === roundMajority) {
       doEpicCountdown("You win!");
+
+    } else if (updatedP2Wins === roundMajority) {
+      doEpicCountdown("You lost");
+
+    } else if (practiceRoundCount + 1 <= practiceRoundMax) {
+      // Only increment round count if there is NO winner
+      setPracticeRoundCount(practiceRoundCount + 1);
     }
 
-    if (updatedP2Wins === roundMajority) {
-      doEpicCountdown("You lost");
-    }
-    
     setP1Wins(updatedP1Wins);
     setP2Wins(updatedP2Wins);
   }
+
+
+  // ************** ON CLICK ************** \\
 
   const onClickEmulateRound = (roundCount: number) => {
     // console.log("starting best of", roundCount);
     setPracticeRoundMax(roundCount);
     setPracticeRoundCount(1);
+    setRoundMajority(Math.ceil(roundCount / 2));
     setRoundWinner("");
     setP1Wins(0);
     setP2Wins(0);
@@ -168,7 +180,7 @@ export default function Practice() {
     setIsPracticeRoundFinished(false);
     setRoundProgress([]);
     // Create the round progress array with the appropriate amount of elements
-    setRoundProgress(Array.apply(PLAYER_TYPES.OTHER, Array(roundCount)));
+    setRoundProgress(Array.from({ length: roundCount }, () => PLAYER_TYPES.OTHER));
   }
 
   const onClickAttack = (userAttack: ATTACK_TYPES) => {
@@ -228,17 +240,21 @@ export default function Practice() {
         <br />
 
         {isShowingEpicCountdown ? null :
-          <div className="container-table">
-            <div className="two-column-spacing">
-              <h4>You:</h4>
-              <h4><b>{userAttack}</b></h4>
+          <>
+            <div className="container-table mb-3">
+              <div className="two-column-spacing">
+                <h4>You:</h4>
+                <h4><b>{userAttack}</b></h4>
+              </div>
+
+              <div className="two-column-spacing">
+                <h4>Opponent:</h4>
+                <h4><b>{opponentAttack}</b></h4>
+              </div>
             </div>
 
-            <div className="two-column-spacing">
-              <h4>Opponent:</h4>
-              <h4><b>{opponentAttack}</b></h4>
-            </div>
-          </div>
+            {isPracticeRoundFinished ? <button className="btn button-positive fs-5" onClick={() => onClickEmulateRound(practiceRoundMax)}>REMATCH</button> : null}
+          </>
         }
       </>
     )
