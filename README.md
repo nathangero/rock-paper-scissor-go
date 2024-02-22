@@ -19,3 +19,9 @@
 [Rock SVG](https://www.svgrepo.com/svg/378869/rock)
 
 [Fist SVG](https://www.svgrepo.com/svg/307314/fist-cross-dictator-bang);
+
+[Crown SVG](https://www.svgrepo.com/svg/313800/crown-solid)
+
+[Circle with X SVG](https://www.svgrepo.com/svg/500506/circle-close)
+
+[Empty Circle SVG](https://www.svgrepo.com/svg/505345/circle);

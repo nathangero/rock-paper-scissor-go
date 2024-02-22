@@ -1,7 +1,7 @@
 import "./style.css";
 import "./swing-animation.css";
 import { Link } from "react-router-dom";
-import { ATTACK_TYPES, ROUND_RESULT } from "../../utils/enums";
+import { ATTACK_TYPES, PLAYER_TYPES, ROUND_RESULT } from "../../utils/enums";
 import { useEffect, useState } from "react";
 import AttackSelection from "../AttackSelection";
 import Round from "../Round";
@@ -26,10 +26,16 @@ export default function Practice() {
   const [p2Wins, setP2Wins] = useState(0);
   const [practiceRoundDraw, setPracticeRoundDraw] = useState(0);
   const [roundWinner, setRoundWinner] = useState("");
+  const [roundProgress, setRoundProgress] = useState<any>([]); // eslint-disable-line @typescript-eslint/no-explicit-any
 
   const [isShowingEpicCountdown, setIsShowingEpicCountdown] = useState(false);
   const [epicCoundownText, setEpicCountdownText] = useState("");
 
+
+  useEffect(() => {
+    // Create the round progress array with the appropriate amount of elements
+    setRoundProgress(new Array(practiceRoundMax));
+  }, [])
 
   useEffect(() => {
     if (isPracticeRound) {
@@ -122,12 +128,17 @@ export default function Practice() {
     // Use temp variables to see if there'll be a winner
     let updatedP1Wins = p1Wins;
     let updatedP2Wins = p2Wins;
+    const updatedRoundProgress = [...roundProgress];
     if (practiceRoundCount + 1 <= practiceRoundMax) setPracticeRoundCount(practiceRoundCount + 1);
     if (result === ROUND_RESULT.WIN) {
       updatedP1Wins++;
+      updatedRoundProgress[practiceRoundCount - 1] = PLAYER_TYPES.USER;
+      setRoundProgress(updatedRoundProgress);
     }
     else if (result === ROUND_RESULT.LOSE) {
       updatedP2Wins++;
+      updatedRoundProgress[practiceRoundCount - 1] = PLAYER_TYPES.OPPONENT;
+      setRoundProgress(updatedRoundProgress);
     }
     
 
@@ -155,6 +166,9 @@ export default function Practice() {
     setP2Wins(0);
     setPracticeRoundDraw(0);
     setIsPracticeRoundFinished(false);
+    setRoundProgress([]);
+    // Create the round progress array with the appropriate amount of elements
+    setRoundProgress(Array.apply(PLAYER_TYPES.OTHER, Array(roundCount)));
   }
 
   const onClickAttack = (userAttack: ATTACK_TYPES) => {
@@ -205,7 +219,7 @@ export default function Practice() {
                 <h3 className="countdown-text">{epicCoundownText}</h3>
                 <img src="assets/fist-cross-dictator-bang-svgrepo-com.svg" width={100} className="fist" alt="rock icon" />
               </> :
-              <Round roundCount={practiceRoundCount} roundMax={practiceRoundMax} isFinished={isPracticeRoundFinished} onClickAttack={onClickAttack} />
+              <Round roundCount={practiceRoundCount} roundMax={practiceRoundMax} roundProgress={roundProgress} isFinished={isPracticeRoundFinished} onClickAttack={onClickAttack} />
             }
           </> :
           <AttackSelection onClickAttack={onClickAttack} />

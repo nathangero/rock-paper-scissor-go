@@ -5,6 +5,12 @@ export enum ATTACK_TYPES {
   RANDOM = "random",
 }
 
+export enum PLAYER_TYPES {
+  USER,
+  OPPONENT,
+  OTHER
+}
+
 export enum ROUND_RESULT {
   WIN = "win",
   LOSE = "lose",
