@@ -1,5 +1,6 @@
-import { Link } from "react-router-dom";
 import "./style.css";
+import "./swing-animation.css";
+import { Link } from "react-router-dom";
 import { ATTACK_TYPES, ROUND_RESULT } from "../../utils/enums";
 import { useEffect, useState } from "react";
 import AttackSelection from "../AttackSelection";
@@ -56,6 +57,7 @@ export default function Practice() {
 
   const doEpicCountdown = (winnerText: string) => {
     // console.log("@doEpicCountdown");
+    const countdownInterval = 600;
     const text = ["SCISSORS", "PAPER", "ROCK"];
     let countdown = text.length;
 
@@ -68,7 +70,7 @@ export default function Practice() {
         setIsShowingEpicCountdown(false);
         setRoundWinner(winnerText);
       }
-    }, 450);
+    }, countdownInterval);
   }
 
 
@@ -199,7 +201,12 @@ export default function Practice() {
         {isPracticeRound ?
           <>
             {isShowingEpicCountdown ?
-              <h3 className="countdown-text">{epicCoundownText}</h3> :
+              <>
+                <h3 className="countdown-text">{epicCoundownText}</h3>
+                <div className="gavel-animation">
+                  <img src="assets/rock-svgrepo-com.svg" width={100} className="gavel" alt="rock icon" />
+                </div>
+              </> :
               <Round roundCount={practiceRoundCount} roundMax={practiceRoundMax} isFinished={isPracticeRoundFinished} onClickAttack={onClickAttack} />
             }
           </> :
@@ -329,10 +336,12 @@ export default function Practice() {
       <div>
         {renderAttack()}
 
-        {isShowingEpicCountdown ? null: <hr />}
+        {isShowingEpicCountdown ? null : <hr />}
 
         {renderStats()}
       </div>
+
+
     </section>
   )
 }
