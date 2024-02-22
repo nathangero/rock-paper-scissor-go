@@ -1,3 +1,7 @@
+.below-attack.hidden {
+  visibility: hidden;
+}
+
 .round-progress {
   display: flex;
   flex-direction: row;

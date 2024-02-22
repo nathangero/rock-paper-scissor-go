@@ -14,3 +14,14 @@
     top: 45%;
   }
 }
+
+@media screen and (max-width: 768px) {
+  @keyframes MoveUpDown {
+    0%, 100% {
+      top: 75%;
+    }
+    80% {
+      top: 55%;
+    }
+  }
+}
