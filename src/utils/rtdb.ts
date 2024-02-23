@@ -1,6 +1,7 @@
 import { child, equalTo, get, limitToFirst, orderByChild, query, ref, update } from "firebase/database"
 import { db } from "../../firebase";
 import { DB_DOC_KEYS, LOBBY_KEYS, USERNAME_KEYS, USER_KEYS } from "./db-keys";
+import { ATTACK_TYPES } from "./enums";
 
 
 /**
@@ -110,16 +111,30 @@ export const searchCasualLobbies = async (): Promise<object> => {
 
 export const joinCasualLobby = async (lobbyId: string, lobbyInfo: LobbyInfo): Promise<boolean> => {
   try {
-    console.log("@joinCasualLobby")
+    // console.log("@joinCasualLobby")
     const dbRef = `${DB_DOC_KEYS.LOBBIES}/${DB_DOC_KEYS.CASUAL}/${lobbyId}`;
-    console.log("lobbyId:", lobbyId);
-    console.log("dbRef:", dbRef);
+    // console.log("lobbyId:", lobbyId);
+    // console.log("dbRef:", dbRef);
     return true; // DEBUG
     await update(ref(db, dbRef), lobbyInfo);
 
     return true;
   } catch (error) {
     console.log("Couldn't join casual lobby");
+    console.error(error);
+    return false;
+  }
+}
+
+export const updateUserAttack = async (lobbyType: DB_DOC_KEYS, lobbyId: string, roundCount: number, userAttack: object): Promise<boolean> => {
+  try {
+    const dbRef = `${DB_DOC_KEYS.LOBBIES}/${lobbyType}/${lobbyId}/${LOBBY_KEYS.ROUNDS}/${roundCount}`;
+    // console.log("dbRef:", dbRef);
+
+    await update(ref(db, dbRef), userAttack);
+    return true;
+  } catch (error) {
+    console.log("Couldn't update user attack");
     console.error(error);
     return false;
   }

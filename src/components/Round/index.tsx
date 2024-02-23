@@ -5,23 +5,22 @@ import React from "react";
 
 export default function Round({ roundCount, roundMax, roundProgress, isFinished, onClickAttack }: Round) {
 
-
   const renderRoundIcon = (playerType: PLAYER_TYPES, index: number) => {
     return (
       <React.Fragment key={index}>
         {playerType === PLAYER_TYPES.OTHER ?
           <>
             <div className="round-icon">
-            <img src="assets/circle-svgrepo-com.svg" width={30} alt="empty circle icon to show an unfinished round." />
+              <img src="/assets/circle-svgrepo-com.svg" width={30} alt="empty circle icon to show an unfinished round." />
             </div>
           </> :
           <>
             {playerType === PLAYER_TYPES.USER ?
               <div className="round-icon">
-                <img src="assets/crown-solid-svgrepo-com.svg" width={40} alt="crown icon for user winning a round." />
+                <img src="/assets/crown-solid-svgrepo-com.svg" width={40} alt="crown icon for user winning a round." />
               </div> :
               <div className="round-icon">
-                <img src="assets/circle-close-svgrepo-com.svg" width={40} alt="circle with x icon for user losing a round." />
+                <img src="/assets/circle-close-svgrepo-com.svg" width={40} alt="circle with x icon for user losing a round." />
               </div>
             }
           </>

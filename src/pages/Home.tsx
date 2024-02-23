@@ -40,7 +40,7 @@ export default function Home() {
     // Get lobbyId
     const lobbyId = lobbyInfo[LOBBY_KEYS.ID];
 
-    console.log("updatedLobby:", updatedLobby);
+    // console.log("updatedLobby:", updatedLobby);
 
     let didJoin = false;
     switch (lobbyType) {
