@@ -85,21 +85,43 @@ export const doesUsernameExist = async (username: string): Promise<boolean> => {
 }
 
 
-export const searchCasualLobbies = async (): Promise<string> => {
+export const searchCasualLobbies = async (): Promise<object> => {
   try {
     const dbRef = `${DB_DOC_KEYS.LOBBIES}/${DB_DOC_KEYS.CASUAL}`;
 
-    const snapshot = await get(query(ref(db, dbRef), orderByChild(LOBBY_KEYS.PLAYERS_NUM), equalTo(1)));
+    const snapshot = await get(query(ref(db, dbRef), orderByChild(LOBBY_KEYS.PLAYERS_NUM), equalTo(1), limitToFirst(1)));
     const value = snapshot.val();
-    console.log("value:", value);
+    // console.log("value:", value);
 
-    if (!value) return ""
+    if (!value) return {};
 
-    const firstRoom = Object.keys(value)[0];
-    return firstRoom
+    const id = Object.keys(value)[0];
+    const lobby = Object.values<LobbyInfo>(value)[0];
+    lobby[LOBBY_KEYS.ID] = id;
+    console.log("lobby:", lobby);
+
+    return lobby
   } catch (error) {
     console.log("Couldn't search for casual lobbies");
     console.error(error);
-    return "";
+    return {};
+  }
+}
+
+export const joinCasualLobby = async (lobbyInfo: LobbyInfo): Promise<boolean> => {
+  try {
+    console.log("@joinCasualLobby")
+    const id = lobbyInfo[LOBBY_KEYS.ID];
+    const dbRef = `${DB_DOC_KEYS.LOBBIES}/${DB_DOC_KEYS.CASUAL}/${id}`;
+    console.log("id:", id);
+    console.log("dbRef:", dbRef);
+    
+    await update(ref(db, dbRef), lobbyInfo);
+
+    return true;
+  } catch (error) {
+    console.log("Couldn't join casual lobby");
+    console.error(error);
+    return false;
   }
 }

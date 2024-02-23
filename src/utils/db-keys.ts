@@ -7,6 +7,7 @@ export enum DB_DOC_KEYS {
 }
 
 export enum LOBBY_KEYS {
+  ID = "id",
   PLAYERS = "players",
   PLAYERS_NUM = "playersNum",
 }

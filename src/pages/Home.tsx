@@ -2,9 +2,11 @@ import { Link } from "react-router-dom";
 import { Modal } from "bootstrap";
 import { useAppSelector } from "../redux/hooks"
 import { LOBBY_TYPES, ROUTER_LINKS } from "../utils/enums";
-import { searchCasualLobbies } from "../utils/rtdb";
+import { joinCasualLobby, searchCasualLobbies } from "../utils/rtdb";
 import LoadingSpinner from "../components/LoadingSpinner";
 import { useEffect, useState } from "react";
+import { LOBBY_KEYS } from "../utils/db-keys";
+import { auth } from "../../firebase";
 
 export default function Home() {
 
@@ -23,10 +25,41 @@ export default function Home() {
   }, []);
 
 
+  const joinLobby = async (lobbyType: LOBBY_TYPES, lobbyInfo: LobbyInfo) => {
+    if (!lobbyInfo || Object.keys(lobbyInfo).length === 0) return;
+
+    // Deconstruct variables
+    const { [LOBBY_KEYS.PLAYERS]: players, [LOBBY_KEYS.PLAYERS_NUM]: playersNum } = lobbyInfo;
+
+    // Update players
+    const updatedPlayers = { ...players, [user.username]: auth.currentUser?.uid };
+
+    // Updated Lobby
+    const updatedLobby = { ...lobbyInfo, players: updatedPlayers, playersNum: playersNum + 1 }; 
+
+    console.log("updatedLobby:", updatedLobby);
+
+    let didJoin = false;
+    switch (lobbyType) {
+      case LOBBY_TYPES.CASUAL:
+        didJoin = await joinCasualLobby(updatedLobby)
+        break;
+
+      case LOBBY_TYPES.RANKED:
+        console.log("search for ranked")
+        break;
+    }
+
+    if (didJoin) {
+      console.log("MOVE USER TO LOBBY PAGE AND START THE MATCH")
+    } else {
+      console.log("Couldn't join the lobby. Could be full");
+    }
+  }
 
   // ************** ON CLICK ************** \\
 
-  const findLobby = async (lobbyType: LOBBY_TYPES) => {
+  const onClickFindLobby = async (lobbyType: LOBBY_TYPES) => {
     try {
       setLobbyId(null);
       setIsSearching(true);
@@ -34,11 +67,9 @@ export default function Home() {
 
       loadingSpinner?.show();
 
-      let lobbyId = "";
       switch (lobbyType) {
         case LOBBY_TYPES.CASUAL:
-          lobbyId = await searchCasualLobbies();
-          setLobbyId(lobbyId);
+          joinLobby(lobbyType, await searchCasualLobbies());
           break;
 
         case LOBBY_TYPES.RANKED:
@@ -46,11 +77,6 @@ export default function Home() {
           break;
       }
 
-      if (lobbyId) {
-        console.log("join the lobby");
-      } else {
-        console.log("need to create new lobby");
-      }
     } catch (error) {
       console.log("Home.tsx couldn't search for casual lobbies");
       console.error(error);
@@ -74,8 +100,8 @@ export default function Home() {
       <div>
         <div className="mb-2">
           {/* <Link to={`${ROUTER_LINKS.LOBBY}/${LOBBY_TYPES.CASUAL}`} className="btn button-positive mx-2">Play for Fun</Link> */}
-          <button className="btn button-positive mx-2" onClick={() => findLobby(LOBBY_TYPES.CASUAL)}>Play For Fun</button>
-          <button className={`btn button-positive mx-2 ${!user?.email ? "disabled" : ""}`} onClick={() => findLobby(LOBBY_TYPES.RANKED)}>Play For Rank</button>
+          <button className="btn button-positive mx-2" onClick={() => onClickFindLobby(LOBBY_TYPES.CASUAL)}>Play For Fun</button>
+          <button className={`btn button-positive mx-2 ${!user?.email ? "disabled" : ""}`} onClick={() => onClickFindLobby(LOBBY_TYPES.RANKED)}>Play For Rank</button>
         </div>
 
         <Link to={"/practice"}><button className="btn button-positive">Practice</button></Link>
