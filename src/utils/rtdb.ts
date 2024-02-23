@@ -108,14 +108,13 @@ export const searchCasualLobbies = async (): Promise<object> => {
   }
 }
 
-export const joinCasualLobby = async (lobbyInfo: LobbyInfo): Promise<boolean> => {
+export const joinCasualLobby = async (lobbyId: string, lobbyInfo: LobbyInfo): Promise<boolean> => {
   try {
     console.log("@joinCasualLobby")
-    const id = lobbyInfo[LOBBY_KEYS.ID];
-    const dbRef = `${DB_DOC_KEYS.LOBBIES}/${DB_DOC_KEYS.CASUAL}/${id}`;
-    console.log("id:", id);
+    const dbRef = `${DB_DOC_KEYS.LOBBIES}/${DB_DOC_KEYS.CASUAL}/${lobbyId}`;
+    console.log("lobbyId:", lobbyId);
     console.log("dbRef:", dbRef);
-    
+    return true; // DEBUG
     await update(ref(db, dbRef), lobbyInfo);
 
     return true;

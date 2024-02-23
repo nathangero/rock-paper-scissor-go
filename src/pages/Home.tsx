@@ -1,22 +1,22 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Modal } from "bootstrap";
-import { useAppSelector } from "../redux/hooks"
+import { useAppDispatch, useAppSelector } from "../redux/hooks"
 import { LOBBY_TYPES, ROUTER_LINKS } from "../utils/enums";
 import { joinCasualLobby, searchCasualLobbies } from "../utils/rtdb";
 import LoadingSpinner from "../components/LoadingSpinner";
 import { useEffect, useState } from "react";
 import { LOBBY_KEYS } from "../utils/db-keys";
 import { auth } from "../../firebase";
+import { USER_ACTIONS } from "../redux/reducer";
 
 export default function Home() {
 
   const user = useAppSelector(state => state.user);
+  const dispatch = useAppDispatch();
+  const navigate = useNavigate();
 
   const [loadingSpinner, setLoadingSpinner] = useState<Modal | null>(null);
-
-  const [isSearching, setIsSearching] = useState<boolean>(false);
-  const [lobbyId, setLobbyId] = useState<string | null>(null);
-  const [lobbyType, setLobbyType] = useState<LOBBY_TYPES>(LOBBY_TYPES.CASUAL);
+  const [loadingText, setLoadingText] = useState<string>("Finding Lobby...")
 
   useEffect(() => {
     // Initialize bootstrap modals 
@@ -35,14 +35,17 @@ export default function Home() {
     const updatedPlayers = { ...players, [user.username]: auth.currentUser?.uid };
 
     // Updated Lobby
-    const updatedLobby = { ...lobbyInfo, players: updatedPlayers, playersNum: playersNum + 1 }; 
+    const updatedLobby: any = { [LOBBY_KEYS.PLAYERS]: updatedPlayers, [LOBBY_KEYS.PLAYERS_NUM]: playersNum + 1 }; // eslint-disable-line @typescript-eslint/no-explicit-any
+
+    // Get lobbyId
+    const lobbyId = lobbyInfo[LOBBY_KEYS.ID];
 
     console.log("updatedLobby:", updatedLobby);
 
     let didJoin = false;
     switch (lobbyType) {
       case LOBBY_TYPES.CASUAL:
-        didJoin = await joinCasualLobby(updatedLobby)
+        didJoin = await joinCasualLobby(lobbyId, updatedLobby)
         break;
 
       case LOBBY_TYPES.RANKED:
@@ -51,9 +54,21 @@ export default function Home() {
     }
 
     if (didJoin) {
-      console.log("MOVE USER TO LOBBY PAGE AND START THE MATCH")
+      // console.log("MOVE USER TO LOBBY PAGE AND START THE MATCH");
+      setLoadingText("Joining lobby!");
+      setTimeout(() => {
+        loadingSpinner?.hide();
+        updatedLobby[LOBBY_KEYS.ID] = lobbyId; // Add the lobby id before adding it to the store
+        dispatch({
+          type: USER_ACTIONS.JOIN_LOBBY,
+          lobby: updatedLobby,
+        })
+        navigate(`${ROUTER_LINKS.LOBBY}/${LOBBY_TYPES.CASUAL}`);
+      }, 1000);
+
     } else {
       console.log("Couldn't join the lobby. Could be full");
+      loadingSpinner?.hide();
     }
   }
 
@@ -61,10 +76,6 @@ export default function Home() {
 
   const onClickFindLobby = async (lobbyType: LOBBY_TYPES) => {
     try {
-      setLobbyId(null);
-      setIsSearching(true);
-      setLobbyType(lobbyType);
-
       loadingSpinner?.show();
 
       switch (lobbyType) {
@@ -82,10 +93,6 @@ export default function Home() {
       console.error(error);
       loadingSpinner?.hide();
     }
-
-    setTimeout(() => {
-      loadingSpinner?.hide();
-    }, 1000);
   }
 
   return (
@@ -108,7 +115,7 @@ export default function Home() {
       </div>
 
       <div className="loading-spinner">
-        <LoadingSpinner spinnerText={"Finding Lobby..."} />
+        <LoadingSpinner spinnerText={loadingText} />
       </div>
     </>
   )
