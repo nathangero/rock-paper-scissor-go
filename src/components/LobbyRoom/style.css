@@ -1,0 +1,21 @@
+.players {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  width: 25%;
+  margin: 0 auto;
+}
+
+@media screen and (max-width: 992px) {
+  .players {
+    width: 50%;
+    margin: 0 auto;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .players {
+    width: 60%;
+    margin: 0 auto;
+  }
+}

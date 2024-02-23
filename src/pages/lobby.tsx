@@ -7,7 +7,7 @@ export default function Lobby() {
 
   return (
     <>
-      {!lobbyType ? "Lobby" : <h2>{ lobbyType?.charAt(0).toUpperCase() + lobbyType?.slice(1) }</h2>}
+      {!lobbyType ? "Lobby" : <h2 className="fs-1">{ lobbyType?.charAt(0).toUpperCase() + lobbyType?.slice(1) } Match</h2>}
 
       <LobbyRoom />
     </>

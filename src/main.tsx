@@ -14,7 +14,7 @@ import Profile from "./components/Profile/index.tsx";
 import StoreProvider from "./redux/GlobalState.tsx";
 import Login from "./pages/Login.tsx";
 import Practice from "./components/Practice/index.tsx";
-import Lobby from "./pages/lobby.tsx";
+import Lobby from "./pages/Lobby.tsx";
 import { ROUTER_LINKS } from "./utils/enums.ts";
 
 const router = createBrowserRouter([
