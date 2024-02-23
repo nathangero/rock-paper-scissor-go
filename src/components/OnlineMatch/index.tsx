@@ -1,12 +1,15 @@
 import "./style.css";
-import React, { useState } from "react";
+import "./swing-animation.css";
+import React, { useEffect, useState } from "react";
 import { ATTACK_TYPES, PLAYER_TYPES } from "../../utils/enums";
 import { useAppSelector } from "../../redux/hooks";
 import AttackSelection from "../AttackSelection";
 import { DB_DOC_KEYS, LOBBY_KEYS } from "../../utils/db-keys";
 import { updateUserAttack } from "../../utils/rtdb";
+import { DataSnapshot, off, onValue, ref } from "firebase/database";
+import { db } from "../../../firebase";
 
-export default function OnlineMatch({ lobbyType, lobbyInfo }: Round) {
+export default function OnlineMatch({ lobbyType, lobbyInfo }: OnlineMatch) {
   const roundCountMax = 5;
   const roundMajority = Math.ceil(roundCountMax); // Amount of rounds needed to win
 
@@ -15,7 +18,7 @@ export default function OnlineMatch({ lobbyType, lobbyInfo }: Round) {
   const [userAttack, setUserAttack] = useState<string>("Waiting...");
   const [opponentAttack, setOpponentAttack] = useState<string>("Waiting...");
 
-  const [roundCount, setRoundCount] = useState<number>(0);
+  const [roundCount, setRoundCount] = useState<number>(1);
   const [roundProgress, setRoundProgress] = useState<PLAYER_TYPES[]>(Array.from({ length: roundCountMax }, () => PLAYER_TYPES.OTHER)); // eslint-disable-line @typescript-eslint/no-explicit-any
   const [userWins, setUserWins] = useState<number>(0);
   const [opponentWins, setOpponentWins] = useState<number>(0);
@@ -27,6 +30,37 @@ export default function OnlineMatch({ lobbyType, lobbyInfo }: Round) {
   const [isShowingCoundtown, setIsShowingCountdown] = useState<boolean>(false);
   const [coundownText, setCountdownText] = useState<string>("");
 
+
+  const listenForOpponentAttack = async () => {
+    try {
+      const lobbyId = lobbyInfo[LOBBY_KEYS.ID];
+      const players = lobbyInfo[LOBBY_KEYS.PLAYERS];
+      const opponent = Object.keys(players)?.filter(player => player != user.username)[0];
+
+      const dbRef = `${DB_DOC_KEYS.LOBBIES}/${DB_DOC_KEYS.CASUAL}/${lobbyId}/${LOBBY_KEYS.ROUNDS}/${roundCount}/${opponent}`;
+
+      const opponentAttackRef = ref(db, dbRef);
+
+      onValue(opponentAttackRef, (snapshot) => {
+        const value = snapshot.val();
+
+        if (value) {
+          // Turn off listener once the opponent's attack is received
+          setOpponentAttack(value);
+          off(opponentAttackRef, "value");
+        } else {
+          setOpponentAttack("Waiting...");
+        }
+      });
+
+    } catch (error) {
+      console.log("Couldn't update user attack");
+      console.error(error);
+      return "Error";
+    }
+  }
+
+
   // ************** ON CLICK ************** \\
 
   const onClickAttack = async (userAttack: ATTACK_TYPES) => {
@@ -37,6 +71,7 @@ export default function OnlineMatch({ lobbyType, lobbyInfo }: Round) {
     }
 
     await updateUserAttack(lobbyType, lobbyInfo[LOBBY_KEYS.ID], roundCount, userAttackObj);
+    await listenForOpponentAttack();
   }
 
 
@@ -100,12 +135,10 @@ export default function OnlineMatch({ lobbyType, lobbyInfo }: Round) {
       {isShowingCoundtown ?
         <>
           <h3 className="countdown-text">{coundownText}</h3>
-          <img src="assets/fist-cross-dictator-bang-svgrepo-com.svg" width={100} className="fist" alt="rock icon" />
+          <img src="/assets/fist-cross-dictator-bang-svgrepo-com.svg" width={100} className="fist" alt="rock icon" />
         </> :
         renderMatch()
       }
-
-
     </>
   )
 }

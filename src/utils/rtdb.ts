@@ -1,4 +1,4 @@
-import { child, equalTo, get, limitToFirst, orderByChild, query, ref, update } from "firebase/database"
+import { child, equalTo, get, limitToFirst, onValue, orderByChild, query, ref, update } from "firebase/database"
 import { db } from "../../firebase";
 import { DB_DOC_KEYS, LOBBY_KEYS, USERNAME_KEYS, USER_KEYS } from "./db-keys";
 import { ATTACK_TYPES } from "./enums";
@@ -131,7 +131,8 @@ export const updateUserAttack = async (lobbyType: DB_DOC_KEYS, lobbyId: string, 
     const dbRef = `${DB_DOC_KEYS.LOBBIES}/${lobbyType}/${lobbyId}/${LOBBY_KEYS.ROUNDS}/${roundCount}`;
     // console.log("dbRef:", dbRef);
 
-    await update(ref(db, dbRef), userAttack);
+    await update(ref(db, dbRef), userAttack)
+    
     return true;
   } catch (error) {
     console.log("Couldn't update user attack");
