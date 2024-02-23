@@ -117,7 +117,7 @@ export default function Login() {
       if (!auth.currentUser) throw ("couldn't login");
 
       const user = await getUser(auth.currentUser.uid);
-      console.log("user from getUser:", user);
+      // console.log("user from getUser:", user);
       dispatch({
         type: USER_ACTIONS.LOGIN,
         user: user

@@ -1,6 +1,6 @@
-import { child, get, ref, update } from "firebase/database"
+import { child, equalTo, get, limitToFirst, orderByChild, query, ref, update } from "firebase/database"
 import { db } from "../../firebase";
-import { DB_DOC_KEYS, USERNAME_KEYS, USER_KEYS } from "./db-keys";
+import { DB_DOC_KEYS, LOBBY_KEYS, USERNAME_KEYS, USER_KEYS } from "./db-keys";
 
 
 /**
@@ -81,5 +81,25 @@ export const doesUsernameExist = async (username: string): Promise<boolean> => {
     console.log("couldn't search for username");
     console.error(error);
     return false;
+  }
+}
+
+
+export const searchCasualLobbies = async (): Promise<string> => {
+  try {
+    const dbRef = `${DB_DOC_KEYS.LOBBIES}/${DB_DOC_KEYS.CASUAL}`;
+
+    const snapshot = await get(query(ref(db, dbRef), orderByChild(LOBBY_KEYS.PLAYERS_NUM), equalTo(1)));
+    const value = snapshot.val();
+    console.log("value:", value);
+
+    if (!value) return ""
+
+    const firstRoom = Object.keys(value)[0];
+    return firstRoom
+  } catch (error) {
+    console.log("Couldn't search for casual lobbies");
+    console.error(error);
+    return "";
   }
 }

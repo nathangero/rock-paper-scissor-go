@@ -1,7 +1,14 @@
 export enum DB_DOC_KEYS {
+  CASUAL = "casual",
   LOBBIES = "lobbies",
+  RANKED = "ranked",
   USERS = "users",
   USERNAMES = "usernames",
+}
+
+export enum LOBBY_KEYS {
+  PLAYERS = "players",
+  PLAYERS_NUM = "playersNum",
 }
 
 export enum USERNAME_KEYS {
