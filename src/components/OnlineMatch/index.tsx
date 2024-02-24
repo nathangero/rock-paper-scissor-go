@@ -11,7 +11,7 @@ import { db } from "../../../firebase";
 
 export default function OnlineMatch({ lobbyType, lobbyInfo }: OnlineMatch) {
   const roundCountMax = 5;
-  const roundMajority = Math.ceil(roundCountMax); // Amount of rounds needed to win
+  const roundMajority = Math.ceil(roundCountMax / 2); // Amount of rounds needed to win
 
   const user = useAppSelector(state => state.user);
 
@@ -98,7 +98,7 @@ export default function OnlineMatch({ lobbyType, lobbyInfo }: OnlineMatch) {
 
 
   const updateMatch = async (roundResult: ROUND_RESULT) => {
-    // console.log("@updatePracticeRound");
+    // console.log("@updateMatch");
 
     if (roundResult === ROUND_RESULT.DRAW) {
       setMatchDraws(matchDraws + 1);
@@ -141,7 +141,7 @@ export default function OnlineMatch({ lobbyType, lobbyInfo }: OnlineMatch) {
 
 
     if (updatedUserWins === roundMajority) {
-      doCountdown("You win!");
+      doCountdown("** You win! **");
 
     } else if (updatedOpponentWins === roundMajority) {
       doCountdown("You lost");
@@ -150,7 +150,6 @@ export default function OnlineMatch({ lobbyType, lobbyInfo }: OnlineMatch) {
 
     setUserWins(updatedUserWins);
     setOpponentWins(updatedOpponentWins);
-
   }
 
   /**
@@ -240,20 +239,32 @@ export default function OnlineMatch({ lobbyType, lobbyInfo }: OnlineMatch) {
     return (
       <>
 
-        {isRoundFinished ?
+        {isMatchFinished ?
           <>
-            <h3>{roundWinner}</h3>
-            {isRoundDraw ?
-              <button className="btn button-positive" onClick={() => onClickRepeatRound()}>Repeat Round</button> :
-              <>
-                {opponentAttackStr  ?
-                  <button className="btn button-positive" onClick={() => onClickNextRound()}>Next Round</button> :
-                  <h3>Waiting for opponent...</h3>
-                }
-              </>
-            }
+            <h3 className="match-end-text">{roundWinner}</h3>
+            <div className="d-flex justify-content-center">
+              
+            <button className="btn button-negative m-2">Quit</button>
+            <button className="btn button-positive m-2 fs-5">REMATCH</button>
+            </div>
           </> :
-          <AttackSelection isFinished={isMatchFinished} onClickAttack={onClickAttack} />
+          <>
+            {isRoundFinished ?
+              <>
+                <h3>{roundWinner}</h3>
+                {isRoundDraw ?
+                  <button className="btn button-positive" onClick={() => onClickRepeatRound()}>Repeat Round</button> :
+                  <>
+                    {opponentAttackStr ?
+                      <button className="btn button-positive" onClick={() => onClickNextRound()}>Next Round</button> :
+                      <h3>Waiting for opponent...</h3>
+                    }
+                  </>
+                }
+              </> :
+              <AttackSelection isFinished={isMatchFinished} onClickAttack={onClickAttack} />
+            }
+          </>
         }
 
         <div className="container-table mb-3">

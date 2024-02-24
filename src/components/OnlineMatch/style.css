@@ -2,6 +2,10 @@
   visibility: hidden;
 }
 
+.match-end-text {
+  font-size: 3rem;
+}
+
 .round-progress {
   display: flex;
   flex-direction: row;
