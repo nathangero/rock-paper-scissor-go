@@ -12,6 +12,7 @@ export enum LOBBY_KEYS {
   PLAYERS_NUM = "playersNum",
   ROUNDS = "rounds",
   WINNER = "winner",
+  MATCH = "matchNum", // Keeps track of match count for rematches
 }
 
 export enum USERNAME_KEYS {

@@ -126,9 +126,9 @@ export const joinCasualLobby = async (lobbyId: string, lobbyInfo: LobbyInfo): Pr
   }
 }
 
-export const updateUserAttack = async (lobbyType: DB_DOC_KEYS, lobbyId: string, roundCount: number, userAttack: object): Promise<boolean> => {
+export const updateUserAttack = async (lobbyType: DB_DOC_KEYS, lobbyId: string, matchCount: number, roundCount: number, userAttack: object): Promise<boolean> => {
   try {
-    const dbRef = `${DB_DOC_KEYS.LOBBIES}/${lobbyType}/${lobbyId}/${LOBBY_KEYS.ROUNDS}/${roundCount}`;
+    const dbRef = `${DB_DOC_KEYS.LOBBIES}/${lobbyType}/${lobbyId}/${LOBBY_KEYS.MATCH}/${matchCount}/${LOBBY_KEYS.ROUNDS}/${roundCount}`;
     // console.log("dbRef:", dbRef);
 
     await update(ref(db, dbRef), userAttack)
@@ -144,8 +144,9 @@ export const updateUserAttack = async (lobbyType: DB_DOC_KEYS, lobbyId: string, 
 
 export const updateMatchDb = async (lobbyType: DB_DOC_KEYS, lobbyId: string, matchCount: number, roundCount: number, roundWinner: object) => {
   try {
-    const dbRef = `${DB_DOC_KEYS.LOBBIES}/${lobbyType}/${lobbyId}/${matchCount}/${LOBBY_KEYS.ROUNDS}/${roundCount}`;
-    // console.log("dbRef:", dbRef);
+    const dbRef = `${DB_DOC_KEYS.LOBBIES}/${lobbyType}/${lobbyId}/${LOBBY_KEYS.MATCH}/${matchCount}/${LOBBY_KEYS.ROUNDS}/${roundCount}`;
+    console.log("dbRef:", dbRef);
+    return;
 
     await update(ref(db, dbRef), roundWinner)
     

@@ -63,7 +63,7 @@ export default function OnlineMatch({ lobbyType, lobbyInfo }: OnlineMatch) {
    */
   const listenForOpponentAttack = async (userAttack: ATTACK_TYPES) => {
     try {
-      const dbRef = `${DB_DOC_KEYS.LOBBIES}/${DB_DOC_KEYS.CASUAL}/${lobbyId}/${LOBBY_KEYS.ROUNDS}/${roundCount}/${opponent}`;
+      const dbRef = `${DB_DOC_KEYS.LOBBIES}/${DB_DOC_KEYS.CASUAL}/${lobbyId}/${LOBBY_KEYS.MATCH}/${matchCount}/${LOBBY_KEYS.ROUNDS}/${roundCount}/${opponent}`;
 
       const opponentAttackRef = ref(db, dbRef);
 
@@ -196,7 +196,7 @@ export default function OnlineMatch({ lobbyType, lobbyInfo }: OnlineMatch) {
     }
 
     setIsRoundFinished(true);
-    await updateUserAttack(lobbyType, lobbyInfo[LOBBY_KEYS.ID], roundCount, userAttackObj);
+    await updateUserAttack(lobbyType, lobbyInfo[LOBBY_KEYS.ID], matchCount, roundCount, userAttackObj);
     await listenForOpponentAttack(userAttack);
   }
 
@@ -375,7 +375,11 @@ export default function OnlineMatch({ lobbyType, lobbyInfo }: OnlineMatch) {
         <Alert
           title={alertTitle}
           body={alertBody}
-          customButton={{ buttonColor: "button-negative", buttonText: "Yes, leave", onClickAction: () => onClickConfirmLeave()}}
+          customButton={{
+            buttonColor: "button-negative",
+            buttonText: "Yes, leave",
+            onClickAction: () => onClickConfirmLeave(),
+          }}
         />
       </div>
     </>
