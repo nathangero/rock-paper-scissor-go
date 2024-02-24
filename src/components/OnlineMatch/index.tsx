@@ -203,6 +203,8 @@ export default function OnlineMatch({ lobbyType, lobbyInfo }: OnlineMatch) {
   const onClickNextRound = () => {
     setIsRoundFinished(false);
     setRoundCount(roundCount + 1);
+    setUserAttackStr("");
+    setOpponentAttackStr("");
     setRoundWinner("");
   }
 
