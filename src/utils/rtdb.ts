@@ -142,9 +142,9 @@ export const updateUserAttack = async (lobbyType: DB_DOC_KEYS, lobbyId: string, 
 }
 
 
-export const updateMatchDb = async (lobbyType: DB_DOC_KEYS, lobbyId: string, roundCount: number, roundWinner: object) => {
+export const updateMatchDb = async (lobbyType: DB_DOC_KEYS, lobbyId: string, matchCount: number, roundCount: number, roundWinner: object) => {
   try {
-    const dbRef = `${DB_DOC_KEYS.LOBBIES}/${lobbyType}/${lobbyId}/${LOBBY_KEYS.ROUNDS}/${roundCount}`;
+    const dbRef = `${DB_DOC_KEYS.LOBBIES}/${lobbyType}/${lobbyId}/${matchCount}/${LOBBY_KEYS.ROUNDS}/${roundCount}`;
     // console.log("dbRef:", dbRef);
 
     await update(ref(db, dbRef), roundWinner)

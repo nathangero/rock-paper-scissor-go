@@ -1,13 +1,15 @@
 import "./style.css";
 import "./swing-animation.css";
 import React, { useEffect, useState } from "react";
-import { ATTACK_TYPES, PLAYER_TYPES, ROUND_RESULT } from "../../utils/enums";
+import { ATTACK_TYPES, PLAYER_TYPES, ROUND_RESULT, ROUTER_LINKS } from "../../utils/enums";
 import { useAppSelector } from "../../redux/hooks";
-import AttackSelection from "../AttackSelection";
 import { DB_DOC_KEYS, LOBBY_KEYS } from "../../utils/db-keys";
 import { updateMatchDb, updateUserAttack } from "../../utils/rtdb";
 import { off, onValue, ref } from "firebase/database";
 import { db } from "../../../firebase";
+import AttackSelection from "../AttackSelection";
+import { Modal } from "bootstrap";
+import Alert from "../Alert";
 
 export default function OnlineMatch({ lobbyType, lobbyInfo }: OnlineMatch) {
   const roundCountMax = 5;
@@ -15,12 +17,17 @@ export default function OnlineMatch({ lobbyType, lobbyInfo }: OnlineMatch) {
 
   const user = useAppSelector(state => state.user);
 
+  const [modalLeaveLobby, setModalLeaveLobby] = useState<Modal | null>(null);
+  const [alertTitle, setAlertTitle] = useState<string>("");
+  const [alertBody, setAlertBody] = useState<string>("");
+
   const [lobbyId, setLobbyId] = useState<string>("");
   const [opponent, setOpponent] = useState<string>("");
 
   const [userAttackStr, setUserAttackStr] = useState<string>("");
   const [opponentAttackStr, setOpponentAttackStr] = useState<string>("");
 
+  const [matchCount, setMatchCount] = useState<number>(0);
   const [roundCount, setRoundCount] = useState<number>(1);
   const [roundProgress, setRoundProgress] = useState<PLAYER_TYPES[]>(Array.from({ length: roundCountMax }, () => PLAYER_TYPES.OTHER)); // eslint-disable-line @typescript-eslint/no-explicit-any
   const [userWins, setUserWins] = useState<number>(0);
@@ -28,7 +35,7 @@ export default function OnlineMatch({ lobbyType, lobbyInfo }: OnlineMatch) {
   const [matchDraws, setMatchDraws] = useState<number>(0);
   const [isRoundDraw, setIsRoundDraw] = useState<boolean>(false);
   const [roundWinner, setRoundWinner] = useState<string>("");
-  const [roundResult, setRoundResult] = useState<string>("");
+  const [matchWinner, setMatchWinner] = useState<string>("");
   const [isRoundFinished, setIsRoundFinished] = useState<boolean>(false);
   const [isMatchFinished, setIsMatchFinished] = useState<boolean>(false);
 
@@ -42,6 +49,10 @@ export default function OnlineMatch({ lobbyType, lobbyInfo }: OnlineMatch) {
     setLobbyId(lobbyInfo[LOBBY_KEYS.ID]);
     const players = lobbyInfo[LOBBY_KEYS.PLAYERS];
     setOpponent(Object.keys(players)?.filter(player => player != user.username)[0]);
+
+    // Set bootstrap modals
+    const modalLeave = document.querySelector<HTMLDivElement>(".alert-modal-leave-lobby")?.querySelector<HTMLDivElement>("#alertModal");
+    if (modalLeave) setModalLeaveLobby(new Modal(modalLeave));
   }, [])
 
 
@@ -118,7 +129,7 @@ export default function OnlineMatch({ lobbyType, lobbyInfo }: OnlineMatch) {
       const roundWinner = {
         [LOBBY_KEYS.WINNER]: user.username
       }
-      await updateMatchDb(DB_DOC_KEYS.CASUAL, lobbyId, roundCount, roundWinner);
+      await updateMatchDb(DB_DOC_KEYS.CASUAL, lobbyId, matchCount, roundCount, roundWinner);
 
       updatedUserWins++;
       updatedRoundProgress[roundCount - 1] = PLAYER_TYPES.USER;
@@ -130,7 +141,7 @@ export default function OnlineMatch({ lobbyType, lobbyInfo }: OnlineMatch) {
       const roundWinner = {
         [LOBBY_KEYS.WINNER]: opponent
       }
-      await updateMatchDb(DB_DOC_KEYS.CASUAL, lobbyId, roundCount, roundWinner);
+      await updateMatchDb(DB_DOC_KEYS.CASUAL, lobbyId, matchCount, roundCount, roundWinner);
 
       updatedOpponentWins++;
       updatedRoundProgress[roundCount - 1] = PLAYER_TYPES.OPPONENT;
@@ -169,7 +180,7 @@ export default function OnlineMatch({ lobbyType, lobbyInfo }: OnlineMatch) {
       if (countdown < 0) {
         clearInterval(timer);
         setIsShowingCountdown(false);
-        setRoundWinner(winnerText);
+        setMatchWinner(winnerText);
       }
     }, countdownInterval);
   }
@@ -207,6 +218,36 @@ export default function OnlineMatch({ lobbyType, lobbyInfo }: OnlineMatch) {
     setRoundWinner("");
   }
 
+  const onClickLeave = () => {
+    setAlertTitle("Leaving the Lobby");
+    setAlertBody("Are you sure you want to leave?");
+    modalLeaveLobby?.show();
+  }
+
+  const onClickConfirmLeave = () => {
+    // TODO: Remove player from lobby in db
+    window.location.href = ROUTER_LINKS.HOME;
+  }
+
+  const onClickRematch = () => {
+    setMatchCount(matchCount + 1); // Increment the match count
+    setIsRoundFinished(false);
+    setIsRoundDraw(false);
+
+    setRoundCount(1);
+    setRoundProgress(Array.from({ length: roundCountMax }, () => PLAYER_TYPES.OTHER));
+    setUserWins(0);
+    setOpponentWins(0);
+    setMatchDraws(0);
+    setIsRoundDraw(false);
+    setRoundWinner("");
+    setMatchWinner("");
+    setIsRoundFinished(false);
+    setIsMatchFinished(false);
+    setIsShowingCountdown(false);
+    setCountdownText("");
+  }
+
 
   // ************** RENDERS ************** \\
 
@@ -238,14 +279,20 @@ export default function OnlineMatch({ lobbyType, lobbyInfo }: OnlineMatch) {
   const renderMatch = () => {
     return (
       <>
+        <h2>Round {roundCount} / {roundCountMax}</h2>
+        <div className="round-progress">
+          {roundProgress.map((value, index) => (
+            renderRoundIcon(value, index)
+          ))}
+        </div>
 
         {isMatchFinished ?
           <>
-            <h3 className="match-end-text">{roundWinner}</h3>
+            <h3 className="match-end-text">{matchWinner}</h3>
             <div className="d-flex justify-content-center">
-              
-            <button className="btn button-negative m-2">Quit</button>
-            <button className="btn button-positive m-2 fs-5">REMATCH</button>
+
+              <button className="btn button-negative m-2" onClick={() => onClickLeave()}>Leave</button>
+              <button className="btn button-positive m-2 fs-5" onClick={() => onClickRematch()}>REMATCH</button>
             </div>
           </> :
           <>
@@ -267,20 +314,6 @@ export default function OnlineMatch({ lobbyType, lobbyInfo }: OnlineMatch) {
           </>
         }
 
-        <div className="container-table mb-3">
-          <div className="two-column-spacing">
-            <h4>You:</h4>
-            <h4><b>{userAttackStr || "Waiting..."}</b></h4>
-          </div>
-
-          <div className="two-column-spacing">
-            <h4>Opponent:</h4>
-            <h4><b>{opponentAttackStr || "Waiting..."}</b></h4>
-          </div>
-        </div>
-
-        <hr />
-
         {renderStats()}
       </>
     )
@@ -290,7 +323,21 @@ export default function OnlineMatch({ lobbyType, lobbyInfo }: OnlineMatch) {
     return (
       <>
         {isShowingCountdown ? null :
-          <div id="practice-round-stats" className="container-table">
+          <div id="casual-round-stats" className="container-table">
+            <div className="mb-3">
+              <div className="two-column-spacing">
+                <h4>You:</h4>
+                <h4><b>{userAttackStr || "Waiting..."}</b></h4>
+              </div>
+
+              <div className="two-column-spacing">
+                <h4>Opponent:</h4>
+                <h4><b>{opponentAttackStr || "Waiting..."}</b></h4>
+              </div>
+            </div>
+
+            <hr />
+
             <div className="two-column-spacing">
               <h4>Wins:</h4>
               <h4><b>{userWins}</b></h4>
@@ -315,14 +362,6 @@ export default function OnlineMatch({ lobbyType, lobbyInfo }: OnlineMatch) {
 
   return (
     <>
-      <h2>Round {roundCount} / {roundCountMax}</h2>
-      <div className="round-progress">
-        {roundProgress.map((value, index) => (
-          renderRoundIcon(value, index)
-        ))}
-      </div>
-
-
       {isShowingCountdown ?
         <>
           <h3 className="countdown-text">{coundownText}</h3>
@@ -330,6 +369,15 @@ export default function OnlineMatch({ lobbyType, lobbyInfo }: OnlineMatch) {
         </> :
         renderMatch()
       }
+
+
+      <div className="alert-modal-leave-lobby">
+        <Alert
+          title={alertTitle}
+          body={alertBody}
+          customButton={{ buttonColor: "button-negative", buttonText: "Yes, leave", onClickAction: () => onClickConfirmLeave()}}
+        />
+      </div>
     </>
   )
 }
