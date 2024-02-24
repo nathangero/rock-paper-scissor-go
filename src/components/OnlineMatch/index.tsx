@@ -1,11 +1,11 @@
 import "./style.css";
 import "./swing-animation.css";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { ATTACK_TYPES, PLAYER_TYPES, ROUND_RESULT } from "../../utils/enums";
 import { useAppSelector } from "../../redux/hooks";
 import AttackSelection from "../AttackSelection";
 import { DB_DOC_KEYS, LOBBY_KEYS } from "../../utils/db-keys";
-import { updateUserAttack } from "../../utils/rtdb";
+import { updateMatchDb, updateUserAttack } from "../../utils/rtdb";
 import { off, onValue, ref } from "firebase/database";
 import { db } from "../../../firebase";
 
@@ -15,20 +15,34 @@ export default function OnlineMatch({ lobbyType, lobbyInfo }: OnlineMatch) {
 
   const user = useAppSelector(state => state.user);
 
-  const [userAttackStr, setUserAttack] = useState<string>("Waiting...");
-  const [opponentAttackStr, setOpponentAttack] = useState<string>("Waiting...");
+  const [lobbyId, setLobbyId] = useState<string>("");
+  const [opponent, setOpponent] = useState<string>("");
+
+  const [userAttackStr, setUserAttackStr] = useState<string>("");
+  const [opponentAttackStr, setOpponentAttackStr] = useState<string>("");
 
   const [roundCount, setRoundCount] = useState<number>(1);
   const [roundProgress, setRoundProgress] = useState<PLAYER_TYPES[]>(Array.from({ length: roundCountMax }, () => PLAYER_TYPES.OTHER)); // eslint-disable-line @typescript-eslint/no-explicit-any
   const [userWins, setUserWins] = useState<number>(0);
   const [opponentWins, setOpponentWins] = useState<number>(0);
   const [matchDraws, setMatchDraws] = useState<number>(0);
+  const [isRoundDraw, setIsRoundDraw] = useState<boolean>(false);
   const [roundWinner, setRoundWinner] = useState<string>("");
   const [roundResult, setRoundResult] = useState<string>("");
+  const [isRoundFinished, setIsRoundFinished] = useState<boolean>(false);
   const [isMatchFinished, setIsMatchFinished] = useState<boolean>(false);
 
   const [isShowingCountdown, setIsShowingCountdown] = useState<boolean>(false);
   const [coundownText, setCountdownText] = useState<string>("");
+
+
+  useEffect(() => {
+    if (!lobbyInfo) return;
+
+    setLobbyId(lobbyInfo[LOBBY_KEYS.ID]);
+    const players = lobbyInfo[LOBBY_KEYS.PLAYERS];
+    setOpponent(Object.keys(players)?.filter(player => player != user.username)[0]);
+  }, [])
 
 
   /**
@@ -38,10 +52,6 @@ export default function OnlineMatch({ lobbyType, lobbyInfo }: OnlineMatch) {
    */
   const listenForOpponentAttack = async (userAttack: ATTACK_TYPES) => {
     try {
-      const lobbyId = lobbyInfo[LOBBY_KEYS.ID];
-      const players = lobbyInfo[LOBBY_KEYS.PLAYERS];
-      const opponent = Object.keys(players)?.filter(player => player != user.username)[0];
-
       const dbRef = `${DB_DOC_KEYS.LOBBIES}/${DB_DOC_KEYS.CASUAL}/${lobbyId}/${LOBBY_KEYS.ROUNDS}/${roundCount}/${opponent}`;
 
       const opponentAttackRef = ref(db, dbRef);
@@ -51,12 +61,12 @@ export default function OnlineMatch({ lobbyType, lobbyInfo }: OnlineMatch) {
 
         if (value) {
           // Turn off listener once the opponent's attack is received
-          setOpponentAttack(value);
+          setOpponentAttackStr(value);
           off(opponentAttackRef, "value");
           const roundResult = decideWinner(userAttack, value);
           await updateMatch(roundResult);
         } else {
-          setOpponentAttack("Waiting...");
+          setOpponentAttackStr("");
         }
       });
 
@@ -89,9 +99,11 @@ export default function OnlineMatch({ lobbyType, lobbyInfo }: OnlineMatch) {
 
   const updateMatch = async (roundResult: ROUND_RESULT) => {
     // console.log("@updatePracticeRound");
-    // console.log("result:", result)
+
     if (roundResult === ROUND_RESULT.DRAW) {
       setMatchDraws(matchDraws + 1);
+      setIsRoundDraw(true);
+      setRoundWinner(`Draw! Repeat round ${roundCount}`);
       return;
     }
 
@@ -99,17 +111,32 @@ export default function OnlineMatch({ lobbyType, lobbyInfo }: OnlineMatch) {
     let updatedUserWins = userWins;
     let updatedOpponentWins = opponentWins;
     const updatedRoundProgress = [...roundProgress];
+    const lobbyId = lobbyInfo[LOBBY_KEYS.ID];
 
     // Update the player's win count and update the round progress element
     if (roundResult === ROUND_RESULT.WIN) {
+      const roundWinner = {
+        [LOBBY_KEYS.WINNER]: user.username
+      }
+      await updateMatchDb(DB_DOC_KEYS.CASUAL, lobbyId, roundCount, roundWinner);
+
       updatedUserWins++;
       updatedRoundProgress[roundCount - 1] = PLAYER_TYPES.USER;
       setRoundProgress(updatedRoundProgress);
+
+      setRoundWinner(`You won round ${roundCount}`);
     }
     else if (roundResult === ROUND_RESULT.LOSE) {
+      const roundWinner = {
+        [LOBBY_KEYS.WINNER]: opponent
+      }
+      await updateMatchDb(DB_DOC_KEYS.CASUAL, lobbyId, roundCount, roundWinner);
+
       updatedOpponentWins++;
       updatedRoundProgress[roundCount - 1] = PLAYER_TYPES.OPPONENT;
       setRoundProgress(updatedRoundProgress);
+
+      setRoundWinner(`You lost round ${roundCount}`);
     }
 
 
@@ -119,13 +146,11 @@ export default function OnlineMatch({ lobbyType, lobbyInfo }: OnlineMatch) {
     } else if (updatedOpponentWins === roundMajority) {
       doCountdown("You lost");
 
-    } else if (roundCount + 1 <= roundCountMax) {
-      // Only increment round count if there is NO winner
-      setRoundCount(roundCount + 1);
     }
 
     setUserWins(updatedUserWins);
     setOpponentWins(updatedOpponentWins);
+
   }
 
   /**
@@ -154,14 +179,31 @@ export default function OnlineMatch({ lobbyType, lobbyInfo }: OnlineMatch) {
   // ************** ON CLICK ************** \\
 
   const onClickAttack = async (userAttack: ATTACK_TYPES) => {
-    setUserAttack(userAttack);
+    setUserAttackStr(userAttack);
 
     const userAttackObj = {
       [user.username]: userAttack
     }
 
+    setIsRoundFinished(true);
     await updateUserAttack(lobbyType, lobbyInfo[LOBBY_KEYS.ID], roundCount, userAttackObj);
     await listenForOpponentAttack(userAttack);
+  }
+
+  const onClickRepeatRound = () => {
+    setIsRoundFinished(false);
+    setIsRoundDraw(false);
+    setRoundWinner("");
+    setUserAttackStr("");
+    setOpponentAttackStr("");
+    setRoundWinner("");
+  }
+
+
+  const onClickNextRound = () => {
+    setIsRoundFinished(false);
+    setRoundCount(roundCount + 1);
+    setRoundWinner("");
   }
 
 
@@ -195,17 +237,32 @@ export default function OnlineMatch({ lobbyType, lobbyInfo }: OnlineMatch) {
   const renderMatch = () => {
     return (
       <>
-        <AttackSelection isFinished={isMatchFinished} onClickAttack={onClickAttack} />
+
+        {isRoundFinished ?
+          <>
+            <h3>{roundWinner}</h3>
+            {isRoundDraw ?
+              <button className="btn button-positive" onClick={() => onClickRepeatRound()}>Repeat Round</button> :
+              <>
+                {opponentAttackStr  ?
+                  <button className="btn button-positive" onClick={() => onClickNextRound()}>Next Round</button> :
+                  <h3>Waiting for opponent...</h3>
+                }
+              </>
+            }
+          </> :
+          <AttackSelection isFinished={isMatchFinished} onClickAttack={onClickAttack} />
+        }
 
         <div className="container-table mb-3">
           <div className="two-column-spacing">
             <h4>You:</h4>
-            <h4><b>{userAttackStr}</b></h4>
+            <h4><b>{userAttackStr || "Waiting..."}</b></h4>
           </div>
 
           <div className="two-column-spacing">
             <h4>Opponent:</h4>
-            <h4><b>{opponentAttackStr}</b></h4>
+            <h4><b>{opponentAttackStr || "Waiting..."}</b></h4>
           </div>
         </div>
 

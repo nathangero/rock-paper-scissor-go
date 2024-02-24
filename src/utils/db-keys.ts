@@ -11,6 +11,7 @@ export enum LOBBY_KEYS {
   PLAYERS = "players",
   PLAYERS_NUM = "playersNum",
   ROUNDS = "rounds",
+  WINNER = "winner",
 }
 
 export enum USERNAME_KEYS {

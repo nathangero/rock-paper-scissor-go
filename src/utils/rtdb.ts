@@ -140,3 +140,19 @@ export const updateUserAttack = async (lobbyType: DB_DOC_KEYS, lobbyId: string, 
     return false;
   }
 }
+
+
+export const updateMatchDb = async (lobbyType: DB_DOC_KEYS, lobbyId: string, roundCount: number, roundWinner: object) => {
+  try {
+    const dbRef = `${DB_DOC_KEYS.LOBBIES}/${lobbyType}/${lobbyId}/${LOBBY_KEYS.ROUNDS}/${roundCount}`;
+    // console.log("dbRef:", dbRef);
+
+    await update(ref(db, dbRef), roundWinner)
+    
+    return true;
+  } catch (error) {
+    console.log("Couldn't update user attack");
+    console.error(error);
+    return false;
+  }
+}
