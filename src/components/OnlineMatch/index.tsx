@@ -45,9 +45,11 @@ export default function OnlineMatch({ lobbyType, lobbyInfo }: OnlineMatch) {
 
   useEffect(() => {
     if (!lobbyInfo) return;
+    console.log("@OnlineMatch useEffect")
 
     setLobbyId(lobbyInfo[LOBBY_KEYS.ID]);
     const players = lobbyInfo[LOBBY_KEYS.PLAYERS];
+    console.log("players:", players);
     setOpponent(Object.keys(players)?.filter(player => player != user.username)[0]);
 
     // Set bootstrap modals
@@ -63,6 +65,8 @@ export default function OnlineMatch({ lobbyType, lobbyInfo }: OnlineMatch) {
    */
   const listenForOpponentAttack = async (userAttack: ATTACK_TYPES) => {
     try {
+      console.log("@listenForOpponentAttack");
+      console.log("opponent:", opponent);
       const dbRef = `${DB_DOC_KEYS.LOBBIES}/${LOBBY_TYPES.CASUAL}/${lobbyId}/${LOBBY_KEYS.MATCH_NUM}/${matchCount}/${LOBBY_KEYS.ROUNDS}/${roundCount}/${opponent}`;
 
       const opponentAttackRef = ref(db, dbRef);

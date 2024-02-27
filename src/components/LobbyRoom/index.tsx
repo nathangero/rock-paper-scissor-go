@@ -47,30 +47,27 @@ export default function LobbyRoom() {
 
       onValue(opponentRef, async (snapshot) => {
         console.log("@listenForOpponentJoin");
-        const value = snapshot.val();
-        console.log("new opponent:", value);
+        const players = snapshot.val();
+        console.log("lobby players:", players);
 
-        if (value) {
-          // Don't stop listening if only 1 player is in the lobby
-          if (Object.keys(value).length < 2) return;
+        // Don't stop listening if only 1 player is in the lobby
+        if (Object.keys(players).length < 2) return;
 
-          const newOpponent = Object.keys(value)?.filter(player => player != user.username)[0];
-          setP2(newOpponent);
-          
-          // Turn off listener once an opponent has joined.
-          off(opponentRef, "value");
-          console.log("stop listening to new opponents")
+        const newOpponent = Object.keys(players)?.filter(player => player != user.username)[0];
+        setP2(newOpponent);
+        console.log("found opponent:", newOpponent);
 
-          // Update the lobby in the store so OnlineMatch component will update too
-          const updatedPlayers = { ...lobby[LOBBY_KEYS.PLAYERS], value }
-          const updatedLobby = { ...lobby, [LOBBY_KEYS.PLAYERS]: updatedPlayers }
-          dispatch({
-            type: USER_ACTIONS.JOIN_LOBBY,
-            lobby: updatedLobby,
-          });
-        } else {
-          setP2("");
-        }
+        // Turn off listener once an opponent has joined.
+        off(opponentRef, "value");
+        console.log("stop listening to new opponents")
+
+        // Update the lobby in the store so OnlineMatch component will update too
+        const updatedLobby = { ...lobby, [LOBBY_KEYS.PLAYERS]: players }
+        dispatch({
+          type: USER_ACTIONS.JOIN_LOBBY,
+          lobby: updatedLobby,
+        });
+
       });
 
     } catch (error) {
