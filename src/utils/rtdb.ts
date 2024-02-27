@@ -88,20 +88,22 @@ export const doesUsernameExist = async (username: string): Promise<boolean> => {
 
 export const dbCreateLobby = async (lobbyType: LOBBY_TYPES, user: object): Promise<LobbyInfo | null> => {
   try {
-    console.log("@dbCreateLobby");
     const dbRef = `${DB_DOC_KEYS.LOBBIES}/${lobbyType}`;
     const newLobbyId = push(child(ref(db), dbRef)).key; // Create a new lobby id
     
     const lobbyRef = `${dbRef}/${newLobbyId}`;
+    const host = Object.keys(user)[0];
 
     const newLobby = {
+      [LOBBY_KEYS.HOST]: host,
       [LOBBY_KEYS.ID]: newLobbyId,
       [LOBBY_KEYS.PLAYERS]: user,
       [LOBBY_KEYS.PLAYERS_NUM]: 1, // The player creating this lobby
+      [LOBBY_KEYS.TYPE]: lobbyType,
     };
     
     await set(ref(db, lobbyRef), newLobby);
-    console.log("successfully created a lobby!");
+    // console.log("successfully created a lobby!");
 
     return newLobby;
   } catch (error) {
@@ -141,7 +143,7 @@ export const joinCasualLobby = async (lobbyId: string, lobbyInfo: LobbyInfo): Pr
     const dbRef = `${DB_DOC_KEYS.LOBBIES}/${LOBBY_TYPES.CASUAL}/${lobbyId}`;
     // console.log("lobbyId:", lobbyId);
     // console.log("dbRef:", dbRef);
-    return true; // DEBUG
+    // return true; // DEBUG
     await update(ref(db, dbRef), lobbyInfo);
 
     return true;
@@ -150,6 +152,10 @@ export const joinCasualLobby = async (lobbyId: string, lobbyInfo: LobbyInfo): Pr
     console.error(error);
     return false;
   }
+}
+
+export const dbLeaveLobby = async () => {
+  // TODO: Store the lobby id in the browser's local storage. so upon refresh, take the id and make the room disappear.
 }
 
 export const updateUserAttack = async (lobbyType: LOBBY_TYPES, lobbyId: string, matchCount: number, roundCount: number, userAttack: object): Promise<boolean> => {

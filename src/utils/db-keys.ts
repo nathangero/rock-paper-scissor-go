@@ -5,12 +5,14 @@ export enum DB_DOC_KEYS {
 }
 
 export enum LOBBY_KEYS {
+  HOST = "host",
   ID = "id",
   PLAYERS = "players",
   PLAYERS_NUM = "playersNum",
   ROUNDS = "rounds",
   WINNER = "winner",
   MATCH_NUM = "matchNum", // Keeps track of match count for rematches
+  TYPE = "lobbyType",
 }
 
 export enum USERNAME_KEYS {

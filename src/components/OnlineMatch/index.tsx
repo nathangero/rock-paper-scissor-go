@@ -53,7 +53,7 @@ export default function OnlineMatch({ lobbyType, lobbyInfo }: OnlineMatch) {
     // Set bootstrap modals
     const modalLeave = document.querySelector<HTMLDivElement>(".alert-modal-leave-lobby")?.querySelector<HTMLDivElement>("#alertModal");
     if (modalLeave) setModalLeaveLobby(new Modal(modalLeave));
-  }, [])
+  }, []);
 
 
   /**

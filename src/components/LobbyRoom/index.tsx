@@ -1,15 +1,19 @@
 import "./style.css";
-import { useAppSelector } from "../../redux/hooks";
+import { useAppDispatch, useAppSelector } from "../../redux/hooks";
 import { useEffect, useState } from "react";
-import {  LOBBY_KEYS } from "../../utils/db-keys";
+import { DB_DOC_KEYS, LOBBY_KEYS } from "../../utils/db-keys";
 import { LOBBY_TYPES, ROUTER_LINKS } from "../../utils/enums";
 import { Modal } from "bootstrap";
 import OnlineMatch from "../OnlineMatch";
+import { off, onValue, ref } from "firebase/database";
+import { db } from "../../../firebase";
+import { USER_ACTIONS } from "../../redux/reducer";
 
 export default function LobbyRoom() {
 
   const user = useAppSelector(state => state.user);
   const lobby = useAppSelector(state => state.lobby);
+  const dispatch = useAppDispatch();
 
 
   const [p1, setP1] = useState<string>("");
@@ -26,11 +30,48 @@ export default function LobbyRoom() {
 
     // Get the player names
     const players = lobby[LOBBY_KEYS.PLAYERS];
+    if (Object.keys(players).length === 1) {
+      listenForOpponentJoin(lobby[LOBBY_KEYS.TYPE], lobby[LOBBY_KEYS.ID]);
+    }
     Object.keys(players)?.map((username) => {
       if (username === user.username) setP1("You");
       else setP2(username);
     });
-  }, []) 
+  }, [])
+
+
+  const listenForOpponentJoin = async (lobbyType: LOBBY_TYPES, lobbyId: string) => {
+    try {
+      // console.log("@listenForOpponentJoin");
+      const dbRef = `${DB_DOC_KEYS.LOBBIES}/${lobbyType}/${lobbyId}/${LOBBY_KEYS.PLAYERS}`;
+      const opponentRef = ref(db, dbRef);
+
+      onValue(opponentRef, async (snapshot) => {
+        const value = snapshot.val();
+        // console.log("value:", value);
+
+        if (value) {
+          // Turn off listener once an opponent has joined.
+          setP2(Object.keys(value)?.filter(player => player != user.username)[0]);
+          off(opponentRef, "value");
+
+          // Update the lobby in the store so OnlineMatch component will update too
+          const updatedPlayers = { ...lobby[LOBBY_KEYS.PLAYERS], value }
+          const updatedLobby = { ...lobby, [LOBBY_KEYS.PLAYERS]: updatedPlayers }
+          dispatch({
+            type: USER_ACTIONS.JOIN_LOBBY,
+            lobby: updatedLobby,
+          });
+        } else {
+          setP2("");
+        }
+      });
+
+    } catch (error) {
+      console.log("Couldn't update user attack");
+      console.error(error);
+    }
+  }
 
 
 
@@ -77,7 +118,7 @@ export default function LobbyRoom() {
         </div>
         <hr />
 
-        <OnlineMatch lobbyType={LOBBY_TYPES.CASUAL} lobbyInfo={lobby}  />
+        <OnlineMatch lobbyType={LOBBY_TYPES.CASUAL} lobbyInfo={lobby} />
       </div>
 
       {alertModalLostConnection()}

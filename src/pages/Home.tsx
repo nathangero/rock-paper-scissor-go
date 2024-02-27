@@ -114,7 +114,7 @@ export default function Home() {
         }
       } else {
         await createLobby(lobbyType);
-        console.log("created lobby");
+        // console.log("created lobby");
       }
 
     } catch (error) {
