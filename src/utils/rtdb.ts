@@ -1,4 +1,4 @@
-import { child, equalTo, get, limitToFirst, orderByChild, push, query, ref, set, update } from "firebase/database"
+import { child, equalTo, get, limitToFirst, orderByChild, push, query, ref, remove, set, update } from "firebase/database"
 import { db } from "../../firebase";
 import { DB_DOC_KEYS, LOBBY_KEYS, USERNAME_KEYS, USER_KEYS } from "./db-keys";
 import {  LOBBY_TYPES } from "./enums";
@@ -173,19 +173,38 @@ export const updateUserAttack = async (lobbyType: LOBBY_TYPES, lobbyId: string, 
   }
 }
 
+/**
+ * Removes the player's attacks from a match's round when a draw happens.
+ * 
+ * @param lobbyType Either "casual" or "ranked"
+ * @param lobbyId ID of the lobby
+ * @param matchCount Match count. E.g. "Match 1", "Match 2"
+ * @param roundCount Round count. E.g. "Round 1", "Round 2"
+ * @param opponent The opponents's attack. Prevents using past opponent's attack
+ */
+export const dbHandleRoundDraw = async (lobbyType: LOBBY_TYPES, lobbyId: string, matchCount: number, roundCount: number, username: string) => {
+  try {
+    const dbRef = `${DB_DOC_KEYS.LOBBIES}/${lobbyType}/${lobbyId}/${LOBBY_KEYS.MATCH_NUM}/${matchCount}/${LOBBY_KEYS.ROUNDS}/${roundCount}/${username}`;
+    console.log("dbRef:", dbRef);
+
+    await remove(ref(db, dbRef));
+  } catch (error) {
+    console.log("Couldn't update user attack");
+    console.error(error);
+    throw error;
+  }
+}
+
 
 export const updateMatchDb = async (lobbyType: LOBBY_TYPES, lobbyId: string, matchCount: number, roundCount: number, roundWinner: object) => {
   try {
     const dbRef = `${DB_DOC_KEYS.LOBBIES}/${lobbyType}/${lobbyId}/${LOBBY_KEYS.MATCH_NUM}/${matchCount}/${LOBBY_KEYS.ROUNDS}/${roundCount}`;
     console.log("dbRef:", dbRef);
-    return;
 
-    await update(ref(db, dbRef), roundWinner)
-    
-    return true;
+    await update(ref(db, dbRef), roundWinner);
   } catch (error) {
     console.log("Couldn't update user attack");
     console.error(error);
-    return false;
+    throw error;
   }
 }

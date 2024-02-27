@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import { ATTACK_TYPES, LOBBY_TYPES, PLAYER_TYPES, ROUND_RESULT, ROUTER_LINKS } from "../../utils/enums";
 import { useAppSelector } from "../../redux/hooks";
 import { DB_DOC_KEYS, LOBBY_KEYS } from "../../utils/db-keys";
-import { updateMatchDb, updateUserAttack } from "../../utils/rtdb";
+import { dbHandleRoundDraw, updateMatchDb, updateUserAttack } from "../../utils/rtdb";
 import { off, onValue, ref } from "firebase/database";
 import { db } from "../../../firebase";
 import AttackSelection from "../AttackSelection";
@@ -34,6 +34,7 @@ export default function OnlineMatch({ lobbyType, lobbyInfo }: OnlineMatch) {
   const [opponentWins, setOpponentWins] = useState<number>(0);
   const [matchDraws, setMatchDraws] = useState<number>(0);
   const [isRoundDraw, setIsRoundDraw] = useState<boolean>(false);
+  const [isResolvingDraw, setIsResolvingDraw] = useState<boolean>(false);
   const [roundWinner, setRoundWinner] = useState<string>("");
   const [matchWinner, setMatchWinner] = useState<string>("");
   const [isRoundFinished, setIsRoundFinished] = useState<boolean>(false);
@@ -45,11 +46,9 @@ export default function OnlineMatch({ lobbyType, lobbyInfo }: OnlineMatch) {
 
   useEffect(() => {
     if (!lobbyInfo) return;
-    console.log("@OnlineMatch useEffect")
 
     setLobbyId(lobbyInfo[LOBBY_KEYS.ID]);
     const players = lobbyInfo[LOBBY_KEYS.PLAYERS];
-    console.log("players:", players);
     setOpponent(Object.keys(players)?.filter(player => player != user.username)[0]);
 
     // Set bootstrap modals
@@ -65,16 +64,12 @@ export default function OnlineMatch({ lobbyType, lobbyInfo }: OnlineMatch) {
    */
   const listenForOpponentAttack = async (userAttack: ATTACK_TYPES) => {
     try {
-      console.log("@listenForOpponentAttack");
-      console.log("opponent:", opponent);
       const dbRef = `${DB_DOC_KEYS.LOBBIES}/${LOBBY_TYPES.CASUAL}/${lobbyId}/${LOBBY_KEYS.MATCH_NUM}/${matchCount}/${LOBBY_KEYS.ROUNDS}/${roundCount}/${opponent}`;
 
       const opponentAttackRef = ref(db, dbRef);
 
       onValue(opponentAttackRef, async (snapshot) => {
         const value = snapshot.val();
-        console.log("@listenForOpponentAttack");
-        console.log("opp attack:", value);
 
         if (value) {
           // Turn off listener once the opponent's attack is received
@@ -84,6 +79,40 @@ export default function OnlineMatch({ lobbyType, lobbyInfo }: OnlineMatch) {
           await updateMatch(roundResult);
         } else {
           setOpponentAttackStr("");
+        }
+      });
+
+    } catch (error) {
+      console.log("Couldn't update user attack");
+      console.error(error);
+    }
+  }
+
+
+  /**
+   * This sets a listener to the match's round count, and waits for both player's attacks to be deleted from the db. 
+   * This makes sure both players don't put attacks ahead of each other in the same round.
+   * 
+   * This is done to prevent race conditions between both players, where if p1 clicks the "Repeat Round" button and selects an attack before p2 clicks their "Repeat Round" button, p1 won't accidentally read in p2's previous attack.
+   */
+  const listenForDrawResolution = async () => {
+    try {
+      const dbRef = `${DB_DOC_KEYS.LOBBIES}/${LOBBY_TYPES.CASUAL}/${lobbyId}/${LOBBY_KEYS.MATCH_NUM}/${matchCount}/${LOBBY_KEYS.ROUNDS}/${roundCount}`;
+
+      const roundRef = ref(db, dbRef);
+
+      onValue(roundRef, async (snapshot) => {
+        const value = snapshot.val();
+
+        if (!value) {
+
+          // Turn off listener once the round has been reset
+          off(roundRef, "value");
+
+          // Set the appropriate flags to false to continue the game
+          setIsResolvingDraw(false);
+          setIsRoundFinished(false);
+          setIsRoundDraw(false);
         }
       });
 
@@ -128,14 +157,13 @@ export default function OnlineMatch({ lobbyType, lobbyInfo }: OnlineMatch) {
     let updatedUserWins = userWins;
     let updatedOpponentWins = opponentWins;
     const updatedRoundProgress = [...roundProgress];
-    const lobbyId = lobbyInfo[LOBBY_KEYS.ID];
 
     // Update the player's win count and update the round progress element
     if (roundResult === ROUND_RESULT.WIN) {
       const roundWinner = {
         [LOBBY_KEYS.WINNER]: user.username
       }
-      await updateMatchDb(LOBBY_TYPES.CASUAL, lobbyId, matchCount, roundCount, roundWinner);
+      await updateMatchDb(lobbyType, lobbyId, matchCount, roundCount, roundWinner);
 
       updatedUserWins++;
       updatedRoundProgress[roundCount - 1] = PLAYER_TYPES.USER;
@@ -147,7 +175,7 @@ export default function OnlineMatch({ lobbyType, lobbyInfo }: OnlineMatch) {
       const roundWinner = {
         [LOBBY_KEYS.WINNER]: opponent
       }
-      await updateMatchDb(LOBBY_TYPES.CASUAL, lobbyId, matchCount, roundCount, roundWinner);
+      await updateMatchDb(lobbyType, lobbyId, matchCount, roundCount, roundWinner);
 
       updatedOpponentWins++;
       updatedRoundProgress[roundCount - 1] = PLAYER_TYPES.OPPONENT;
@@ -174,7 +202,6 @@ export default function OnlineMatch({ lobbyType, lobbyInfo }: OnlineMatch) {
    * @param winnerText What will be displayed to the user when the match ends
    */
   const doCountdown = (winnerText: string) => {
-    // console.log("@doEpicCountdown");
     const countdownInterval = 600;
     const text = ["SCISSORS", "PAPER", "ROCK"];
     let countdown = text.length;
@@ -206,9 +233,10 @@ export default function OnlineMatch({ lobbyType, lobbyInfo }: OnlineMatch) {
     await listenForOpponentAttack(userAttack);
   }
 
-  const onClickRepeatRound = () => {
-    setIsRoundFinished(false);
-    setIsRoundDraw(false);
+  const onClickRepeatRound = async () => {
+    await dbHandleRoundDraw(lobbyType, lobbyId, matchCount, roundCount, user.username);
+    await listenForDrawResolution();
+    setIsResolvingDraw(true);
     setRoundWinner("");
     setUserAttackStr("");
     setOpponentAttackStr("");
@@ -306,11 +334,19 @@ export default function OnlineMatch({ lobbyType, lobbyInfo }: OnlineMatch) {
               <>
                 <h3>{roundWinner}</h3>
                 {isRoundDraw ?
-                  <button className="btn button-positive" onClick={() => onClickRepeatRound()}>Repeat Round</button> :
                   <>
-                    {opponentAttackStr ?
-                      <button className="btn button-positive" onClick={() => onClickNextRound()}>Next Round</button> :
-                      <h3>Waiting for opponent...</h3>
+                    {isResolvingDraw ? <h3>Waiting for opponent...</h3> :
+                      <button className="btn button-positive" onClick={() => onClickRepeatRound()}>Repeat Round</button>
+                    }
+                  </> :
+                  <>
+                    {isResolvingDraw ? <h3>Waiting for opponent...</h3> :
+                      <>
+                        {opponentAttackStr ?
+                          <button className="btn button-positive" onClick={() => onClickNextRound()}>Next Round</button> :
+                          <h3>Waiting for opponent...</h3>
+                        }
+                      </>
                     }
                   </>
                 }

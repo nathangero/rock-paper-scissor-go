@@ -46,20 +46,20 @@ export default function LobbyRoom() {
       const opponentRef = ref(db, dbRef);
 
       onValue(opponentRef, async (snapshot) => {
-        console.log("@listenForOpponentJoin");
+        // console.log("@listenForOpponentJoin");
         const players = snapshot.val();
-        console.log("lobby players:", players);
+        // console.log("lobby players:", players);
 
         // Don't stop listening if only 1 player is in the lobby
         if (Object.keys(players).length < 2) return;
 
         const newOpponent = Object.keys(players)?.filter(player => player != user.username)[0];
         setP2(newOpponent);
-        console.log("found opponent:", newOpponent);
+        // console.log("found opponent:", newOpponent);
 
         // Turn off listener once an opponent has joined.
         off(opponentRef, "value");
-        console.log("stop listening to new opponents")
+        // console.log("stop listening to new opponents");
 
         // Update the lobby in the store so OnlineMatch component will update too
         const updatedLobby = { ...lobby, [LOBBY_KEYS.PLAYERS]: players }
