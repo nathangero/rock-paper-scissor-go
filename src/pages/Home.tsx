@@ -2,7 +2,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Modal } from "bootstrap";
 import { useAppDispatch, useAppSelector } from "../redux/hooks"
 import { LOBBY_TYPES, ROUTER_LINKS } from "../utils/enums";
-import { joinCasualLobby, searchCasualLobbies } from "../utils/rtdb";
+import { dbCreateLobby, joinCasualLobby, searchCasualLobbies } from "../utils/rtdb";
 import LoadingSpinner from "../components/LoadingSpinner";
 import { useEffect, useState } from "react";
 import { LOBBY_KEYS } from "../utils/db-keys";
@@ -63,11 +63,34 @@ export default function Home() {
           type: USER_ACTIONS.JOIN_LOBBY,
           lobby: updatedLobby,
         })
-        navigate(`${ROUTER_LINKS.LOBBY}/${LOBBY_TYPES.CASUAL}`);
+        navigate(`${ROUTER_LINKS.LOBBY}/${lobbyType}`);
       }, 1000);
 
     } else {
-      console.log("Couldn't join the lobby. Could be full");
+      console.log("Couldn't join the lobby. Could be full.");
+      loadingSpinner?.hide();
+    }
+  }
+
+  const createLobby = async (lobbyType: LOBBY_TYPES) => {
+    try {
+      setLoadingText("Creating a lobby...");
+      const userObj = { [user.username]: auth.currentUser?.uid };
+      const newLobby = await dbCreateLobby(lobbyType, userObj);
+      
+      if (newLobby) {
+        setTimeout(() => {
+          loadingSpinner?.hide();
+          dispatch({
+            type: USER_ACTIONS.JOIN_LOBBY,
+            lobby: newLobby,
+          })
+          navigate(`${ROUTER_LINKS.LOBBY}/${lobbyType}`);
+        }, 1000);
+      }
+    } catch (error) {
+      console.log("Couldn't create lobby");
+      console.error(error);
       loadingSpinner?.hide();
     }
   }
@@ -77,15 +100,21 @@ export default function Home() {
   const onClickFindLobby = async (lobbyType: LOBBY_TYPES) => {
     try {
       loadingSpinner?.show();
+      const lobby = await searchCasualLobbies();
 
-      switch (lobbyType) {
-        case LOBBY_TYPES.CASUAL:
-          joinLobby(lobbyType, await searchCasualLobbies());
-          break;
-
-        case LOBBY_TYPES.RANKED:
-          console.log("search for ranked")
-          break;
+      if (lobby) {
+        switch (lobbyType) {
+          case LOBBY_TYPES.CASUAL:
+            joinLobby(lobbyType, lobby);
+            break;
+  
+          case LOBBY_TYPES.RANKED:
+            console.log("search for ranked")
+            break;
+        }
+      } else {
+        await createLobby(lobbyType);
+        console.log("created lobby");
       }
 
     } catch (error) {

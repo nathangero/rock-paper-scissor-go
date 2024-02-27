@@ -1,7 +1,7 @@
-import { child, equalTo, get, limitToFirst, onValue, orderByChild, query, ref, update } from "firebase/database"
+import { child, equalTo, get, limitToFirst, orderByChild, push, query, ref, set, update } from "firebase/database"
 import { db } from "../../firebase";
 import { DB_DOC_KEYS, LOBBY_KEYS, USERNAME_KEYS, USER_KEYS } from "./db-keys";
-import { ATTACK_TYPES } from "./enums";
+import {  LOBBY_TYPES } from "./enums";
 
 
 /**
@@ -86,15 +86,41 @@ export const doesUsernameExist = async (username: string): Promise<boolean> => {
 }
 
 
-export const searchCasualLobbies = async (): Promise<object> => {
+export const dbCreateLobby = async (lobbyType: LOBBY_TYPES, user: object): Promise<LobbyInfo | null> => {
   try {
-    const dbRef = `${DB_DOC_KEYS.LOBBIES}/${DB_DOC_KEYS.CASUAL}`;
+    console.log("@dbCreateLobby");
+    const dbRef = `${DB_DOC_KEYS.LOBBIES}/${lobbyType}`;
+    const newLobbyId = push(child(ref(db), dbRef)).key; // Create a new lobby id
+    
+    const lobbyRef = `${dbRef}/${newLobbyId}`;
+
+    const newLobby = {
+      [LOBBY_KEYS.ID]: newLobbyId,
+      [LOBBY_KEYS.PLAYERS]: user,
+      [LOBBY_KEYS.PLAYERS_NUM]: 1, // The player creating this lobby
+    };
+    
+    await set(ref(db, lobbyRef), newLobby);
+    console.log("successfully created a lobby!");
+
+    return newLobby;
+  } catch (error) {
+    console.log("Couldn't create casual lobbies");
+    console.error(error);
+    return null;
+  }
+}
+
+
+export const searchCasualLobbies = async (): Promise<object | null> => {
+  try {
+    const dbRef = `${DB_DOC_KEYS.LOBBIES}/${LOBBY_TYPES.CASUAL}`;
 
     const snapshot = await get(query(ref(db, dbRef), orderByChild(LOBBY_KEYS.PLAYERS_NUM), equalTo(1), limitToFirst(1)));
     const value = snapshot.val();
     // console.log("value:", value);
 
-    if (!value) return {};
+    if (!value) return null;
 
     const id = Object.keys(value)[0];
     const lobby = Object.values<LobbyInfo>(value)[0];
@@ -105,14 +131,14 @@ export const searchCasualLobbies = async (): Promise<object> => {
   } catch (error) {
     console.log("Couldn't search for casual lobbies");
     console.error(error);
-    return {};
+    return null;
   }
 }
 
 export const joinCasualLobby = async (lobbyId: string, lobbyInfo: LobbyInfo): Promise<boolean> => {
   try {
     // console.log("@joinCasualLobby")
-    const dbRef = `${DB_DOC_KEYS.LOBBIES}/${DB_DOC_KEYS.CASUAL}/${lobbyId}`;
+    const dbRef = `${DB_DOC_KEYS.LOBBIES}/${LOBBY_TYPES.CASUAL}/${lobbyId}`;
     // console.log("lobbyId:", lobbyId);
     // console.log("dbRef:", dbRef);
     return true; // DEBUG
@@ -126,9 +152,9 @@ export const joinCasualLobby = async (lobbyId: string, lobbyInfo: LobbyInfo): Pr
   }
 }
 
-export const updateUserAttack = async (lobbyType: DB_DOC_KEYS, lobbyId: string, matchCount: number, roundCount: number, userAttack: object): Promise<boolean> => {
+export const updateUserAttack = async (lobbyType: LOBBY_TYPES, lobbyId: string, matchCount: number, roundCount: number, userAttack: object): Promise<boolean> => {
   try {
-    const dbRef = `${DB_DOC_KEYS.LOBBIES}/${lobbyType}/${lobbyId}/${LOBBY_KEYS.MATCH}/${matchCount}/${LOBBY_KEYS.ROUNDS}/${roundCount}`;
+    const dbRef = `${DB_DOC_KEYS.LOBBIES}/${lobbyType}/${lobbyId}/${LOBBY_KEYS.MATCH_NUM}/${matchCount}/${LOBBY_KEYS.ROUNDS}/${roundCount}`;
     // console.log("dbRef:", dbRef);
 
     await update(ref(db, dbRef), userAttack)
@@ -142,9 +168,9 @@ export const updateUserAttack = async (lobbyType: DB_DOC_KEYS, lobbyId: string, 
 }
 
 
-export const updateMatchDb = async (lobbyType: DB_DOC_KEYS, lobbyId: string, matchCount: number, roundCount: number, roundWinner: object) => {
+export const updateMatchDb = async (lobbyType: LOBBY_TYPES, lobbyId: string, matchCount: number, roundCount: number, roundWinner: object) => {
   try {
-    const dbRef = `${DB_DOC_KEYS.LOBBIES}/${lobbyType}/${lobbyId}/${LOBBY_KEYS.MATCH}/${matchCount}/${LOBBY_KEYS.ROUNDS}/${roundCount}`;
+    const dbRef = `${DB_DOC_KEYS.LOBBIES}/${lobbyType}/${lobbyId}/${LOBBY_KEYS.MATCH_NUM}/${matchCount}/${LOBBY_KEYS.ROUNDS}/${roundCount}`;
     console.log("dbRef:", dbRef);
     return;
 

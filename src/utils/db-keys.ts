@@ -1,7 +1,5 @@
 export enum DB_DOC_KEYS {
-  CASUAL = "casual",
   LOBBIES = "lobbies",
-  RANKED = "ranked",
   USERS = "users",
   USERNAMES = "usernames",
 }
@@ -12,7 +10,7 @@ export enum LOBBY_KEYS {
   PLAYERS_NUM = "playersNum",
   ROUNDS = "rounds",
   WINNER = "winner",
-  MATCH = "matchNum", // Keeps track of match count for rematches
+  MATCH_NUM = "matchNum", // Keeps track of match count for rematches
 }
 
 export enum USERNAME_KEYS {

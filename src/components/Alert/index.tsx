@@ -34,7 +34,7 @@ export default function Alert({ centered = true, title, body, customButton }: Al
             <div className="modal-body text-end">
               {customButton ?
                 renderCustomButton() :
-                <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">"Got it"</button>
+                <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Got it</button>
               }
             </div>
           </div>

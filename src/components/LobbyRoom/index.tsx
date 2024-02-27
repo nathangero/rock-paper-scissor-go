@@ -1,10 +1,9 @@
 import "./style.css";
 import { useAppSelector } from "../../redux/hooks";
 import { useEffect, useState } from "react";
-import { DB_DOC_KEYS, LOBBY_KEYS } from "../../utils/db-keys";
-import { ATTACK_TYPES, PLAYER_TYPES, ROUTER_LINKS } from "../../utils/enums";
+import {  LOBBY_KEYS } from "../../utils/db-keys";
+import { LOBBY_TYPES, ROUTER_LINKS } from "../../utils/enums";
 import { Modal } from "bootstrap";
-import { updateUserAttack } from "../../utils/rtdb";
 import OnlineMatch from "../OnlineMatch";
 
 export default function LobbyRoom() {
@@ -78,7 +77,7 @@ export default function LobbyRoom() {
         </div>
         <hr />
 
-        <OnlineMatch lobbyType={DB_DOC_KEYS.CASUAL} lobbyInfo={lobby}  />
+        <OnlineMatch lobbyType={LOBBY_TYPES.CASUAL} lobbyInfo={lobby}  />
       </div>
 
       {alertModalLostConnection()}

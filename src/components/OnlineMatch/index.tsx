@@ -1,7 +1,7 @@
 import "./style.css";
 import "./swing-animation.css";
 import React, { useEffect, useState } from "react";
-import { ATTACK_TYPES, PLAYER_TYPES, ROUND_RESULT, ROUTER_LINKS } from "../../utils/enums";
+import { ATTACK_TYPES, LOBBY_TYPES, PLAYER_TYPES, ROUND_RESULT, ROUTER_LINKS } from "../../utils/enums";
 import { useAppSelector } from "../../redux/hooks";
 import { DB_DOC_KEYS, LOBBY_KEYS } from "../../utils/db-keys";
 import { updateMatchDb, updateUserAttack } from "../../utils/rtdb";
@@ -63,7 +63,7 @@ export default function OnlineMatch({ lobbyType, lobbyInfo }: OnlineMatch) {
    */
   const listenForOpponentAttack = async (userAttack: ATTACK_TYPES) => {
     try {
-      const dbRef = `${DB_DOC_KEYS.LOBBIES}/${DB_DOC_KEYS.CASUAL}/${lobbyId}/${LOBBY_KEYS.MATCH}/${matchCount}/${LOBBY_KEYS.ROUNDS}/${roundCount}/${opponent}`;
+      const dbRef = `${DB_DOC_KEYS.LOBBIES}/${LOBBY_TYPES.CASUAL}/${lobbyId}/${LOBBY_KEYS.MATCH_NUM}/${matchCount}/${LOBBY_KEYS.ROUNDS}/${roundCount}/${opponent}`;
 
       const opponentAttackRef = ref(db, dbRef);
 
@@ -129,7 +129,7 @@ export default function OnlineMatch({ lobbyType, lobbyInfo }: OnlineMatch) {
       const roundWinner = {
         [LOBBY_KEYS.WINNER]: user.username
       }
-      await updateMatchDb(DB_DOC_KEYS.CASUAL, lobbyId, matchCount, roundCount, roundWinner);
+      await updateMatchDb(LOBBY_TYPES.CASUAL, lobbyId, matchCount, roundCount, roundWinner);
 
       updatedUserWins++;
       updatedRoundProgress[roundCount - 1] = PLAYER_TYPES.USER;
@@ -141,7 +141,7 @@ export default function OnlineMatch({ lobbyType, lobbyInfo }: OnlineMatch) {
       const roundWinner = {
         [LOBBY_KEYS.WINNER]: opponent
       }
-      await updateMatchDb(DB_DOC_KEYS.CASUAL, lobbyId, matchCount, roundCount, roundWinner);
+      await updateMatchDb(LOBBY_TYPES.CASUAL, lobbyId, matchCount, roundCount, roundWinner);
 
       updatedOpponentWins++;
       updatedRoundProgress[roundCount - 1] = PLAYER_TYPES.OPPONENT;
@@ -387,6 +387,6 @@ export default function OnlineMatch({ lobbyType, lobbyInfo }: OnlineMatch) {
 }
 
 interface OnlineMatch {
-  lobbyType: DB_DOC_KEYS;
+  lobbyType: LOBBY_TYPES;
   lobbyInfo: LobbyInfo;
 }
