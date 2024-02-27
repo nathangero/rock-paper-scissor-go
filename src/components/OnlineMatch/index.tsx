@@ -69,6 +69,8 @@ export default function OnlineMatch({ lobbyType, lobbyInfo }: OnlineMatch) {
 
       onValue(opponentAttackRef, async (snapshot) => {
         const value = snapshot.val();
+        console.log("@listenForOpponentAttack");
+        console.log("opp attack:", value);
 
         if (value) {
           // Turn off listener once the opponent's attack is received

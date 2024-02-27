@@ -42,18 +42,24 @@ export default function LobbyRoom() {
 
   const listenForOpponentJoin = async (lobbyType: LOBBY_TYPES, lobbyId: string) => {
     try {
-      // console.log("@listenForOpponentJoin");
       const dbRef = `${DB_DOC_KEYS.LOBBIES}/${lobbyType}/${lobbyId}/${LOBBY_KEYS.PLAYERS}`;
       const opponentRef = ref(db, dbRef);
 
       onValue(opponentRef, async (snapshot) => {
+        console.log("@listenForOpponentJoin");
         const value = snapshot.val();
-        // console.log("value:", value);
+        console.log("new opponent:", value);
 
         if (value) {
+          // Don't stop listening if only 1 player is in the lobby
+          if (Object.keys(value).length < 2) return;
+
+          const newOpponent = Object.keys(value)?.filter(player => player != user.username)[0];
+          setP2(newOpponent);
+          
           // Turn off listener once an opponent has joined.
-          setP2(Object.keys(value)?.filter(player => player != user.username)[0]);
           off(opponentRef, "value");
+          console.log("stop listening to new opponents")
 
           // Update the lobby in the store so OnlineMatch component will update too
           const updatedPlayers = { ...lobby[LOBBY_KEYS.PLAYERS], value }
@@ -118,7 +124,13 @@ export default function LobbyRoom() {
         </div>
         <hr />
 
-        <OnlineMatch lobbyType={LOBBY_TYPES.CASUAL} lobbyInfo={lobby} />
+        {/* TODO: If no opponent, don't show the OnlineMatch component yet. Show some "waiting for an opponent..." text */}
+
+        {p2 ?
+          <OnlineMatch lobbyType={LOBBY_TYPES.CASUAL} lobbyInfo={lobby} /> :
+          <h4>Waiting for an opponent...</h4>
+        }
+
       </div>
 
       {alertModalLostConnection()}
