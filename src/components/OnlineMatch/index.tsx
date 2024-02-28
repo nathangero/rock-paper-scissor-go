@@ -124,7 +124,7 @@ export default function OnlineMatch({ lobbyType, lobbyInfo }: OnlineMatch) {
           setIsResolvingDraw(false);
           setIsRoundFinished(false);
           setIsRoundDraw(false);
-          // setIsTimerActive(false);
+          setIsTimerActive(true);
         }
       });
 
@@ -287,6 +287,7 @@ export default function OnlineMatch({ lobbyType, lobbyInfo }: OnlineMatch) {
     setOpponentAttackStr("");
     setRoundWinner("");
     setTimeLimit(roundTimeLimit);
+    setIsTimerActive(true);
   }
 
   const onClickLeave = () => {

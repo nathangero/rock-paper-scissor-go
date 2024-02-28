@@ -213,7 +213,7 @@ export const updateUserAttack = async (lobbyType: LOBBY_TYPES, lobbyId: string, 
 export const dbHandleRoundDraw = async (lobbyType: LOBBY_TYPES, lobbyId: string, matchCount: number, roundCount: number, username: string) => {
   try {
     const dbRef = `${DB_DOC_KEYS.LOBBIES}/${lobbyType}/${lobbyId}/${LOBBY_KEYS.MATCH_NUM}/${matchCount}/${LOBBY_KEYS.ROUNDS}/${roundCount}/${username}`;
-    console.log("dbRef:", dbRef);
+    // console.log("dbRef:", dbRef);
 
     await remove(ref(db, dbRef));
   } catch (error) {
@@ -227,7 +227,7 @@ export const dbHandleRoundDraw = async (lobbyType: LOBBY_TYPES, lobbyId: string,
 export const updateMatchDb = async (lobbyType: LOBBY_TYPES, lobbyId: string, matchCount: number, roundCount: number, roundWinner: object) => {
   try {
     const dbRef = `${DB_DOC_KEYS.LOBBIES}/${lobbyType}/${lobbyId}/${LOBBY_KEYS.MATCH_NUM}/${matchCount}/${LOBBY_KEYS.ROUNDS}/${roundCount}`;
-    console.log("dbRef:", dbRef);
+    // console.log("dbRef:", dbRef);
 
     await update(ref(db, dbRef), roundWinner);
   } catch (error) {
