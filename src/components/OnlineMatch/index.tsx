@@ -12,7 +12,7 @@ import { Modal } from "bootstrap";
 import Alert from "../Alert";
 import ShotClock from "../ShotClock";
 
-export default function OnlineMatch({ lobbyType, lobbyInfo }: OnlineMatch) {
+export default function OnlineMatch({ lobbyType, lobbyInfo, isMatchFinished, setIsMatchFinished }: OnlineMatch) {
   const roundCountMax = 5;
   const roundMajority = Math.ceil(roundCountMax / 2); // Amount of rounds needed to win
 
@@ -41,7 +41,6 @@ export default function OnlineMatch({ lobbyType, lobbyInfo }: OnlineMatch) {
   const [roundWinner, setRoundWinner] = useState<string>("");
   const [matchWinner, setMatchWinner] = useState<string>("");
   const [isRoundFinished, setIsRoundFinished] = useState<boolean>(false);
-  const [isMatchFinished, setIsMatchFinished] = useState<boolean>(false);
 
   const [isShowingCountdown, setIsShowingCountdown] = useState<boolean>(false);
   const [coundownText, setCountdownText] = useState<string>("");
@@ -59,10 +58,6 @@ export default function OnlineMatch({ lobbyType, lobbyInfo }: OnlineMatch) {
     if (modalLeave) setModalLeaveLobby(new Modal(modalLeave));
   }, []);
 
-  useEffect(() => {
-    console.log("is timer active?", isTimerActive);
-    // if (!isTimerActive) setIsTimerActive(true);
-  }, [isTimerActive])
 
 
   /**
@@ -113,7 +108,7 @@ export default function OnlineMatch({ lobbyType, lobbyInfo }: OnlineMatch) {
         const value = snapshot.val();
 
         if (!value) {
-          console.log("draw resolved");
+          // console.log("draw resolved");
           // Turn off listener once the round has been reset
           off(roundRef, "value");
 
@@ -226,11 +221,11 @@ export default function OnlineMatch({ lobbyType, lobbyInfo }: OnlineMatch) {
     let countdown = text.length;
 
     setIsShowingCountdown(true);
+    setIsMatchFinished(true);
     setIsBetweenRounds(false);
     setIsTimerActive(false);
     const timer = setInterval(() => {
       setCountdownText(text[--countdown]);
-      setIsMatchFinished(true);
       if (countdown < 0) {
         clearInterval(timer);
         setIsShowingCountdown(false);
@@ -409,7 +404,7 @@ export default function OnlineMatch({ lobbyType, lobbyInfo }: OnlineMatch) {
                   </>
                 }
               </> :
-              <AttackSelection isFinished={isMatchFinished} onClickAttack={onClickAttack} />
+              <AttackSelection onClickAttack={onClickAttack} />
             }
           </>
         }
@@ -489,4 +484,6 @@ export default function OnlineMatch({ lobbyType, lobbyInfo }: OnlineMatch) {
 interface OnlineMatch {
   lobbyType: LOBBY_TYPES;
   lobbyInfo: LobbyInfo;
+  isMatchFinished: boolean;
+  setIsMatchFinished: React.Dispatch<React.SetStateAction<boolean>>;
 }

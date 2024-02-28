@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 
 export default function ShotClock({ isActive, isBetweenRounds, onTimeout }: ShotClock) {
-  const roundFullTime = 15; // 15 seconds
-  const roundBetweenTime = 7; // The countdown between rounds
+  const roundFullTime = 10; // 15 seconds
+  const roundBetweenTime = 6; // The countdown between rounds
 
   const [seconds, setSeconds] = useState<number>(roundFullTime);
 
@@ -10,7 +10,7 @@ export default function ShotClock({ isActive, isBetweenRounds, onTimeout }: Shot
     let timer: NodeJS.Timeout;
 
     if (!isActive) {
-      console.log("timer stopped, starting again with", isBetweenRounds ? roundBetweenTime : roundFullTime, "seconds")
+      // console.log("timer stopped, starting again with", isBetweenRounds ? roundBetweenTime : roundFullTime, "seconds")
       setSeconds(isBetweenRounds ? roundBetweenTime : roundFullTime); // Reset the time limit when timer is stopped
       return;
     }
@@ -20,7 +20,7 @@ export default function ShotClock({ isActive, isBetweenRounds, onTimeout }: Shot
         setSeconds(seconds - 1);
       }, 1000);
     } else if (seconds === 0) {
-      console.log("time over!");
+      // console.log("time over!");
       onTimeout();
     }
 

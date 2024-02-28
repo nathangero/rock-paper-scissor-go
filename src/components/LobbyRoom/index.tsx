@@ -25,6 +25,8 @@ export default function LobbyRoom() {
   const [p1, setP1] = useState<string>("");
   const [p2, setP2] = useState<string>("");
 
+  const [isMatchFinished, setIsMatchFinished] = useState<boolean>(false);
+
   useEffect(() => {
     if (!lobby) {
       handleNoLobbyInfo();
@@ -58,7 +60,7 @@ export default function LobbyRoom() {
   const handleNoLobbyInfo = async () => {
     try {
       const storage = localStorage.getItem(LOCAL_STORAGE_KEYS.LOBBY);
-      if (!storage) return; 
+      if (!storage) return;
 
       const lobbyStorage = JSON.parse(storage);
       await dbLeaveLobby(lobbyStorage[LOBBY_KEYS.TYPE], lobbyStorage[LOBBY_KEYS.ID], user.username);
@@ -186,12 +188,14 @@ export default function LobbyRoom() {
         <hr />
 
         {p2 ?
-          <OnlineMatch lobbyType={LOBBY_TYPES.CASUAL} lobbyInfo={lobby} /> :
+          <OnlineMatch lobbyType={LOBBY_TYPES.CASUAL} lobbyInfo={lobby} isMatchFinished={isMatchFinished} setIsMatchFinished={setIsMatchFinished} /> :
           <h4>Waiting for an opponent...</h4>
         }
 
         <br /><br /><br />
-        <button className="btn button-negative" onClick={() => onClickLeaveMatch()}>{p2 ? "Forfeit Match" : "Leave Match"}</button>
+        {isMatchFinished ? null :
+          <button className="btn button-negative" onClick={() => onClickLeaveMatch()}>{p2 ? "Forfeit Match" : "Leave Match"}</button>
+        }
 
       </div>
 
