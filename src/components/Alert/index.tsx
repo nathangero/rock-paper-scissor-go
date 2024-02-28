@@ -48,7 +48,7 @@ interface AlertProps {
   centered?: boolean;
   title: string;
   body: string;
-  customButton?: CustomButton;
+  customButton?: CustomButton | null;
 }
 
 export interface CustomButton {
