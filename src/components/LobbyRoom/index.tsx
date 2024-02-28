@@ -105,6 +105,7 @@ export default function LobbyRoom() {
           setAlertTitle("Opponent has left the match");
           setAlertBody("Waiting for another opponent to join");
           setAlertButton(null);
+          setIsMatchFinished(false);
         }
 
         // Update the lobby in the store so OnlineMatch component will update too
