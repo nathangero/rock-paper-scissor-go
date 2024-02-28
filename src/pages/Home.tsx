@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { Modal } from "bootstrap";
 import { useAppDispatch, useAppSelector } from "../redux/hooks"
-import { LOBBY_TYPES, ROUTER_LINKS } from "../utils/enums";
+import { LOBBY_TYPES, LOCAL_STORAGE_KEYS, ROUTER_LINKS } from "../utils/enums";
 import { dbCreateLobby, joinCasualLobby, searchCasualLobbies } from "../utils/rtdb";
 import LoadingSpinner from "../components/LoadingSpinner";
 import { useEffect, useState } from "react";
@@ -63,7 +63,14 @@ export default function Home() {
         dispatch({
           type: USER_ACTIONS.JOIN_LOBBY,
           lobby: updatedLobby,
-        })
+        });
+
+        const lobbyStorage = {
+          [LOBBY_KEYS.ID]: lobbyId,
+          [LOBBY_KEYS.TYPE]: lobbyType,
+        }
+
+        localStorage.setItem(LOCAL_STORAGE_KEYS.LOBBY, JSON.stringify(lobbyStorage));
         navigate(`${ROUTER_LINKS.LOBBY}/${lobbyType}`);
       }, 1000);
 
@@ -86,6 +93,13 @@ export default function Home() {
             type: USER_ACTIONS.JOIN_LOBBY,
             lobby: newLobby,
           })
+
+          const lobbyStorage = {
+            [LOBBY_KEYS.ID]: newLobby[LOBBY_KEYS.ID],
+            [LOBBY_KEYS.TYPE]: lobbyType,
+          }
+
+          localStorage.setItem(LOCAL_STORAGE_KEYS.LOBBY, JSON.stringify(lobbyStorage));
           navigate(`${ROUTER_LINKS.LOBBY}/${lobbyType}`);
         }, 1000);
       }
@@ -108,7 +122,7 @@ export default function Home() {
           case LOBBY_TYPES.CASUAL:
             joinLobby(lobbyType, lobby);
             break;
-  
+
           case LOBBY_TYPES.RANKED:
             console.log("search for ranked")
             break;

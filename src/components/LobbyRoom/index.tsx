@@ -2,7 +2,7 @@ import "./style.css";
 import { useAppDispatch, useAppSelector } from "../../redux/hooks";
 import { useEffect, useState } from "react";
 import { DB_DOC_KEYS, LOBBY_KEYS } from "../../utils/db-keys";
-import { LOBBY_TYPES, ROUTER_LINKS } from "../../utils/enums";
+import { LOBBY_TYPES, LOCAL_STORAGE_KEYS, ROUTER_LINKS } from "../../utils/enums";
 import { Modal } from "bootstrap";
 import OnlineMatch from "../OnlineMatch";
 import { onValue, ref } from "firebase/database";
@@ -27,6 +27,7 @@ export default function LobbyRoom() {
 
   useEffect(() => {
     if (!lobby) {
+      handleNoLobbyInfo();
       // Show an alert saying the connection was lost
       const modalError = document.querySelector<HTMLDivElement>(".alert-modal-lost-connection")?.querySelector<HTMLDivElement>("#alertLostConnection");
       if (modalError) new Modal(modalError).show();
@@ -54,6 +55,20 @@ export default function LobbyRoom() {
   }, [alertTitle])
 
 
+  const handleNoLobbyInfo = async () => {
+    try {
+      const storage = localStorage.getItem(LOCAL_STORAGE_KEYS.LOBBY);
+      if (!storage) return; 
+
+      const lobbyStorage = JSON.parse(storage);
+      await dbLeaveLobby(lobbyStorage[LOBBY_KEYS.TYPE], lobbyStorage[LOBBY_KEYS.ID], user.username);
+    } catch (error) {
+      console.log("Couldn't leave match");
+      console.error(error);
+    }
+  }
+
+
   const listenForOpponentStatus = (lobbyType: LOBBY_TYPES, lobbyId: string) => {
     try {
       const dbRef = `${DB_DOC_KEYS.LOBBIES}/${lobbyType}/${lobbyId}/${LOBBY_KEYS.PLAYERS}`;
@@ -78,7 +93,7 @@ export default function LobbyRoom() {
           // If there's a new opponent, set their name
           setP2(newOpponent);
 
-        } else if (!newOpponent && p2Name) {          
+        } else if (!newOpponent && p2Name) {
           // If the opponent was in the lobby but then left, then notify the user
           setP2("");
           setAlertTitle("Opponent has left the match");
@@ -93,7 +108,6 @@ export default function LobbyRoom() {
           type: USER_ACTIONS.JOIN_LOBBY,
           lobby: updatedLobby,
         });
-
       });
 
     } catch (error) {

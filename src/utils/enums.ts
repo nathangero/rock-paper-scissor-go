@@ -10,6 +10,10 @@ export enum LOBBY_TYPES {
   RANKED = "ranked",
 }
 
+export enum LOCAL_STORAGE_KEYS {
+  LOBBY = "rpsgo-lobby",
+}
+
 export enum PLAYER_TYPES {
   USER,
   OPPONENT,

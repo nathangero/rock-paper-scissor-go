@@ -178,7 +178,7 @@ export const dbLeaveLobby = async (lobbyType: LOBBY_TYPES.CASUAL, lobbyId: strin
     }
 
   } catch (error) {
-    console.log("Couldn't update user attack");
+    console.log("Couldn't leave lobby");
     console.error(error);
   }
 }
