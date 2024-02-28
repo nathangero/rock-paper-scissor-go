@@ -68,6 +68,8 @@ export default function LobbyRoom() {
         const players = snapshot.val();
         // console.log("lobby players:", players);
 
+        if (!players) return;
+
         // Don't stop listening if only 1 player is in the lobby
         if (Object.keys(players).length < 2) return;
 
@@ -98,12 +100,8 @@ export default function LobbyRoom() {
 
   const onClickLeaveMatch = async () => {
     try {
-      console.log("@onClickLeaveMatch");
-      console.log("lobby:", lobby)
-      const playerNum = Object.keys(players);
-      console.log("players:", players);
       await dbLeaveLobby(lobby[LOBBY_KEYS.TYPE], lobby[LOBBY_KEYS.ID], user.username);
-      // window.location.href = ROUTER_LINKS.HOME;
+      window.location.href = ROUTER_LINKS.HOME;
     } catch (error) {
       console.log("Couldn't leave match");
       console.error(error);

@@ -163,12 +163,20 @@ export const dbLeaveLobby = async (lobbyType: LOBBY_TYPES.CASUAL, lobbyId: strin
     // console.log("dbRef:", dbRef);
 
     await remove(ref(db, dbRef));
-    return;
-    // TODO Find out a way to update "playerNum" in database. Maybe pull the current number and check if lobby should be closed or just subtract by 1?
+    
+    // pull the current number and check if lobby should be closed or just subtract 1 "playerNum"
+    const lobbyRef = `${DB_DOC_KEYS.LOBBIES}/${lobbyType}/${lobbyId}`;
+    const snapshot = await get(child(ref(db), lobbyRef));
+    const numPlayers = snapshot.val()[LOBBY_KEYS.PLAYERS_NUM];
 
-    // Update the number of players
-    const numPlayerRef = `${DB_DOC_KEYS.LOBBIES}/${lobbyType}/${lobbyId}`;
-    // await update(ref(db, numPlayerRef), );
+    if (numPlayers - 1 < 1) {
+      // remove the whole lobby
+      await remove(ref(db, lobbyRef));
+    } else {
+      // Update the number of players
+      await update(ref(db, lobbyRef), { [LOBBY_KEYS.PLAYERS_NUM]: numPlayers - 1 });
+    }
+
   } catch (error) {
     console.log("Couldn't update user attack");
     console.error(error);
