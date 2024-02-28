@@ -62,6 +62,9 @@ export default function LobbyRoom() {
 
       const lobbyStorage = JSON.parse(storage);
       await dbLeaveLobby(lobbyStorage[LOBBY_KEYS.TYPE], lobbyStorage[LOBBY_KEYS.ID], user.username);
+
+      // Remove the local storage item after the user leaves the lobby
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.LOBBY);
     } catch (error) {
       console.log("Couldn't leave match");
       console.error(error);
@@ -126,6 +129,9 @@ export default function LobbyRoom() {
   const onConfirmLeaveMatch = async () => {
     try {
       await dbLeaveLobby(lobby[LOBBY_KEYS.TYPE], lobby[LOBBY_KEYS.ID], user.username);
+      
+      // Remove the local storage item after the user leaves the lobby
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.LOBBY);
       window.location.href = ROUTER_LINKS.HOME;
     } catch (error) {
       console.log("Couldn't leave match");
