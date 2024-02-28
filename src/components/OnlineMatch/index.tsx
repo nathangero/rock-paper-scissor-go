@@ -15,9 +15,6 @@ import ShotClock from "../ShotClock";
 export default function OnlineMatch({ lobbyType, lobbyInfo }: OnlineMatch) {
   const roundCountMax = 5;
   const roundMajority = Math.ceil(roundCountMax / 2); // Amount of rounds needed to win
-  const roundTimeLimit = 15; // 15 seconds
-  const roundBetweenTimeLimit = 7; // The countdown between rounds
-
 
   const user = useAppSelector(state => state.user);
 
@@ -31,7 +28,7 @@ export default function OnlineMatch({ lobbyType, lobbyInfo }: OnlineMatch) {
   const [userAttackStr, setUserAttackStr] = useState<string>("");
   const [opponentAttackStr, setOpponentAttackStr] = useState<string>("");
   const [isTimerActive, setIsTimerActive] = useState<boolean>(true);
-  const [timeLimit, setTimeLimit] = useState<number>(roundTimeLimit);
+  const [isBetweenRounds, setIsBetweenRounds] = useState<boolean>(false);
 
   const [matchCount, setMatchCount] = useState<number>(0);
   const [roundCount, setRoundCount] = useState<number>(1);
@@ -116,7 +113,7 @@ export default function OnlineMatch({ lobbyType, lobbyInfo }: OnlineMatch) {
         const value = snapshot.val();
 
         if (!value) {
-
+          console.log("draw resolved");
           // Turn off listener once the round has been reset
           off(roundRef, "value");
 
@@ -124,7 +121,12 @@ export default function OnlineMatch({ lobbyType, lobbyInfo }: OnlineMatch) {
           setIsResolvingDraw(false);
           setIsRoundFinished(false);
           setIsRoundDraw(false);
-          setIsTimerActive(true);
+
+          setIsBetweenRounds(false);
+          setIsTimerActive(false);
+          setTimeout(() => {
+            setIsTimerActive(true);
+          }, 500);
         }
       });
 
@@ -158,15 +160,14 @@ export default function OnlineMatch({ lobbyType, lobbyInfo }: OnlineMatch) {
   const updateMatch = async (roundResult: ROUND_RESULT) => {
     // console.log("@updateMatch");
 
-    setTimeLimit(roundBetweenTimeLimit);
-
+    setIsBetweenRounds(true);
     if (roundResult === ROUND_RESULT.DRAW) {
       setMatchDraws(matchDraws + 1);
+      setIsTimerActive(false);
+      setIsTimerActive(true)
+      // setTimeout(() => setIsTimerActive(true), 500);
       setIsRoundDraw(true);
       setRoundWinner(`Draw! Repeat round ${roundCount}`);
-      // setIsTimerActive(false);
-      // setIsTimerActive(true);
-      // setTimeout(() => { setIsTimerActive(true) }, 500);
       return;
     }
 
@@ -212,8 +213,7 @@ export default function OnlineMatch({ lobbyType, lobbyInfo }: OnlineMatch) {
 
     setUserWins(updatedUserWins);
     setOpponentWins(updatedOpponentWins);
-
-    console.log("setting timelimit to", roundBetweenTimeLimit);
+    setIsTimerActive(true);
   }
 
   /**
@@ -226,6 +226,8 @@ export default function OnlineMatch({ lobbyType, lobbyInfo }: OnlineMatch) {
     let countdown = text.length;
 
     setIsShowingCountdown(true);
+    setIsBetweenRounds(false);
+    setIsTimerActive(false);
     const timer = setInterval(() => {
       setCountdownText(text[--countdown]);
       setIsMatchFinished(true);
@@ -257,6 +259,7 @@ export default function OnlineMatch({ lobbyType, lobbyInfo }: OnlineMatch) {
 
   const onClickAttack = async (userAttack: ATTACK_TYPES) => {
     setUserAttackStr(userAttack);
+    setIsBetweenRounds(true);
     setIsTimerActive(false); // Stop the timer
 
     const userAttackObj = {
@@ -276,7 +279,10 @@ export default function OnlineMatch({ lobbyType, lobbyInfo }: OnlineMatch) {
     setUserAttackStr("");
     setOpponentAttackStr("");
     setRoundWinner("");
-    setTimeLimit(roundTimeLimit);
+    setIsBetweenRounds(false);
+    setIsTimerActive(false);
+    // setIsTimerActive(true);
+    setTimeout(() => setIsTimerActive(false), 500);
   }
 
 
@@ -286,8 +292,10 @@ export default function OnlineMatch({ lobbyType, lobbyInfo }: OnlineMatch) {
     setUserAttackStr("");
     setOpponentAttackStr("");
     setRoundWinner("");
-    setTimeLimit(roundTimeLimit);
-    setIsTimerActive(true);
+    setIsBetweenRounds(false);
+    setIsTimerActive(false);
+    // setIsTimerActive(true)
+    setTimeout(() => setIsTimerActive(true), 500);
   }
 
   const onClickLeave = () => {
@@ -326,6 +334,7 @@ export default function OnlineMatch({ lobbyType, lobbyInfo }: OnlineMatch) {
     setIsMatchFinished(false);
     setIsShowingCountdown(false);
     setCountdownText("");
+    setIsTimerActive(true);
   }
 
 
@@ -367,7 +376,7 @@ export default function OnlineMatch({ lobbyType, lobbyInfo }: OnlineMatch) {
         </div>
 
 
-        <ShotClock timeLimit={timeLimit} isActive={isTimerActive} onTimeout={() => onTimeout()} />
+
         {isMatchFinished ?
           <>
             <h3 className="match-end-text">{matchWinner}</h3>
@@ -378,6 +387,7 @@ export default function OnlineMatch({ lobbyType, lobbyInfo }: OnlineMatch) {
             </div>
           </> :
           <>
+            <ShotClock isActive={isTimerActive} isBetweenRounds={isBetweenRounds} onTimeout={() => onTimeout()} />
             {isRoundFinished ?
               <>
                 <h3>{roundWinner}</h3>
