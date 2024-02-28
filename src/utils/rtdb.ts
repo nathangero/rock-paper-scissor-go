@@ -154,8 +154,7 @@ export const joinCasualLobby = async (lobbyId: string, lobbyInfo: LobbyInfo): Pr
   }
 }
 
-export const dbLeaveLobby = async (lobbyType: LOBBY_TYPES.CASUAL, lobbyId: string, username: string): Promise<void> => {
-  // TODO: Store the lobby id in the browser's local storage. so upon refresh, take the id and make the room disappear.
+export const dbLeaveLobby = async (lobbyType: LOBBY_TYPES, lobbyId: string, username: string): Promise<void> => {
   try {
     console.log("@dbLeaveLobby");
 
@@ -175,6 +174,10 @@ export const dbLeaveLobby = async (lobbyType: LOBBY_TYPES.CASUAL, lobbyId: strin
     } else {
       // Update the number of players
       await update(ref(db, lobbyRef), { [LOBBY_KEYS.PLAYERS_NUM]: numPlayers - 1 });
+
+      // Remove the match history
+      const matchNumRef = `${DB_DOC_KEYS.LOBBIES}/${lobbyType}/${lobbyId}/${LOBBY_KEYS.MATCH_NUM}`;
+      await remove(ref(db, matchNumRef));
     }
 
   } catch (error) {

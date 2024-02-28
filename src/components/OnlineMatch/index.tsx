@@ -1,19 +1,23 @@
 import "./style.css";
 import "./swing-animation.css";
 import React, { useEffect, useState } from "react";
-import { ATTACK_TYPES, LOBBY_TYPES, PLAYER_TYPES, ROUND_RESULT, ROUTER_LINKS } from "../../utils/enums";
+import { ATTACK_TYPES, LOBBY_TYPES, LOCAL_STORAGE_KEYS, PLAYER_TYPES, ROUND_RESULT, ROUTER_LINKS } from "../../utils/enums";
 import { useAppSelector } from "../../redux/hooks";
 import { DB_DOC_KEYS, LOBBY_KEYS } from "../../utils/db-keys";
-import { dbHandleRoundDraw, updateMatchDb, updateUserAttack } from "../../utils/rtdb";
+import { dbHandleRoundDraw, dbLeaveLobby, updateMatchDb, updateUserAttack } from "../../utils/rtdb";
 import { off, onValue, ref } from "firebase/database";
 import { db } from "../../../firebase";
 import AttackSelection from "../AttackSelection";
 import { Modal } from "bootstrap";
 import Alert from "../Alert";
+import ShotClock from "../ShotClock";
 
 export default function OnlineMatch({ lobbyType, lobbyInfo }: OnlineMatch) {
   const roundCountMax = 5;
   const roundMajority = Math.ceil(roundCountMax / 2); // Amount of rounds needed to win
+  const roundTimeLimit = 15; // 15 seconds
+  const roundBetweenTimeLimit = 7; // The countdown between rounds
+
 
   const user = useAppSelector(state => state.user);
 
@@ -26,6 +30,8 @@ export default function OnlineMatch({ lobbyType, lobbyInfo }: OnlineMatch) {
 
   const [userAttackStr, setUserAttackStr] = useState<string>("");
   const [opponentAttackStr, setOpponentAttackStr] = useState<string>("");
+  const [isTimerActive, setIsTimerActive] = useState<boolean>(true);
+  const [timeLimit, setTimeLimit] = useState<number>(roundTimeLimit);
 
   const [matchCount, setMatchCount] = useState<number>(0);
   const [roundCount, setRoundCount] = useState<number>(1);
@@ -55,6 +61,11 @@ export default function OnlineMatch({ lobbyType, lobbyInfo }: OnlineMatch) {
     const modalLeave = document.querySelector<HTMLDivElement>(".alert-modal-leave-lobby")?.querySelector<HTMLDivElement>("#alertModal");
     if (modalLeave) setModalLeaveLobby(new Modal(modalLeave));
   }, []);
+
+  useEffect(() => {
+    console.log("is timer active?", isTimerActive);
+    // if (!isTimerActive) setIsTimerActive(true);
+  }, [isTimerActive])
 
 
   /**
@@ -113,6 +124,7 @@ export default function OnlineMatch({ lobbyType, lobbyInfo }: OnlineMatch) {
           setIsResolvingDraw(false);
           setIsRoundFinished(false);
           setIsRoundDraw(false);
+          // setIsTimerActive(false);
         }
       });
 
@@ -146,10 +158,15 @@ export default function OnlineMatch({ lobbyType, lobbyInfo }: OnlineMatch) {
   const updateMatch = async (roundResult: ROUND_RESULT) => {
     // console.log("@updateMatch");
 
+    setTimeLimit(roundBetweenTimeLimit);
+
     if (roundResult === ROUND_RESULT.DRAW) {
       setMatchDraws(matchDraws + 1);
       setIsRoundDraw(true);
       setRoundWinner(`Draw! Repeat round ${roundCount}`);
+      // setIsTimerActive(false);
+      // setIsTimerActive(true);
+      // setTimeout(() => { setIsTimerActive(true) }, 500);
       return;
     }
 
@@ -195,6 +212,8 @@ export default function OnlineMatch({ lobbyType, lobbyInfo }: OnlineMatch) {
 
     setUserWins(updatedUserWins);
     setOpponentWins(updatedOpponentWins);
+
+    console.log("setting timelimit to", roundBetweenTimeLimit);
   }
 
   /**
@@ -219,10 +238,26 @@ export default function OnlineMatch({ lobbyType, lobbyInfo }: OnlineMatch) {
   }
 
 
+  const onTimeout = async () => {
+    try {
+      console.log("player didn't respond, so kicking from lobby");
+      await onClickConfirmLeave();
+
+      // Remove the local storage item after the user leaves the lobby
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.LOBBY);
+      window.location.href = ROUTER_LINKS.HOME;
+    } catch (error) {
+      console.log("Couldn't leave lobby upon timeout");
+      console.error(error);
+    }
+  }
+
+
   // ************** ON CLICK ************** \\
 
   const onClickAttack = async (userAttack: ATTACK_TYPES) => {
     setUserAttackStr(userAttack);
+    setIsTimerActive(false); // Stop the timer
 
     const userAttackObj = {
       [user.username]: userAttack
@@ -241,6 +276,7 @@ export default function OnlineMatch({ lobbyType, lobbyInfo }: OnlineMatch) {
     setUserAttackStr("");
     setOpponentAttackStr("");
     setRoundWinner("");
+    setTimeLimit(roundTimeLimit);
   }
 
 
@@ -250,6 +286,7 @@ export default function OnlineMatch({ lobbyType, lobbyInfo }: OnlineMatch) {
     setUserAttackStr("");
     setOpponentAttackStr("");
     setRoundWinner("");
+    setTimeLimit(roundTimeLimit);
   }
 
   const onClickLeave = () => {
@@ -258,9 +295,17 @@ export default function OnlineMatch({ lobbyType, lobbyInfo }: OnlineMatch) {
     modalLeaveLobby?.show();
   }
 
-  const onClickConfirmLeave = () => {
-    // TODO: Remove player from lobby in db
-    window.location.href = ROUTER_LINKS.HOME;
+  const onClickConfirmLeave = async () => {
+    try {
+      await dbLeaveLobby(lobbyType, lobbyInfo[LOBBY_KEYS.ID], user.username);
+
+      // Remove the local storage item after the user leaves the lobby
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.LOBBY);
+      window.location.href = ROUTER_LINKS.HOME;
+    } catch (error) {
+      console.log("Couldn't leave lobby upon timeout");
+      console.error(error);
+    }
   }
 
   const onClickRematch = () => {
@@ -320,6 +365,8 @@ export default function OnlineMatch({ lobbyType, lobbyInfo }: OnlineMatch) {
           ))}
         </div>
 
+
+        <ShotClock timeLimit={timeLimit} isActive={isTimerActive} onTimeout={() => onTimeout()} />
         {isMatchFinished ?
           <>
             <h3 className="match-end-text">{matchWinner}</h3>
