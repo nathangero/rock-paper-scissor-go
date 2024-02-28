@@ -1,7 +1,7 @@
 import { child, equalTo, get, limitToFirst, orderByChild, push, query, ref, remove, set, update } from "firebase/database"
 import { db } from "../../firebase";
 import { DB_DOC_KEYS, LOBBY_KEYS, USERNAME_KEYS, USER_KEYS } from "./db-keys";
-import {  LOBBY_TYPES } from "./enums";
+import { LOBBY_TYPES } from "./enums";
 
 
 /**
@@ -90,7 +90,7 @@ export const dbCreateLobby = async (lobbyType: LOBBY_TYPES, user: object): Promi
   try {
     const dbRef = `${DB_DOC_KEYS.LOBBIES}/${lobbyType}`;
     const newLobbyId = push(child(ref(db), dbRef)).key; // Create a new lobby id
-    
+
     const lobbyRef = `${dbRef}/${newLobbyId}`;
     const host = Object.keys(user)[0];
 
@@ -101,7 +101,7 @@ export const dbCreateLobby = async (lobbyType: LOBBY_TYPES, user: object): Promi
       [LOBBY_KEYS.PLAYERS_NUM]: 1, // The player creating this lobby
       [LOBBY_KEYS.TYPE]: lobbyType,
     };
-    
+
     await set(ref(db, lobbyRef), newLobby);
     // console.log("successfully created a lobby!");
 
@@ -154,8 +154,25 @@ export const joinCasualLobby = async (lobbyId: string, lobbyInfo: LobbyInfo): Pr
   }
 }
 
-export const dbLeaveLobby = async () => {
+export const dbLeaveLobby = async (lobbyType: LOBBY_TYPES.CASUAL, lobbyId: string, username: string): Promise<void> => {
   // TODO: Store the lobby id in the browser's local storage. so upon refresh, take the id and make the room disappear.
+  try {
+    console.log("@dbLeaveLobby");
+
+    const dbRef = `${DB_DOC_KEYS.LOBBIES}/${lobbyType}/${lobbyId}/${LOBBY_KEYS.PLAYERS}/${username}`;
+    // console.log("dbRef:", dbRef);
+
+    await remove(ref(db, dbRef));
+    return;
+    // TODO Find out a way to update "playerNum" in database. Maybe pull the current number and check if lobby should be closed or just subtract by 1?
+
+    // Update the number of players
+    const numPlayerRef = `${DB_DOC_KEYS.LOBBIES}/${lobbyType}/${lobbyId}`;
+    // await update(ref(db, numPlayerRef), );
+  } catch (error) {
+    console.log("Couldn't update user attack");
+    console.error(error);
+  }
 }
 
 export const updateUserAttack = async (lobbyType: LOBBY_TYPES, lobbyId: string, matchCount: number, roundCount: number, userAttack: object): Promise<boolean> => {
@@ -164,7 +181,7 @@ export const updateUserAttack = async (lobbyType: LOBBY_TYPES, lobbyId: string, 
     // console.log("dbRef:", dbRef);
 
     await update(ref(db, dbRef), userAttack)
-    
+
     return true;
   } catch (error) {
     console.log("Couldn't update user attack");

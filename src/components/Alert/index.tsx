@@ -51,7 +51,7 @@ interface AlertProps {
   customButton?: CustomButton;
 }
 
-interface CustomButton {
+export interface CustomButton {
   buttonColor?: string;
   buttonText?: string;
   onClickAction?: VoidFunction;

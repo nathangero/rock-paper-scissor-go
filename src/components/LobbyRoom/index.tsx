@@ -8,6 +8,8 @@ import OnlineMatch from "../OnlineMatch";
 import { off, onValue, ref } from "firebase/database";
 import { db } from "../../../firebase";
 import { USER_ACTIONS } from "../../redux/reducer";
+import { dbLeaveLobby } from "../../utils/rtdb";
+import Alert, { CustomButton } from "../Alert";
 
 export default function LobbyRoom() {
 
@@ -15,10 +17,14 @@ export default function LobbyRoom() {
   const lobby = useAppSelector(state => state.lobby);
   const dispatch = useAppDispatch();
 
+  const [alertModal, setAlertModal] = useState<Modal | null>(null);
+  const [alertTitle, setAlertTitle] = useState<string>("");
+  const [alertBody, setAlertBody] = useState<string>("");
+  const [alertButton, setAlertButton] = useState<CustomButton>({});
 
   const [p1, setP1] = useState<string>("");
   const [p2, setP2] = useState<string>("");
-
+  const [players, setPlayers] = useState<object>({});
 
   useEffect(() => {
     if (!lobby) {
@@ -28,16 +34,28 @@ export default function LobbyRoom() {
       return;
     }
 
+
+    const modalLeave = document.querySelector<HTMLDivElement>(".alert-modal-lobby-room")?.querySelector<HTMLDivElement>("#alertModal");
+    setAlertTitle(p2 ? "Forfeit Match" : "Leave Match");
+    setAlertBody("Are you sure you want to leave the match?");
+    setAlertButton({ buttonColor: "button-negative", buttonText: "Yes", onClickAction: () => onClickLeaveMatch() });
+
+    if (modalLeave) setAlertModal(new Modal(modalLeave));
+
     // Get the player names
     const players = lobby[LOBBY_KEYS.PLAYERS];
     if (Object.keys(players).length === 1) {
       listenForOpponentJoin(lobby[LOBBY_KEYS.TYPE], lobby[LOBBY_KEYS.ID]);
     }
+
     Object.keys(players)?.map((username) => {
       if (username === user.username) setP1("You");
       else setP2(username);
     });
-  }, [])
+
+    setPlayers(players);
+  }, []);
+
 
 
   const listenForOpponentJoin = async (lobbyType: LOBBY_TYPES, lobbyId: string) => {
@@ -62,7 +80,8 @@ export default function LobbyRoom() {
         // console.log("stop listening to new opponents");
 
         // Update the lobby in the store so OnlineMatch component will update too
-        const updatedLobby = { ...lobby, [LOBBY_KEYS.PLAYERS]: players }
+        const updatedLobby = { ...lobby, [LOBBY_KEYS.PLAYERS]: players, [LOBBY_KEYS.PLAYERS_NUM]: Object.keys(players).length };
+
         dispatch({
           type: USER_ACTIONS.JOIN_LOBBY,
           lobby: updatedLobby,
@@ -76,6 +95,21 @@ export default function LobbyRoom() {
     }
   }
 
+
+  const onClickLeaveMatch = async () => {
+    try {
+      console.log("@onClickLeaveMatch");
+      console.log("lobby:", lobby)
+      const playerNum = Object.keys(players);
+      console.log("players:", players);
+      await dbLeaveLobby(lobby[LOBBY_KEYS.TYPE], lobby[LOBBY_KEYS.ID], user.username);
+      // window.location.href = ROUTER_LINKS.HOME;
+    } catch (error) {
+      console.log("Couldn't leave match");
+      console.error(error);
+      window.location.href = ROUTER_LINKS.HOME;
+    }
+  }
 
 
   const alertModalLostConnection = () => {
@@ -121,16 +155,21 @@ export default function LobbyRoom() {
         </div>
         <hr />
 
-        {/* TODO: If no opponent, don't show the OnlineMatch component yet. Show some "waiting for an opponent..." text */}
-
         {p2 ?
           <OnlineMatch lobbyType={LOBBY_TYPES.CASUAL} lobbyInfo={lobby} /> :
           <h4>Waiting for an opponent...</h4>
         }
 
+        <br /><br /><br />
+        <button className="btn button-negative" onClick={() => alertModal?.show()}>{p2 ? "Forfeit Match" : "Leave Match"}</button>
+
       </div>
 
       {alertModalLostConnection()}
+
+      <div className="alert-modal-lobby-room">
+        <Alert title={alertTitle} body={alertBody} customButton={alertButton} />
+      </div>
     </>
   )
 }

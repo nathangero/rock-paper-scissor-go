@@ -59,6 +59,7 @@ export default function Home() {
       setTimeout(() => {
         loadingSpinner?.hide();
         updatedLobby[LOBBY_KEYS.ID] = lobbyId; // Add the lobby id before adding it to the store
+        updatedLobby[LOBBY_KEYS.TYPE] = lobbyType;
         dispatch({
           type: USER_ACTIONS.JOIN_LOBBY,
           lobby: updatedLobby,
@@ -77,7 +78,7 @@ export default function Home() {
       setLoadingText("Creating a lobby...");
       const userObj = { [user.username]: auth.currentUser?.uid };
       const newLobby = await dbCreateLobby(lobbyType, userObj);
-      
+      console.log("new lobby:", newLobby);
       if (newLobby) {
         setTimeout(() => {
           loadingSpinner?.hide();
