@@ -7,7 +7,7 @@ import { auth } from "../../../firebase.ts";
 
 import Alert from "../Alert/index.js";
 import LoadingSpinner from "../LoadingSpinner/index.jsx";
-import { addUser, doesUsernameExist } from "../../utils/rtdb.ts";
+import { dbAddUser, dbDoesUsernameExist } from "../../utils/rtdb.ts";
 import { useAppDispatch } from "../../redux/hooks.ts";
 import { USER_ACTIONS } from "../../redux/reducer.ts";
 
@@ -66,7 +66,7 @@ export default function Signup() {
    */
   const checkUsernameAvailability = async (username: string) => {
     try {
-      const isAvailable = await doesUsernameExist(username);
+      const isAvailable = await dbDoesUsernameExist(username);
       // console.log("isAvailable:", isAvailable);
       setIsCheckingUsernameAvailablility(false);
 
@@ -156,7 +156,7 @@ export default function Signup() {
 
       // console.log("auth.currentUser:", auth.currentUser.uid);
       const uid = auth.currentUser.uid;
-      const newUser = await addUser(uid, signupEmail, signupUsername);
+      const newUser = await dbAddUser(uid, signupEmail, signupUsername);
       dispatch({
         type: USER_ACTIONS.LOGIN,
         user: newUser

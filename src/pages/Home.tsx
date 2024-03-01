@@ -2,7 +2,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Modal } from "bootstrap";
 import { useAppDispatch, useAppSelector } from "../redux/hooks"
 import { LOBBY_TYPES, LOCAL_STORAGE_KEYS, ROUTER_LINKS } from "../utils/enums";
-import { dbCreateLobby, joinCasualLobby, searchCasualLobbies } from "../utils/rtdb";
+import { dbCreateLobby, dbJoinLobby, dbSearchLobbies } from "../utils/rtdb";
 import LoadingSpinner from "../components/LoadingSpinner";
 import { useEffect, useState } from "react";
 import { LOBBY_KEYS } from "../utils/db-keys";
@@ -45,7 +45,7 @@ export default function Home() {
     let didJoin = false;
     switch (lobbyType) {
       case LOBBY_TYPES.CASUAL:
-        didJoin = await joinCasualLobby(lobbyId, updatedLobby)
+        didJoin = await dbJoinLobby(LOBBY_TYPES.CASUAL, lobbyId, updatedLobby)
         break;
 
       case LOBBY_TYPES.RANKED:
@@ -115,7 +115,7 @@ export default function Home() {
   const onClickFindLobby = async (lobbyType: LOBBY_TYPES) => {
     try {
       loadingSpinner?.show();
-      const lobby = await searchCasualLobbies();
+      const lobby = await dbSearchLobbies(lobbyType);
 
       if (lobby) {
         switch (lobbyType) {

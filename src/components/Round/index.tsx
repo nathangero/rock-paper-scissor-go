@@ -37,7 +37,7 @@ export default function Round({ roundCount, roundMax, roundProgress, isFinished,
           renderRoundIcon(value, index)
         ))}
       </div>
-      <AttackSelection isFinished={isFinished} onClickAttack={onClickAttack} />
+      <AttackSelection onClickAttack={onClickAttack} />
     </>
   )
 }

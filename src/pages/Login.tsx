@@ -8,7 +8,7 @@ import Alert from "../components/Alert/index.js";
 import Signup from "../components/Signup/index.tsx";
 import LoadingSpinner from "../components/LoadingSpinner/index.js";
 import { useNavigate } from "react-router-dom";
-import { getUser } from "../utils/rtdb.ts";
+import { dbGetUser } from "../utils/rtdb.ts";
 import { useAppDispatch } from "../redux/hooks.ts";
 import { USER_ACTIONS } from "../redux/reducer.ts";
 // import { FirebaseError } from "@firebase/util";
@@ -116,8 +116,8 @@ export default function Login() {
 
       if (!auth.currentUser) throw ("couldn't login");
 
-      const user = await getUser(auth.currentUser.uid);
-      // console.log("user from getUser:", user);
+      const user = await dbGetUser(auth.currentUser.uid);
+      // console.log("user from dbGetUser:", user);
       dispatch({
         type: USER_ACTIONS.LOGIN,
         user: user

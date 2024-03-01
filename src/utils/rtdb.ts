@@ -114,9 +114,9 @@ export const dbCreateLobby = async (lobbyType: LOBBY_TYPES, user: object): Promi
 }
 
 
-export const searchCasualLobbies = async (): Promise<object | null> => {
+export const dbSearchLobbies = async (lobbyType: LOBBY_TYPES): Promise<object | null> => {
   try {
-    const dbRef = `${DB_DOC_KEYS.LOBBIES}/${LOBBY_TYPES.CASUAL}`;
+    const dbRef = `${DB_DOC_KEYS.LOBBIES}/${lobbyType}`;
 
     const snapshot = await get(query(ref(db, dbRef), orderByChild(LOBBY_KEYS.PLAYERS_NUM), equalTo(1), limitToFirst(1)));
     const value = snapshot.val();
@@ -137,10 +137,10 @@ export const searchCasualLobbies = async (): Promise<object | null> => {
   }
 }
 
-export const joinCasualLobby = async (lobbyId: string, lobbyInfo: LobbyInfo): Promise<boolean> => {
+export const dbJoinLobby = async (lobbyType: LOBBY_TYPES, lobbyId: string, lobbyInfo: LobbyInfo): Promise<boolean> => {
   try {
-    // console.log("@joinCasualLobby")
-    const dbRef = `${DB_DOC_KEYS.LOBBIES}/${LOBBY_TYPES.CASUAL}/${lobbyId}`;
+    // console.log("@dbJoinLobby")
+    const dbRef = `${DB_DOC_KEYS.LOBBIES}/${lobbyType}/${lobbyId}`;
     // console.log("lobbyId:", lobbyId);
     // console.log("dbRef:", dbRef);
     // return true; // DEBUG
@@ -186,7 +186,7 @@ export const dbLeaveLobby = async (lobbyType: LOBBY_TYPES, lobbyId: string, user
   }
 }
 
-export const updateUserAttack = async (lobbyType: LOBBY_TYPES, lobbyId: string, matchCount: number, roundCount: number, userAttack: object): Promise<boolean> => {
+export const dbUpdateUserAttack = async (lobbyType: LOBBY_TYPES, lobbyId: string, matchCount: number, roundCount: number, userAttack: object): Promise<boolean> => {
   try {
     const dbRef = `${DB_DOC_KEYS.LOBBIES}/${lobbyType}/${lobbyId}/${LOBBY_KEYS.MATCH_NUM}/${matchCount}/${LOBBY_KEYS.ROUNDS}/${roundCount}`;
     // console.log("dbRef:", dbRef);

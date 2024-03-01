@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import { ATTACK_TYPES, LOBBY_TYPES, LOCAL_STORAGE_KEYS, PLAYER_TYPES, ROUND_RESULT, ROUTER_LINKS } from "../../utils/enums";
 import { useAppSelector } from "../../redux/hooks";
 import { DB_DOC_KEYS, LOBBY_KEYS } from "../../utils/db-keys";
-import { dbHandleRoundDraw, dbLeaveLobby, updateMatchDb, updateUserAttack } from "../../utils/rtdb";
+import { dbHandleRoundDraw, dbLeaveLobby, updateMatchDb, dbUpdateUserAttack } from "../../utils/rtdb";
 import { off, onValue, ref } from "firebase/database";
 import { db } from "../../../firebase";
 import AttackSelection from "../AttackSelection";
@@ -262,7 +262,7 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, isMatchFinished, set
     }
 
     setIsRoundFinished(true);
-    await updateUserAttack(lobbyType, lobbyInfo[LOBBY_KEYS.ID], matchCount, roundCount, userAttackObj);
+    await dbUpdateUserAttack(lobbyType, lobbyInfo[LOBBY_KEYS.ID], matchCount, roundCount, userAttackObj);
     await listenForOpponentAttack(userAttack);
   }
 

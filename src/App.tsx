@@ -4,7 +4,7 @@ import { Outlet } from "react-router-dom"
 import Navbar from "./components/Navbar"
 import { useAppDispatch } from "./redux/hooks"
 import { auth } from "../firebase"
-import { getUser } from "./utils/rtdb"
+import { dbGetUser } from "./utils/rtdb"
 import { USER_ACTIONS } from "./redux/reducer"
 // import LoadingSpinner from "./components/LoadingSpinner"
 
@@ -20,7 +20,7 @@ function App() {
         // console.log("logging in user:", user.uid);
 
         // Get user info before removing "Loading" text
-        const existingUser = await getUser(user.uid);
+        const existingUser = await dbGetUser(user.uid);
         if (!existingUser) return;
 
         dispatch({
