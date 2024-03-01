@@ -2,7 +2,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Modal } from "bootstrap";
 import { useAppDispatch, useAppSelector } from "../redux/hooks"
 import { LOBBY_TYPES, LOCAL_STORAGE_KEYS, ROUTER_LINKS } from "../utils/enums";
-import { dbCreateLobby, dbJoinLobby, dbSearchLobbies } from "../utils/rtdb";
+import { dbCreateLobby, dbGetLobbyPlayers, dbJoinLobby, dbSearchLobbies } from "../utils/rtdb";
 import LoadingSpinner from "../components/LoadingSpinner";
 import { useEffect, useState } from "react";
 import { LOBBY_KEYS } from "../utils/db-keys";
@@ -29,13 +29,17 @@ export default function Home() {
     if (!lobbyInfo || Object.keys(lobbyInfo).length === 0) return;
 
     // Deconstruct variables
-    const { [LOBBY_KEYS.PLAYERS]: players, [LOBBY_KEYS.PLAYERS_NUM]: playersNum } = lobbyInfo;
+    const { [LOBBY_KEYS.PLAYERS]: players } = lobbyInfo;
 
     // Update players
     const updatedPlayers = { ...players, [user.username]: auth.currentUser?.uid };
 
+    // Update players already in the lobby
+    const playerNum = await dbGetLobbyPlayers(lobbyType, lobbyInfo[LOBBY_KEYS.ID]);
+    console.log("playerNum:", playerNum);
+
     // Updated Lobby
-    const updatedLobby: any = { [LOBBY_KEYS.PLAYERS]: updatedPlayers, [LOBBY_KEYS.PLAYERS_NUM]: playersNum + 1 }; // eslint-disable-line @typescript-eslint/no-explicit-any
+    const updatedLobby: any = { [LOBBY_KEYS.PLAYERS]: updatedPlayers, [LOBBY_KEYS.PLAYERS_NUM]: playerNum + 1 }; // eslint-disable-line @typescript-eslint/no-explicit-any
 
     // Get lobbyId
     const lobbyId = lobbyInfo[LOBBY_KEYS.ID];

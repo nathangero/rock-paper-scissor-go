@@ -9,7 +9,7 @@ import { off, onValue, ref } from "firebase/database";
 import { db } from "../../../firebase";
 import AttackSelection from "../AttackSelection";
 import { Modal } from "bootstrap";
-import Alert from "../Alert";
+import Alert, { CustomButton } from "../Alert";
 import ShotClock from "../ShotClock";
 
 export default function OnlineMatch({ lobbyType, lobbyInfo, isMatchFinished, setIsMatchFinished }: OnlineMatch) {
@@ -21,6 +21,7 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, isMatchFinished, set
   const [modalLeaveLobby, setModalLeaveLobby] = useState<Modal | null>(null);
   const [alertTitle, setAlertTitle] = useState<string>("");
   const [alertBody, setAlertBody] = useState<string>("");
+  const [alertButton, setAlertButton] = useState<CustomButton | null>({});
 
   const [lobbyId, setLobbyId] = useState<string>("");
   const [opponent, setOpponent] = useState<string>("");
@@ -242,7 +243,11 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, isMatchFinished, set
 
       // Remove the local storage item after the user leaves the lobby
       localStorage.removeItem(LOCAL_STORAGE_KEYS.LOBBY);
-      window.location.href = ROUTER_LINKS.HOME;
+
+      setAlertTitle("Kicked for inactivity");
+      setAlertBody("You'll be returned to the main menu");
+      setAlertButton(null);
+      modalLeaveLobby?.show();
     } catch (error) {
       console.log("Couldn't leave lobby upon timeout");
       console.error(error);
@@ -296,6 +301,11 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, isMatchFinished, set
   const onClickLeave = () => {
     setAlertTitle("Leaving the Lobby");
     setAlertBody("Are you sure you want to leave?");
+    setAlertButton({
+      buttonColor: "button-negative",
+      buttonText: "Yes, leave",
+      onClickAction: () => onClickConfirmLeave(),
+    });
     modalLeaveLobby?.show();
   }
 
@@ -470,11 +480,7 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, isMatchFinished, set
         <Alert
           title={alertTitle}
           body={alertBody}
-          customButton={{
-            buttonColor: "button-negative",
-            buttonText: "Yes, leave",
-            onClickAction: () => onClickConfirmLeave(),
-          }}
+          customButton={alertButton}
         />
       </div>
     </>

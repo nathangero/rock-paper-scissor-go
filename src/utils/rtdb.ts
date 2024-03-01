@@ -143,7 +143,7 @@ export const dbJoinLobby = async (lobbyType: LOBBY_TYPES, lobbyId: string, lobby
     const dbRef = `${DB_DOC_KEYS.LOBBIES}/${lobbyType}/${lobbyId}`;
     // console.log("lobbyId:", lobbyId);
     // console.log("dbRef:", dbRef);
-    // return true; // DEBUG
+    
     await update(ref(db, dbRef), lobbyInfo);
 
     return true;
@@ -162,7 +162,7 @@ export const dbLeaveLobby = async (lobbyType: LOBBY_TYPES, lobbyId: string, user
     // console.log("dbRef:", dbRef);
 
     await remove(ref(db, dbRef));
-    
+
     // pull the current number and check if lobby should be closed or just subtract 1 "playerNum"
     const lobbyRef = `${DB_DOC_KEYS.LOBBIES}/${lobbyType}/${lobbyId}`;
     const snapshot = await get(child(ref(db), lobbyRef));
@@ -183,6 +183,24 @@ export const dbLeaveLobby = async (lobbyType: LOBBY_TYPES, lobbyId: string, user
   } catch (error) {
     console.log("Couldn't leave lobby");
     console.error(error);
+  }
+}
+
+export const dbGetLobbyPlayers = async (lobbyType: LOBBY_TYPES, lobbyId: string): Promise<number> => {
+  try {
+    // console.log("@dbGetLobbyPlayers")
+
+    // Update the playerNum everytime a player joins
+    const playersRef = `${DB_DOC_KEYS.LOBBIES}/${lobbyType}/${lobbyId}/${LOBBY_KEYS.PLAYERS}`;
+    const snapshot = await get(child(ref(db), playersRef));
+    const players = snapshot.val();
+
+    if (players) return Object.keys(players).length; // Return the current number of players
+    else return 0; // If no players, then return 0
+  } catch (error) {
+    console.log("Couldn't get players in lobby");
+    console.error(error);
+    return 0;
   }
 }
 
