@@ -12,6 +12,7 @@ export enum LOBBY_KEYS {
   ROUNDS = "rounds",
   WINNER = "winner",
   MATCH_NUM = "matchNum", // Keeps track of match count for rematches
+  REMATCH = "rematch",
   TYPE = "lobbyType",
 }
 

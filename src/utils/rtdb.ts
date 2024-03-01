@@ -242,7 +242,7 @@ export const dbHandleRoundDraw = async (lobbyType: LOBBY_TYPES, lobbyId: string,
 }
 
 
-export const updateMatchDb = async (lobbyType: LOBBY_TYPES, lobbyId: string, matchCount: number, roundCount: number, roundWinner: object) => {
+export const dbUpdateMatch = async (lobbyType: LOBBY_TYPES, lobbyId: string, matchCount: number, roundCount: number, roundWinner: object) => {
   try {
     const dbRef = `${DB_DOC_KEYS.LOBBIES}/${lobbyType}/${lobbyId}/${LOBBY_KEYS.MATCH_NUM}/${matchCount}/${LOBBY_KEYS.ROUNDS}/${roundCount}`;
     // console.log("dbRef:", dbRef);
@@ -250,6 +250,23 @@ export const updateMatchDb = async (lobbyType: LOBBY_TYPES, lobbyId: string, mat
     await update(ref(db, dbRef), roundWinner);
   } catch (error) {
     console.log("Couldn't update user attack");
+    console.error(error);
+    throw error;
+  }
+}
+
+
+export const dbUpdateRematch = async (lobbyType: LOBBY_TYPES, lobbyId: string, matchCount: number, username: string, doRematch: boolean) => {
+  try {
+    const dbRef = `${DB_DOC_KEYS.LOBBIES}/${lobbyType}/${lobbyId}/${LOBBY_KEYS.MATCH_NUM}/${matchCount}/${LOBBY_KEYS.REMATCH}`;
+    // console.log("dbRef:", dbRef);
+    const rematch = {
+      [username]: doRematch,
+    }
+
+    await update(ref(db, dbRef), rematch);
+  } catch (error) {
+    console.log("Couldn't update round rematch");
     console.error(error);
     throw error;
   }

@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import { ATTACK_TYPES, LOBBY_TYPES, LOCAL_STORAGE_KEYS, PLAYER_TYPES, ROUND_RESULT, ROUTER_LINKS } from "../../utils/enums";
 import { useAppSelector } from "../../redux/hooks";
 import { DB_DOC_KEYS, LOBBY_KEYS } from "../../utils/db-keys";
-import { dbHandleRoundDraw, dbLeaveLobby, updateMatchDb, dbUpdateUserAttack } from "../../utils/rtdb";
+import { dbHandleRoundDraw, dbLeaveLobby, dbUpdateMatch, dbUpdateRematch, dbUpdateUserAttack } from "../../utils/rtdb";
 import { off, onValue, ref } from "firebase/database";
 import { db } from "../../../firebase";
 import AttackSelection from "../AttackSelection";
@@ -30,6 +30,7 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, isMatchFinished, set
   const [opponentAttackStr, setOpponentAttackStr] = useState<string>("");
   const [isTimerActive, setIsTimerActive] = useState<boolean>(true);
   const [isBetweenRounds, setIsBetweenRounds] = useState<boolean>(false);
+  const [isWaitingForRematch, setIsWaitingForRematch] = useState<boolean>(false);
 
   const [matchCount, setMatchCount] = useState<number>(0);
   const [roundCount, setRoundCount] = useState<number>(1);
@@ -132,6 +133,37 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, isMatchFinished, set
     }
   }
 
+
+  const listenForRematch = async () => {
+    try {
+      const dbRef = `${DB_DOC_KEYS.LOBBIES}/${LOBBY_TYPES.CASUAL}/${lobbyId}/${LOBBY_KEYS.MATCH_NUM}/${matchCount}/${LOBBY_KEYS.REMATCH}`;
+
+      const rematchRef = ref(db, dbRef);
+
+      onValue(rematchRef, async (snapshot) => {
+        const value = snapshot.val();
+
+        if (!value) return; // Return if null
+
+        if (!value[opponent]) return; // Return if no opponent yet
+
+        const willRematch = value[opponent];
+        console.log("opponent rematch?", willRematch);
+        
+        // Turn off listener once opponent response is received
+        off(rematchRef, "value");
+        setIsWaitingForRematch(false);
+
+        if (willRematch) onConfirmRematch();
+
+      });
+
+    } catch (error) {
+      console.log("Couldn't listen to rematch");
+      console.error(error);
+    }
+  }
+
   /**
    * Determines if the user won, lost, or had a draw with their opponent.
    * 
@@ -177,7 +209,7 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, isMatchFinished, set
       const roundWinner = {
         [LOBBY_KEYS.WINNER]: user.username
       }
-      await updateMatchDb(lobbyType, lobbyId, matchCount, roundCount, roundWinner);
+      await dbUpdateMatch(lobbyType, lobbyId, matchCount, roundCount, roundWinner);
 
       updatedUserWins++;
       updatedRoundProgress[roundCount - 1] = PLAYER_TYPES.USER;
@@ -189,7 +221,7 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, isMatchFinished, set
       const roundWinner = {
         [LOBBY_KEYS.WINNER]: opponent
       }
-      await updateMatchDb(lobbyType, lobbyId, matchCount, roundCount, roundWinner);
+      await dbUpdateMatch(lobbyType, lobbyId, matchCount, roundCount, roundWinner);
 
       updatedOpponentWins++;
       updatedRoundProgress[roundCount - 1] = PLAYER_TYPES.OPPONENT;
@@ -238,9 +270,8 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, isMatchFinished, set
 
   const onTimeout = async () => {
     try {
-      console.log("player didn't respond, so kicking from lobby");
       await dbLeaveLobby(lobbyType, lobbyInfo[LOBBY_KEYS.ID], user.username);
-      
+
       // Remove the local storage item after the user leaves the lobby
       localStorage.removeItem(LOCAL_STORAGE_KEYS.LOBBY);
 
@@ -296,31 +327,13 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, isMatchFinished, set
     setTimeout(() => setIsTimerActive(true), 500);
   }
 
-  const onClickLeave = () => {
-    setAlertTitle("Leaving the Lobby");
-    setAlertBody("Are you sure you want to leave?");
-    setAlertButton({
-      buttonColor: "button-negative",
-      buttonText: "Yes, leave",
-      onClickAction: () => onClickConfirmLeave(),
-    });
-    modalLeaveLobby?.show();
+  const onClickRematch = async () => {
+    setIsWaitingForRematch(true);
+    await dbUpdateRematch(lobbyType, lobbyId, matchCount, user.username, true);
+    await listenForRematch();
   }
 
-  const onClickConfirmLeave = async () => {
-    try {
-      await dbLeaveLobby(lobbyType, lobbyInfo[LOBBY_KEYS.ID], user.username);
-
-      // Remove the local storage item after the user leaves the lobby
-      localStorage.removeItem(LOCAL_STORAGE_KEYS.LOBBY);
-      window.location.href = ROUTER_LINKS.HOME;
-    } catch (error) {
-      console.log("Couldn't leave lobby upon timeout");
-      console.error(error);
-    }
-  }
-
-  const onClickRematch = () => {
+  const onConfirmRematch = () => {
     setMatchCount(matchCount + 1); // Increment the match count
     setIsRoundFinished(false);
     setIsRoundDraw(false);
@@ -338,6 +351,31 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, isMatchFinished, set
     setIsShowingCountdown(false);
     setCountdownText("");
     setIsTimerActive(true);
+  }
+
+  const onClickLeave = () => {
+    setAlertTitle("Leaving the Lobby");
+    setAlertBody("Are you sure you want to leave?");
+    setAlertButton({
+      buttonColor: "button-negative",
+      buttonText: "Yes, leave",
+      onClickAction: () => onConfirmLeave(),
+    });
+    modalLeaveLobby?.show();
+  }
+
+  const onConfirmLeave = async () => {
+    try {
+      await dbUpdateRematch(lobbyType, lobbyId, matchCount, user.username, false);
+      await dbLeaveLobby(lobbyType, lobbyInfo[LOBBY_KEYS.ID], user.username);
+
+      // Remove the local storage item after the user leaves the lobby
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.LOBBY);
+      window.location.href = ROUTER_LINKS.HOME;
+    } catch (error) {
+      console.log("Couldn't leave lobby upon timeout");
+      console.error(error);
+    }
   }
 
 
@@ -423,8 +461,16 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, isMatchFinished, set
             <h3 className="match-end-text">{matchWinner}</h3>
             <div className="d-flex justify-content-center">
 
-              <button className="btn button-negative m-2" onClick={() => onClickLeave()}>Leave</button>
-              <button className="btn button-positive m-2 fs-5" onClick={() => onClickRematch()}>REMATCH</button>
+              {isWaitingForRematch ?
+                <div className="d-flex flex-column">
+                  <h3>Waiting for opponent's response...</h3>
+                  <button className="btn button-negative m-2" onClick={() => onClickLeave()}>Leave</button>
+                </div> :
+                <>
+                  <button className="btn button-negative m-2" onClick={() => onClickLeave()}>Leave</button>
+                  <button className="btn button-positive m-2 fs-5" onClick={() => onClickRematch()}>REMATCH</button>
+                </>
+              }
             </div>
           </> :
           <>

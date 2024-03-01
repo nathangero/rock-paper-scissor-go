@@ -88,7 +88,7 @@ export default function Home() {
       setLoadingText("Creating a lobby...");
       const userObj = { [user.username]: auth.currentUser?.uid };
       const newLobby = await dbCreateLobby(lobbyType, userObj);
-      console.log("new lobby:", newLobby);
+      // console.log("new lobby:", newLobby);
       if (newLobby) {
         setTimeout(() => {
           loadingSpinner?.hide();
