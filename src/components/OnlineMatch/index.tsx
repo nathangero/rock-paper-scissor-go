@@ -239,15 +239,13 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, isMatchFinished, set
   const onTimeout = async () => {
     try {
       console.log("player didn't respond, so kicking from lobby");
-      await onClickConfirmLeave();
-
+      await dbLeaveLobby(lobbyType, lobbyInfo[LOBBY_KEYS.ID], user.username);
+      
       // Remove the local storage item after the user leaves the lobby
       localStorage.removeItem(LOCAL_STORAGE_KEYS.LOBBY);
 
-      setAlertTitle("Kicked for inactivity");
-      setAlertBody("You'll be returned to the main menu");
-      setAlertButton(null);
-      modalLeaveLobby?.show();
+      const modalTimeout = document.querySelector<HTMLDivElement>(".alert-modal-timeout")?.querySelector<HTMLDivElement>("#alertModal");
+      if (modalTimeout) new Modal(modalTimeout).show();
     } catch (error) {
       console.log("Couldn't leave lobby upon timeout");
       console.error(error);
@@ -343,7 +341,45 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, isMatchFinished, set
   }
 
 
+  const onConfirmTimeout = () => {
+    switch (lobbyType) {
+      case LOBBY_TYPES.CASUAL:
+        window.location.href = ROUTER_LINKS.HOME;
+        break;
+
+      case LOBBY_TYPES.RANKED:
+        // TODO Ranked point calc
+        window.location.href = ROUTER_LINKS.HOME;
+        break;
+    }
+  }
+
+
   // ************** RENDERS ************** \\
+
+  const renderModalTimeout = () => {
+    return (
+      <div className="modal-dialog modal-dialog-centered" style={{ zIndex: 9999 }}>
+        <div className="modal fade" id="alertModal" tabIndex={-1} aria-labelledby="alertModalLabel" aria-hidden="true">
+          <div className="modal-dialog modal-dialog-centered">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">Kicked for inactivty</h5>
+              </div>
+              <div className="modal-body custom-modal-body">
+                <p className="modal-title text-center fs-5">
+                  You'll be returned to the Main Menu
+                </p>
+              </div>
+              <div className="modal-body text-end">
+                <button type="button" className="btn btn-secondary" onClick={() => onConfirmTimeout()} data-bs-dismiss="modal">Got it</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   const renderRoundIcon = (playerType: PLAYER_TYPES, index: number) => {
     return (
@@ -482,6 +518,10 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, isMatchFinished, set
           body={alertBody}
           customButton={alertButton}
         />
+      </div>
+
+      <div className="alert-modal-timeout">
+        {renderModalTimeout()}
       </div>
     </>
   )

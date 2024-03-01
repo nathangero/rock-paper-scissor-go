@@ -36,7 +36,6 @@ export default function Home() {
 
     // Update players already in the lobby
     const playerNum = await dbGetLobbyPlayers(lobbyType, lobbyInfo[LOBBY_KEYS.ID]);
-    console.log("playerNum:", playerNum);
 
     // Updated Lobby
     const updatedLobby: any = { [LOBBY_KEYS.PLAYERS]: updatedPlayers, [LOBBY_KEYS.PLAYERS_NUM]: playerNum + 1 }; // eslint-disable-line @typescript-eslint/no-explicit-any
