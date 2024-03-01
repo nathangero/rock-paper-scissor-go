@@ -12,7 +12,7 @@ import { LOBBY_TYPES } from "./enums";
  * @param username The user's username
  * @returns An object containing the user's email, username, and time registered
  */
-export const addUser = async (uid: string, email: string, username: string) => {
+export const dbAddUser = async (uid: string, email: string, username: string) => {
   try {
     const userRef = `${DB_DOC_KEYS.USERS}/${uid}`;
     const newUser = {
@@ -44,7 +44,7 @@ export const addUser = async (uid: string, email: string, username: string) => {
 }
 
 
-export const getUser = async (uid: string): Promise<object> => {
+export const dbGetUser = async (uid: string): Promise<object> => {
   try {
     const userRef = `${DB_DOC_KEYS.USERS}/${uid}`;
 
@@ -69,7 +69,7 @@ export const getUser = async (uid: string): Promise<object> => {
  * @param username The username to check
  * @returns True if the username already exists, false if not
  */
-export const doesUsernameExist = async (username: string): Promise<boolean> => {
+export const dbDoesUsernameExist = async (username: string): Promise<boolean> => {
   try {
     const dbRef = `${DB_DOC_KEYS.USERNAMES}/${username.trim().toLowerCase()}`;
 
