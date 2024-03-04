@@ -154,6 +154,35 @@ export const dbJoinLobby = async (lobbyType: LOBBY_TYPES, lobbyId: string, lobby
   }
 }
 
+export const dbJoinPrivateLobby = async (lobbyId: string, user: object): Promise<object | null> => {
+  try {
+    // console.log("@dbJoinLobby")
+    const dbRef = `${DB_DOC_KEYS.LOBBIES}/${LOBBY_TYPES.PRIVATE}/${lobbyId}`;
+    // console.log("lobbyId:", lobbyId);
+    // console.log("dbRef:", dbRef);
+
+    const snapshot = await get(ref(db, dbRef));
+    const lobbyInfo = snapshot.val();
+
+    const { [LOBBY_KEYS.PLAYERS]: players, [LOBBY_KEYS.PLAYERS_NUM]: playerNum } = lobbyInfo;
+
+    // Update players
+    const updatedPlayers = { ...players, ...user };
+
+    // Updated Lobby
+    const updatedLobby: any = { [LOBBY_KEYS.PLAYERS]: updatedPlayers, [LOBBY_KEYS.PLAYERS_NUM]: playerNum + 1 }; // eslint-disable-line @typescript-eslint/no-explicit-any
+    
+    await update(ref(db, dbRef), updatedLobby);
+
+    return updatedLobby;
+  } catch (error) {
+    console.log("Couldn't join casual lobby");
+    console.error(error);
+    return null;
+  }
+}
+
+
 export const dbLeaveLobby = async (lobbyType: LOBBY_TYPES, lobbyId: string, username: string): Promise<void> => {
   try {
     console.log("@dbLeaveLobby");

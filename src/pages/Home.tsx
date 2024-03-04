@@ -2,7 +2,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { Modal } from "bootstrap";
 import { useAppDispatch, useAppSelector } from "../redux/hooks"
 import { LOBBY_TYPES, LOCAL_STORAGE_KEYS, ROUTER_LINKS } from "../utils/enums";
-import { dbCreateLobby, dbGetLobbyPlayers, dbJoinLobby, dbSearchLobbies } from "../utils/rtdb";
+import { dbCreateLobby, dbGetLobbyPlayers, dbJoinLobby, dbJoinPrivateLobby, dbSearchLobbies } from "../utils/rtdb";
 import LoadingSpinner from "../components/LoadingSpinner";
 import { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import { LOBBY_KEYS } from "../utils/db-keys";
@@ -96,7 +96,7 @@ export default function Home() {
       const newLobby = await dbCreateLobby(lobbyType, userObj);
       // console.log("new lobby:", newLobby);
       if (newLobby) {
-        createLobbyHelper(lobbyType, newLobby);
+        joinLobbyHelper(lobbyType, newLobby);
       }
     } catch (error) {
       console.log("Couldn't create lobby");
@@ -105,16 +105,21 @@ export default function Home() {
     }
   }
 
-  const createLobbyHelper = (lobbyType: LOBBY_TYPES, newLobby: LobbyInfo) => {
+  const joinLobbyHelper = (lobbyType: LOBBY_TYPES, lobbyInfo: LobbyInfo, lobbyId?: string) => {
     setTimeout(() => {
       loadingSpinner?.hide();
+
+      // If needed, add the lobby id before adding it to the store
+      if (lobbyId) lobbyInfo[LOBBY_KEYS.ID] = lobbyId;
+      lobbyInfo[LOBBY_KEYS.TYPE] = lobbyType;
+
       dispatch({
         type: USER_ACTIONS.JOIN_LOBBY,
-        lobby: newLobby,
+        lobby: lobbyInfo,
       })
 
       const lobbyStorage = {
-        [LOBBY_KEYS.ID]: newLobby[LOBBY_KEYS.ID],
+        [LOBBY_KEYS.ID]: lobbyInfo[LOBBY_KEYS.ID],
         [LOBBY_KEYS.TYPE]: lobbyType,
       }
 
@@ -127,11 +132,12 @@ export default function Home() {
   const createPrivateLobby = async () => {
     try {
       setLoadingText("Creating private lobby...");
+      loadingSpinner?.show();
       const userObj = { [user.username]: auth.currentUser?.uid };
       const newLobby = await dbCreateLobby(LOBBY_TYPES.PRIVATE, userObj, privateLobbyId);
-      
+
       if (newLobby) {
-        createLobbyHelper(LOBBY_TYPES.PRIVATE, newLobby);
+        joinLobbyHelper(LOBBY_TYPES.PRIVATE, newLobby);
       }
     } catch (error) {
       console.log("Couldn't create private lobby");
@@ -142,7 +148,14 @@ export default function Home() {
 
   const joinPrivateLobby = async () => {
     try {
-      console.log("join lobby:", privateLobbyId);
+      setLoadingText("Joining private lobby...");
+      loadingSpinner?.show();
+      const userObj = { [user.username]: auth.currentUser?.uid };
+      const privateLobby = await dbJoinPrivateLobby(privateLobbyId, userObj);
+
+      if (privateLobby) {
+        joinLobbyHelper(LOBBY_TYPES.PRIVATE, privateLobby, privateLobbyId);
+      }
     } catch (error) {
       console.log("Couldn't join private lobby");
       console.error(error);
