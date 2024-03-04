@@ -69,7 +69,7 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, isMatchFinished, set
    */
   const listenForOpponentAttack = async (userAttack: ATTACK_TYPES) => {
     try {
-      const dbRef = `${DB_DOC_KEYS.LOBBIES}/${LOBBY_TYPES.CASUAL}/${lobbyId}/${LOBBY_KEYS.MATCH_NUM}/${matchCount}/${LOBBY_KEYS.ROUNDS}/${roundCount}/${opponent}`;
+      const dbRef = `${DB_DOC_KEYS.LOBBIES}/${lobbyType}/${lobbyId}/${LOBBY_KEYS.MATCH_NUM}/${matchCount}/${LOBBY_KEYS.ROUNDS}/${roundCount}/${opponent}`;
 
       const opponentAttackRef = ref(db, dbRef);
 
@@ -102,7 +102,7 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, isMatchFinished, set
    */
   const listenForDrawResolution = async () => {
     try {
-      const dbRef = `${DB_DOC_KEYS.LOBBIES}/${LOBBY_TYPES.CASUAL}/${lobbyId}/${LOBBY_KEYS.MATCH_NUM}/${matchCount}/${LOBBY_KEYS.ROUNDS}/${roundCount}`;
+      const dbRef = `${DB_DOC_KEYS.LOBBIES}/${lobbyType}/${lobbyId}/${LOBBY_KEYS.MATCH_NUM}/${matchCount}/${LOBBY_KEYS.ROUNDS}/${roundCount}`;
 
       const roundRef = ref(db, dbRef);
 
@@ -136,7 +136,7 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, isMatchFinished, set
 
   const listenForRematch = async () => {
     try {
-      const dbRef = `${DB_DOC_KEYS.LOBBIES}/${LOBBY_TYPES.CASUAL}/${lobbyId}/${LOBBY_KEYS.MATCH_NUM}/${matchCount}/${LOBBY_KEYS.REMATCH}`;
+      const dbRef = `${DB_DOC_KEYS.LOBBIES}/${lobbyType}/${lobbyId}/${LOBBY_KEYS.MATCH_NUM}/${matchCount}/${LOBBY_KEYS.REMATCH}`;
 
       const rematchRef = ref(db, dbRef);
 
@@ -380,16 +380,7 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, isMatchFinished, set
 
 
   const onConfirmTimeout = () => {
-    switch (lobbyType) {
-      case LOBBY_TYPES.CASUAL:
-        window.location.href = ROUTER_LINKS.HOME;
-        break;
-
-      case LOBBY_TYPES.RANKED:
-        // TODO Ranked point calc
-        window.location.href = ROUTER_LINKS.HOME;
-        break;
-    }
+    window.location.href = ROUTER_LINKS.HOME;
   }
 
 

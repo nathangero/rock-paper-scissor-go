@@ -189,7 +189,7 @@ export default function LobbyRoom() {
         <hr />
 
         {p2 ?
-          <OnlineMatch lobbyType={LOBBY_TYPES.CASUAL} lobbyInfo={lobby} isMatchFinished={isMatchFinished} setIsMatchFinished={setIsMatchFinished} /> :
+          <OnlineMatch lobbyType={lobby[LOBBY_KEYS.TYPE]} lobbyInfo={lobby} isMatchFinished={isMatchFinished} setIsMatchFinished={setIsMatchFinished} /> :
           <h4>Waiting for an opponent...</h4>
         }
 
