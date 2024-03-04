@@ -4,7 +4,7 @@ import { useAppDispatch, useAppSelector } from "../redux/hooks"
 import { LOBBY_TYPES, LOCAL_STORAGE_KEYS, ROUTER_LINKS } from "../utils/enums";
 import { dbCreateLobby, dbGetLobbyPlayers, dbJoinLobby, dbSearchLobbies } from "../utils/rtdb";
 import LoadingSpinner from "../components/LoadingSpinner";
-import { useEffect, useState } from "react";
+import { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import { LOBBY_KEYS } from "../utils/db-keys";
 import { auth } from "../../firebase";
 import { USER_ACTIONS } from "../redux/reducer";
@@ -17,6 +17,12 @@ export default function Home() {
 
   const [loadingSpinner, setLoadingSpinner] = useState<Modal | null>(null);
   const [loadingText, setLoadingText] = useState<string>("Finding Lobby...")
+
+  const [isPlayingCasual, setIsPlayingCasual] = useState<boolean>(false);
+  const [isCreatingPrivate, setIsCreatingPrivate] = useState<boolean>(false);
+  const [isJoiningPrivate, setIsJoiningPrivate] = useState<boolean>(false);
+
+  const [privateLobbyId, setPrivateLobbyId] = useState<string>("");
 
   useEffect(() => {
     // Initialize bootstrap modals 
@@ -90,27 +96,63 @@ export default function Home() {
       const newLobby = await dbCreateLobby(lobbyType, userObj);
       // console.log("new lobby:", newLobby);
       if (newLobby) {
-        setTimeout(() => {
-          loadingSpinner?.hide();
-          dispatch({
-            type: USER_ACTIONS.JOIN_LOBBY,
-            lobby: newLobby,
-          })
-
-          const lobbyStorage = {
-            [LOBBY_KEYS.ID]: newLobby[LOBBY_KEYS.ID],
-            [LOBBY_KEYS.TYPE]: lobbyType,
-          }
-
-          localStorage.setItem(LOCAL_STORAGE_KEYS.LOBBY, JSON.stringify(lobbyStorage));
-          navigate(`${ROUTER_LINKS.LOBBY}/${lobbyType}`);
-        }, 1000);
+        createLobbyHelper(lobbyType, newLobby);
       }
     } catch (error) {
       console.log("Couldn't create lobby");
       console.error(error);
       loadingSpinner?.hide();
     }
+  }
+
+  const createLobbyHelper = (lobbyType: LOBBY_TYPES, newLobby: LobbyInfo) => {
+    setTimeout(() => {
+      loadingSpinner?.hide();
+      dispatch({
+        type: USER_ACTIONS.JOIN_LOBBY,
+        lobby: newLobby,
+      })
+
+      const lobbyStorage = {
+        [LOBBY_KEYS.ID]: newLobby[LOBBY_KEYS.ID],
+        [LOBBY_KEYS.TYPE]: lobbyType,
+      }
+
+      localStorage.setItem(LOCAL_STORAGE_KEYS.LOBBY, JSON.stringify(lobbyStorage));
+      navigate(`${ROUTER_LINKS.LOBBY}/${lobbyType}`);
+    }, 1000);
+  }
+
+
+  const createPrivateLobby = async () => {
+    try {
+      setLoadingText("Creating private lobby...");
+      const userObj = { [user.username]: auth.currentUser?.uid };
+      const newLobby = await dbCreateLobby(LOBBY_TYPES.PRIVATE, userObj, privateLobbyId);
+      
+      if (newLobby) {
+        createLobbyHelper(LOBBY_TYPES.PRIVATE, newLobby);
+      }
+    } catch (error) {
+      console.log("Couldn't create private lobby");
+      console.error(error);
+    }
+  }
+
+
+  const joinPrivateLobby = async () => {
+    try {
+      console.log("join lobby:", privateLobbyId);
+    } catch (error) {
+      console.log("Couldn't join private lobby");
+      console.error(error);
+    }
+  }
+
+  // ON CHANGE
+
+  const onChangePrivateLobbyId = ({ target }: ChangeEvent<HTMLInputElement>) => {
+    setPrivateLobbyId(target.value);
   }
 
   // ************** ON CLICK ************** \\
@@ -142,6 +184,32 @@ export default function Home() {
     }
   }
 
+
+  const onSubmitPrivateLobby = async (e: FormEvent)  => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (isCreatingPrivate) {
+      await createPrivateLobby();
+    }
+
+    if (isJoiningPrivate) {
+      await joinPrivateLobby();
+    }
+  }
+
+
+  const onClickShowCreateLobbyId = () => {
+    setPrivateLobbyId("");
+    setIsCreatingPrivate(!isCreatingPrivate);
+  }
+
+  const onClickShowJoinLobbyId = () => {
+    setPrivateLobbyId("");
+    setIsJoiningPrivate(!isJoiningPrivate);
+  }
+
+
   return (
     <>
       <h1>Rock Paper Scissor, Go!</h1>
@@ -153,11 +221,28 @@ export default function Home() {
 
       <div>
         <div className="mb-2">
-          {/* <Link to={`${ROUTER_LINKS.LOBBY}/${LOBBY_TYPES.CASUAL}`} className="btn button-positive mx-2">Play for Fun</Link> */}
-          <button className="btn button-positive mx-2" onClick={() => onClickFindLobby(LOBBY_TYPES.CASUAL)}>Play For Fun</button>
-          <button className={`btn button-positive mx-2 ${!user?.email ? "disabled" : ""}`} onClick={() => onClickFindLobby(LOBBY_TYPES.RANKED)}>Play For Rank</button>
+          <button className="btn button-positive mx-2" onClick={() => setIsPlayingCasual(!isPlayingCasual)}>Play For Fun</button>
+          {isPlayingCasual ? null : <button className={`btn button-positive mx-2 ${!user?.email ? "disabled" : ""}`} onClick={() => onClickFindLobby(LOBBY_TYPES.RANKED)}>Play For Rank</button>}
         </div>
 
+        {!isPlayingCasual ? null :
+          <div className="d-flex flex-column align-items-center">
+            <div className="d-flex flex-sm-row flex-column justify-content-center flex-wrap mb-3">
+              <button className={`btn button-positive m-2 ${(isCreatingPrivate || isJoiningPrivate) ? "hidden" : ""}`} onClick={() => onClickFindLobby(LOBBY_TYPES.CASUAL)}>Find Casual Game</button>
+              <button className={`btn button-positive m-2 ${isJoiningPrivate ? "hidden" : ""}`} onClick={() => onClickShowCreateLobbyId()}>Create Private Game</button>
+              <button className={`btn button-positive m-2 ${isCreatingPrivate ? "hidden" : ""}`} onClick={() => onClickShowJoinLobbyId()}>Join Private Game</button>
+            </div>
+
+            {!isCreatingPrivate && !isJoiningPrivate ? null :
+              <form onSubmit={onSubmitPrivateLobby}>
+                <input className="form-control text-center" value={privateLobbyId} onChange={onChangePrivateLobbyId} placeholder="Lobby Code" />
+                <button type="submit" className="btn button-positive m-2">{isCreatingPrivate ? "Create Lobby" : "Join Lobby" }</button>
+              </form>
+            }
+          </div>
+        }
+
+        <hr />
         <Link to={"/practice"}><button className="btn button-positive">Practice</button></Link>
       </div>
 

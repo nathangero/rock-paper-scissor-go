@@ -86,34 +86,6 @@ export const dbDoesUsernameExist = async (username: string): Promise<boolean> =>
 }
 
 
-export const dbCreateLobby = async (lobbyType: LOBBY_TYPES, user: object): Promise<LobbyInfo | null> => {
-  try {
-    const dbRef = `${DB_DOC_KEYS.LOBBIES}/${lobbyType}`;
-    const newLobbyId = push(child(ref(db), dbRef)).key; // Create a new lobby id
-
-    const lobbyRef = `${dbRef}/${newLobbyId}`;
-    const host = Object.keys(user)[0];
-
-    const newLobby = {
-      [LOBBY_KEYS.HOST]: host,
-      [LOBBY_KEYS.ID]: newLobbyId,
-      [LOBBY_KEYS.PLAYERS]: user,
-      [LOBBY_KEYS.PLAYERS_NUM]: 1, // The player creating this lobby
-      [LOBBY_KEYS.TYPE]: lobbyType,
-    };
-
-    await set(ref(db, lobbyRef), newLobby);
-    // console.log("successfully created a lobby!");
-
-    return newLobby;
-  } catch (error) {
-    console.log("Couldn't create casual lobbies");
-    console.error(error);
-    return null;
-  }
-}
-
-
 export const dbSearchLobbies = async (lobbyType: LOBBY_TYPES): Promise<object | null> => {
   try {
     const dbRef = `${DB_DOC_KEYS.LOBBIES}/${lobbyType}`;
@@ -132,6 +104,34 @@ export const dbSearchLobbies = async (lobbyType: LOBBY_TYPES): Promise<object | 
     return lobby
   } catch (error) {
     console.log("Couldn't search for casual lobbies");
+    console.error(error);
+    return null;
+  }
+}
+
+
+export const dbCreateLobby = async (lobbyType: LOBBY_TYPES, user: object, lobbyId?: string): Promise<LobbyInfo | null> => {
+  try {
+    const dbRef = `${DB_DOC_KEYS.LOBBIES}/${lobbyType}`;
+    const newLobbyId = lobbyId ? lobbyId : push(child(ref(db), dbRef)).key; // Create a new lobby id if one isn't provided 
+
+    const lobbyRef = `${dbRef}/${newLobbyId}`;
+    const host = Object.keys(user)[0];
+
+    const newLobby = {
+      [LOBBY_KEYS.HOST]: host,
+      [LOBBY_KEYS.ID]: newLobbyId,
+      [LOBBY_KEYS.PLAYERS]: user,
+      [LOBBY_KEYS.PLAYERS_NUM]: 1, // The player creating this lobby
+      [LOBBY_KEYS.TYPE]: lobbyType,
+    };
+
+    await set(ref(db, lobbyRef), newLobby);
+    console.log("successfully created a lobby!");
+
+    return newLobby;
+  } catch (error) {
+    console.log("Couldn't create casual lobbies");
     console.error(error);
     return null;
   }

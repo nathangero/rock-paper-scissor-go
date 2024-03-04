@@ -59,6 +59,10 @@ main {
   border-radius: 0  5px  5px 0;
 }
 
+.hidden {
+  visibility: hidden;
+}
+
 .page-login {
   width: 50%;
   margin: 0 auto;

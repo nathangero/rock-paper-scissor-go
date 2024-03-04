@@ -308,7 +308,7 @@ export default function Practice() {
               <h4><b>{draws}</b></h4>
             </div>
             <div className="two-column-spacing">
-              <h4>Win rate:</h4>
+              <h4>Win ratio:</h4>
               <h4><b>{calcWinLossRatio()}%</b></h4>
             </div>
             <div className="two-column-spacing">

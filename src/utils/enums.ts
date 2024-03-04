@@ -7,6 +7,7 @@ export enum ATTACK_TYPES {
 
 export enum LOBBY_TYPES {
   CASUAL = "casual",
+  PRIVATE = "private",
   RANKED = "ranked",
 }
 
