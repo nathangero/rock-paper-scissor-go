@@ -238,7 +238,7 @@ export default function Practice() {
                 <h3 className="countdown-text">{epicCoundownText}</h3>
                 <img src="assets/fist-cross-dictator-bang-svgrepo-com.svg" width={100} className="fist" alt="rock icon" />
               </> :
-              <Round roundCount={practiceRoundCount} roundMax={practiceRoundMax} roundProgress={roundProgress} isFinished={isPracticeRoundFinished} onClickAttack={onClickAttack} />
+              <Round roundCount={practiceRoundCount} roundMax={practiceRoundMax} roundProgress={roundProgress} onClickAttack={onClickAttack} />
             }
           </> :
           <AttackSelection onClickAttack={onClickAttack} />
