@@ -190,10 +190,17 @@ export default function LobbyRoom() {
 
         {p2 ?
           <OnlineMatch lobbyType={lobby[LOBBY_KEYS.TYPE]} lobbyInfo={lobby} isMatchFinished={isMatchFinished} setIsMatchFinished={setIsMatchFinished} /> :
-          <h4>Waiting for an opponent...</h4>
+          <>
+            <h4>Waiting for an opponent...</h4>
+            {lobby[LOBBY_KEYS.TYPE] === LOBBY_TYPES.PRIVATE ?
+              <>
+                <p className="fs-3">Your lobby code: <b>{lobby[LOBBY_KEYS.ID]}</b></p>
+              </> : null
+            }
+          </>
         }
 
-        <br /><br /><br />
+        <br /><br />
         {isMatchFinished ? null :
           <button className="btn button-negative" onClick={() => onClickLeaveMatch()}>{p2 ? "Forfeit Match" : "Leave Match"}</button>
         }
