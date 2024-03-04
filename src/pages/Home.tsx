@@ -2,12 +2,13 @@ import { Link, useNavigate } from "react-router-dom";
 import { Modal } from "bootstrap";
 import { useAppDispatch, useAppSelector } from "../redux/hooks"
 import { LOBBY_TYPES, LOCAL_STORAGE_KEYS, ROUTER_LINKS } from "../utils/enums";
-import { dbCreateLobby, dbGetLobbyPlayers, dbJoinLobby, dbJoinPrivateLobby, dbSearchLobbies } from "../utils/rtdb";
+import { dbCheckPrivateLobby, dbCreateLobby, dbGetLobbyPlayers, dbJoinLobby, dbJoinPrivateLobby, dbSearchLobbies } from "../utils/rtdb";
 import LoadingSpinner from "../components/LoadingSpinner";
 import { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import { LOBBY_KEYS } from "../utils/db-keys";
 import { auth } from "../../firebase";
 import { USER_ACTIONS } from "../redux/reducer";
+import Alert from "../components/Alert";
 
 export default function Home() {
   const LOBBY_ID_REGEX = /^[a-zA-Z0-9-]+$/;
@@ -16,6 +17,10 @@ export default function Home() {
   const user = useAppSelector(state => state.user);
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
+  
+  const [modalAlert, setModalAlert] = useState<Modal | null>(null);
+  const [alertTitle, setAlertTitle] = useState('');
+  const [alertBody, setAlertBody] = useState('');
 
   const [loadingSpinner, setLoadingSpinner] = useState<Modal | null>(null);
   const [loadingText, setLoadingText] = useState<string>("Finding Lobby...")
@@ -31,6 +36,9 @@ export default function Home() {
     // Initialize bootstrap modals 
     const loadingSpinner = document.querySelector<HTMLDivElement>(".loading-spinner")?.querySelector<HTMLDivElement>("#modal-loading-spinner");
     if (loadingSpinner) setLoadingSpinner(new Modal(loadingSpinner));
+
+    const modalLobbyExists = document.querySelector<HTMLDivElement>(".alert-modal-lobby-exists")?.querySelector<HTMLDivElement>("#alertModal");
+    if (modalLobbyExists) setModalAlert(new Modal(modalLobbyExists));
   }, []);
 
   useEffect(() => {
@@ -218,7 +226,16 @@ export default function Home() {
     e.stopPropagation();
 
     if (isCreatingPrivate) {
-      await createPrivateLobby();
+      loadingSpinner?.show();
+      const lobbyAlreadyExists = await dbCheckPrivateLobby(privateLobbyId);
+      if (!lobbyAlreadyExists) await createPrivateLobby();
+      else {
+        loadingSpinner?.hide();
+        setAlertTitle("Lobby Already Exists");
+        setAlertBody("Please create a different lobby code");
+        modalAlert?.show();
+      }
+      
     }
 
     if (isJoiningPrivate) {
@@ -274,6 +291,11 @@ export default function Home() {
 
         <hr />
         <Link to={"/practice"}><button className="btn button-positive">Practice</button></Link>
+      </div>
+      
+
+      <div className="alert-modal-lobby-exists">
+        <Alert title={alertTitle} body={alertBody} />
       </div>
 
       <div className="loading-spinner">

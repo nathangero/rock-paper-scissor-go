@@ -109,6 +109,25 @@ export const dbSearchLobbies = async (lobbyType: LOBBY_TYPES): Promise<object | 
   }
 }
 
+/**
+ * 
+ * @param lobbyId Lobby id the user wants to use
+ * @returns True if lobby does exist (user must make new code), False if lobby does not exist
+ */
+export const dbCheckPrivateLobby = async (lobbyId: string): Promise<boolean> => {
+  try {
+    const dbRef = `${DB_DOC_KEYS.LOBBIES}/${LOBBY_TYPES.PRIVATE}/${lobbyId}`;
+
+    const snapshot = await get(ref(db, dbRef));
+    return snapshot.exists();
+  } catch (error) {
+    console.log("couldn't check private lobbies");
+    console.error(error);
+
+    return true;
+  }
+}
+
 
 export const dbCreateLobby = async (lobbyType: LOBBY_TYPES, user: object, lobbyId?: string): Promise<LobbyInfo | null> => {
   try {
