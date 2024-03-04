@@ -127,7 +127,7 @@ export const dbCreateLobby = async (lobbyType: LOBBY_TYPES, user: object, lobbyI
     };
 
     await set(ref(db, lobbyRef), newLobby);
-    console.log("successfully created a lobby!");
+    // console.log("successfully created a lobby!");
 
     return newLobby;
   } catch (error) {
@@ -234,8 +234,6 @@ export const dbGetLobbyPlayers = async (lobbyType: LOBBY_TYPES, lobbyId: string)
 }
 
 export const dbUpdateUserAttack = async (lobbyType: LOBBY_TYPES, lobbyId: string, matchCount: number, roundCount: number, userAttack: object): Promise<boolean> => {
-  console.log("@dbUpdateUserAttack");
-  console.log("lobbytype:", lobbyType);
   try {
     const dbRef = `${DB_DOC_KEYS.LOBBIES}/${lobbyType}/${lobbyId}/${LOBBY_KEYS.MATCH_NUM}/${matchCount}/${LOBBY_KEYS.ROUNDS}/${roundCount}`;
     // console.log("dbRef:", dbRef);

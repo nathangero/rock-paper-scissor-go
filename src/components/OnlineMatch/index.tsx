@@ -148,7 +148,7 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, isMatchFinished, set
         if (!value[opponent]) return; // Return if no opponent yet
 
         const willRematch = value[opponent];
-        console.log("opponent rematch?", willRematch);
+        // console.log("opponent rematch?", willRematch);
         
         // Turn off listener once opponent response is received
         off(rematchRef, "value");
