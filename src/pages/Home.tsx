@@ -10,6 +10,8 @@ import { auth } from "../../firebase";
 import { USER_ACTIONS } from "../redux/reducer";
 
 export default function Home() {
+  const LOBBY_ID_REGEX = /^[a-zA-Z0-9-]+$/;
+  const LOBBY_ID_LENGTH = 8; // Only allow up to 8 characters;
 
   const user = useAppSelector(state => state.user);
   const dispatch = useAppDispatch();
@@ -23,12 +25,20 @@ export default function Home() {
   const [isJoiningPrivate, setIsJoiningPrivate] = useState<boolean>(false);
 
   const [privateLobbyId, setPrivateLobbyId] = useState<string>("");
+  const [isPrivateIdValid, setIsPrivateIdValid] = useState<boolean>(false);
 
   useEffect(() => {
     // Initialize bootstrap modals 
     const loadingSpinner = document.querySelector<HTMLDivElement>(".loading-spinner")?.querySelector<HTMLDivElement>("#modal-loading-spinner");
     if (loadingSpinner) setLoadingSpinner(new Modal(loadingSpinner));
   }, []);
+
+  useEffect(() => {
+    // Determine if the 
+    const createJoinPrivateButton = document.getElementById("create-join-private-lobby");
+    if (createJoinPrivateButton && isPrivateIdValid) createJoinPrivateButton.removeAttribute("disabled");
+    else if (createJoinPrivateButton) createJoinPrivateButton.setAttribute("disabled", "");
+  }, [isPrivateIdValid, isCreatingPrivate, isJoiningPrivate])
 
 
   const joinLobby = async (lobbyType: LOBBY_TYPES, lobbyInfo: LobbyInfo) => {
@@ -162,10 +172,15 @@ export default function Home() {
     }
   }
 
-  // ON CHANGE
+  // ************** ON CHANGE ************** \\
 
   const onChangePrivateLobbyId = ({ target }: ChangeEvent<HTMLInputElement>) => {
-    setPrivateLobbyId(target.value);
+    const id = target.value;
+    if (!LOBBY_ID_REGEX.test(id)) setIsPrivateIdValid(false); // Tell user the code isn't valid
+    else if (id.length > LOBBY_ID_LENGTH) return; // Prevent going over 8 characters
+    else setIsPrivateIdValid(true); // Code is valid if above cases fall through
+
+    setPrivateLobbyId(id);
   }
 
   // ************** ON CLICK ************** \\
@@ -248,8 +263,10 @@ export default function Home() {
 
             {!isCreatingPrivate && !isJoiningPrivate ? null :
               <form onSubmit={onSubmitPrivateLobby}>
-                <input className="form-control text-center" value={privateLobbyId} onChange={onChangePrivateLobbyId} placeholder="Lobby Code" />
-                <button type="submit" className="btn button-positive m-2">{isCreatingPrivate ? "Create Lobby" : "Join Lobby" }</button>
+                <input className="form-control text-center private-lobby-code" value={privateLobbyId} onChange={onChangePrivateLobbyId} placeholder="Lobby Code" />
+                <p className="m-2">*Code must be 1-8 characters and only include letters, numbers, and dashes</p>
+                {isPrivateIdValid ? null : <p className="text-danger fs-3">Code is not valid.</p>}
+                <button id="create-join-private-lobby" type="submit" className="btn button-positive m-2" disabled>{isCreatingPrivate ? "Create Lobby" : "Join Lobby" }</button>
               </form>
             }
           </div>
