@@ -346,7 +346,7 @@ export default function Practice() {
             to={"/"}
             className="btn button-positive m2"
           >
-            <i className="bi bi-arrow-left"></i> <label>Home</label>
+            <i className="bi bi-arrow-left"></i> Home
           </Link>
 
           <button className="btn button-positive m-2" onClick={() => setIsPracticeMatch(!isPracticeRound)}>{isPracticeRound ? "Stop Match" : "Practice Match"}</button>
