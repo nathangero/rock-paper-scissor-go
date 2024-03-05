@@ -183,6 +183,8 @@ export const dbJoinPrivateLobby = async (lobbyId: string, user: object): Promise
     const snapshot = await get(ref(db, dbRef));
     const lobbyInfo = snapshot.val();
 
+    if (!lobbyInfo) return null; // Null check
+
     const { [LOBBY_KEYS.PLAYERS]: players, [LOBBY_KEYS.PLAYERS_NUM]: playerNum } = lobbyInfo;
 
     // Update players
@@ -195,7 +197,7 @@ export const dbJoinPrivateLobby = async (lobbyId: string, user: object): Promise
 
     return updatedLobby;
   } catch (error) {
-    console.log("Couldn't join casual lobby");
+    console.log("Couldn't join private lobby");
     console.error(error);
     return null;
   }
