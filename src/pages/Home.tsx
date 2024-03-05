@@ -173,6 +173,11 @@ export default function Home() {
 
       if (privateLobby) {
         joinLobbyHelper(LOBBY_TYPES.PRIVATE, privateLobby, privateLobbyId);
+      } else {
+        loadingSpinner?.hide();
+        setAlertTitle("Couldn't find lobby");
+        setAlertBody("Lobby might not exist or code was incorrect.");
+        modalAlert?.show();
       }
     } catch (error) {
       console.log("Couldn't join private lobby");
@@ -206,6 +211,10 @@ export default function Home() {
 
           case LOBBY_TYPES.RANKED:
             console.log("search for ranked")
+            loadingSpinner?.hide();
+            setAlertTitle("Feature not implemented yet");
+            setAlertBody("Please wait for a future update! :)");
+            modalAlert?.show();
             break;
         }
       } else {
@@ -267,7 +276,7 @@ export default function Home() {
       <div>
         <div className="mb-2">
           <button className="btn button-positive mx-2" onClick={() => setIsPlayingCasual(!isPlayingCasual)}>Play For Fun</button>
-          {isPlayingCasual ? null : <button className={`btn button-positive mx-2 ${!user?.email ? "disabled" : ""}`} onClick={() => onClickFindLobby(LOBBY_TYPES.RANKED)}>Play For Rank</button>}
+          {isPlayingCasual ? null : <button className={`btn button-positive mx-2 ${!user?.email ? "disabled" : ""}`} onClick={() => onClickFindLobby(LOBBY_TYPES.RANKED)} disabled >Play For Rank</button>}
         </div>
 
         {!isPlayingCasual ? null :
