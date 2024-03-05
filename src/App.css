@@ -26,10 +26,12 @@ main {
   color: white;
   background-color: var(--button-positive);
 }
+
 .btn.button-positive:hover {
   color: white;
   background-color: var(--button-positive-hover);
 }
+
 .btn.button-positive:active {
   color: white !important;
   background-color: var(--button-positive-click) !important;
@@ -40,10 +42,12 @@ main {
   color: white;
   background-color: var(--button-negative);
 }
+
 .btn.button-negative:hover {
   color: white;
   background-color: var(--button-negative-hover);
 }
+
 .btn.button-negative:active {
   color: white !important;
   background-color: var(--button-negative-click) !important;
@@ -56,7 +60,11 @@ main {
 
 .container-password button {
   color: var(--button-positive);
-  border-radius: 0  5px  5px 0;
+  border-radius: 0 5px 5px 0;
+}
+
+.hidden {
+  visibility: hidden;
 }
 
 .page-login {
@@ -75,6 +83,11 @@ main {
 
 p.text-danger {
   color: var(--text-danger) !important;
+}
+
+.private-lobby-code {
+  width: 50% !important;
+  margin: 0 auto;
 }
 
 @media screen and (max-width: 992px) {

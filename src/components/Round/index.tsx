@@ -3,7 +3,7 @@ import { ATTACK_TYPES, PLAYER_TYPES } from "../../utils/enums";
 import AttackSelection from "../AttackSelection";
 import React from "react";
 
-export default function Round({ roundCount, roundMax, roundProgress, isFinished, onClickAttack }: Round) {
+export default function Round({ roundCount, roundMax, roundProgress, onClickAttack }: Round) {
 
   const renderRoundIcon = (playerType: PLAYER_TYPES, index: number) => {
     return (
@@ -46,6 +46,5 @@ interface Round {
   roundCount: number;
   roundMax: number;
   roundProgress: any[]; // eslint-disable-line @typescript-eslint/no-explicit-any
-  isFinished: boolean;
   onClickAttack: (attackType: ATTACK_TYPES) => void;
 }

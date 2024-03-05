@@ -86,34 +86,6 @@ export const dbDoesUsernameExist = async (username: string): Promise<boolean> =>
 }
 
 
-export const dbCreateLobby = async (lobbyType: LOBBY_TYPES, user: object): Promise<LobbyInfo | null> => {
-  try {
-    const dbRef = `${DB_DOC_KEYS.LOBBIES}/${lobbyType}`;
-    const newLobbyId = push(child(ref(db), dbRef)).key; // Create a new lobby id
-
-    const lobbyRef = `${dbRef}/${newLobbyId}`;
-    const host = Object.keys(user)[0];
-
-    const newLobby = {
-      [LOBBY_KEYS.HOST]: host,
-      [LOBBY_KEYS.ID]: newLobbyId,
-      [LOBBY_KEYS.PLAYERS]: user,
-      [LOBBY_KEYS.PLAYERS_NUM]: 1, // The player creating this lobby
-      [LOBBY_KEYS.TYPE]: lobbyType,
-    };
-
-    await set(ref(db, lobbyRef), newLobby);
-    // console.log("successfully created a lobby!");
-
-    return newLobby;
-  } catch (error) {
-    console.log("Couldn't create casual lobbies");
-    console.error(error);
-    return null;
-  }
-}
-
-
 export const dbSearchLobbies = async (lobbyType: LOBBY_TYPES): Promise<object | null> => {
   try {
     const dbRef = `${DB_DOC_KEYS.LOBBIES}/${lobbyType}`;
@@ -137,6 +109,53 @@ export const dbSearchLobbies = async (lobbyType: LOBBY_TYPES): Promise<object | 
   }
 }
 
+/**
+ * 
+ * @param lobbyId Lobby id the user wants to use
+ * @returns True if lobby does exist (user must make new code), False if lobby does not exist
+ */
+export const dbCheckPrivateLobby = async (lobbyId: string): Promise<boolean> => {
+  try {
+    const dbRef = `${DB_DOC_KEYS.LOBBIES}/${LOBBY_TYPES.PRIVATE}/${lobbyId}`;
+
+    const snapshot = await get(ref(db, dbRef));
+    return snapshot.exists();
+  } catch (error) {
+    console.log("couldn't check private lobbies");
+    console.error(error);
+
+    return true;
+  }
+}
+
+
+export const dbCreateLobby = async (lobbyType: LOBBY_TYPES, user: object, lobbyId?: string): Promise<LobbyInfo | null> => {
+  try {
+    const dbRef = `${DB_DOC_KEYS.LOBBIES}/${lobbyType}`;
+    const newLobbyId = lobbyId ? lobbyId : push(child(ref(db), dbRef)).key; // Create a new lobby id if one isn't provided 
+
+    const lobbyRef = `${dbRef}/${newLobbyId}`;
+    const host = Object.keys(user)[0];
+
+    const newLobby = {
+      [LOBBY_KEYS.HOST]: host,
+      [LOBBY_KEYS.ID]: newLobbyId,
+      [LOBBY_KEYS.PLAYERS]: user,
+      [LOBBY_KEYS.PLAYERS_NUM]: 1, // The player creating this lobby
+      [LOBBY_KEYS.TYPE]: lobbyType,
+    };
+
+    await set(ref(db, lobbyRef), newLobby);
+    // console.log("successfully created a lobby!");
+
+    return newLobby;
+  } catch (error) {
+    console.log("Couldn't create casual lobbies");
+    console.error(error);
+    return null;
+  }
+}
+
 export const dbJoinLobby = async (lobbyType: LOBBY_TYPES, lobbyId: string, lobbyInfo: LobbyInfo): Promise<boolean> => {
   try {
     // console.log("@dbJoinLobby")
@@ -153,6 +172,37 @@ export const dbJoinLobby = async (lobbyType: LOBBY_TYPES, lobbyId: string, lobby
     return false;
   }
 }
+
+export const dbJoinPrivateLobby = async (lobbyId: string, user: object): Promise<object | null> => {
+  try {
+    // console.log("@dbJoinLobby")
+    const dbRef = `${DB_DOC_KEYS.LOBBIES}/${LOBBY_TYPES.PRIVATE}/${lobbyId}`;
+    // console.log("lobbyId:", lobbyId);
+    // console.log("dbRef:", dbRef);
+
+    const snapshot = await get(ref(db, dbRef));
+    const lobbyInfo = snapshot.val();
+
+    if (!lobbyInfo) return null; // Null check
+
+    const { [LOBBY_KEYS.PLAYERS]: players, [LOBBY_KEYS.PLAYERS_NUM]: playerNum } = lobbyInfo;
+
+    // Update players
+    const updatedPlayers = { ...players, ...user };
+
+    // Updated Lobby
+    const updatedLobby: any = { [LOBBY_KEYS.PLAYERS]: updatedPlayers, [LOBBY_KEYS.PLAYERS_NUM]: playerNum + 1 }; // eslint-disable-line @typescript-eslint/no-explicit-any
+    
+    await update(ref(db, dbRef), updatedLobby);
+
+    return updatedLobby;
+  } catch (error) {
+    console.log("Couldn't join private lobby");
+    console.error(error);
+    return null;
+  }
+}
+
 
 export const dbLeaveLobby = async (lobbyType: LOBBY_TYPES, lobbyId: string, username: string): Promise<void> => {
   try {
