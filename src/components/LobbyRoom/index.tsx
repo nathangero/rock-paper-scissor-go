@@ -36,7 +36,6 @@ export default function LobbyRoom() {
       return;
     }
 
-
     const modalLeave = document.querySelector<HTMLDivElement>(".alert-modal-lobby-room")?.querySelector<HTMLDivElement>("#alertModal");
     if (modalLeave) setAlertModal(new Modal(modalLeave));
 
@@ -188,14 +187,18 @@ export default function LobbyRoom() {
         </div>
         <hr />
 
-        {p2 ?
-          <OnlineMatch lobbyType={lobby[LOBBY_KEYS.TYPE]} lobbyInfo={lobby} isMatchFinished={isMatchFinished} setIsMatchFinished={setIsMatchFinished} /> :
+        {!lobby ? null :
           <>
-            <h4>Waiting for an opponent...</h4>
-            {lobby[LOBBY_KEYS.TYPE] === LOBBY_TYPES.PRIVATE ?
+            {p2 && lobby ?
+              <OnlineMatch lobbyType={lobby[LOBBY_KEYS.TYPE]} lobbyInfo={lobby} isMatchFinished={isMatchFinished} setIsMatchFinished={setIsMatchFinished} /> :
               <>
-                <p className="fs-3">Your lobby code: <b>{lobby[LOBBY_KEYS.ID]}</b></p>
-              </> : null
+                <h4>Waiting for an opponent...</h4>
+                {lobby[LOBBY_KEYS.TYPE] === LOBBY_TYPES.PRIVATE ?
+                  <>
+                    <p className="fs-3">Your lobby code: <b>{lobby[LOBBY_KEYS.ID]}</b></p>
+                  </> : null
+                }
+              </>
             }
           </>
         }
