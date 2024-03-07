@@ -33,7 +33,7 @@ export default function Navbar() {
     <header>
       <nav className="navbar navbar-expand-sm mb-2">
         <div className="container-fluid">
-          <Link to={NAV_LINKS.HOME} className="navbar-brand">ICON</Link>
+          <Link to={NAV_LINKS.HOME} className="navbar-brand">RPS GO!</Link>
 
           <button
             className="navbar-toggler"

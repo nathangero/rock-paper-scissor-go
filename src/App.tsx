@@ -6,6 +6,7 @@ import { useAppDispatch } from "./redux/hooks"
 import { auth } from "../firebase"
 import { dbGetUser } from "./utils/rtdb"
 import { USER_ACTIONS } from "./redux/reducer"
+import Footer from "./components/Footer"
 // import LoadingSpinner from "./components/LoadingSpinner"
 
 function App() {
@@ -41,7 +42,6 @@ function App() {
     return (
       <>
         <div className="d-flex justify-content-center align-items-center" style={{ height: "100vh" }}>
-          {/* <LoadingSpinner spinnerText={"Loading..."} useModal={false} /> */}
         </div>
       </>
     )
@@ -53,6 +53,7 @@ function App() {
       <main>
         <Outlet />
       </main>
+      <Footer />
     </>
   )
 }

@@ -34,3 +34,5 @@ export enum ROUTER_LINKS {
   PRACTICE = "/practice",
   PROFILE = "/profile",
 }
+
+export const VERSION_NUM = "0.75b";
