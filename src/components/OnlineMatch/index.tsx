@@ -4,9 +4,9 @@ import React, { useEffect, useState } from "react";
 import { ATTACK_TYPES, LOBBY_TYPES, LOCAL_STORAGE_KEYS, PLAYER_TYPES, ROUND_RESULT, ROUTER_LINKS } from "../../utils/enums";
 import { useAppSelector } from "../../redux/hooks";
 import { DB_DOC_KEYS, LOBBY_KEYS } from "../../utils/db-keys";
-import { dbHandleRoundDraw, dbLeaveLobby, dbUpdateMatch, dbUpdateRematch, dbUpdateUserAttack } from "../../utils/rtdb";
+import { dbHandleRoundDraw, dbLeaveLobby, dbUpdateMatch, dbUpdatePlayerStats, dbUpdateRematch, dbUpdateUserAttack } from "../../utils/rtdb";
 import { off, onValue, ref } from "firebase/database";
-import { db } from "../../../firebase";
+import { auth, db } from "../../../firebase";
 import AttackSelection from "../AttackSelection";
 import { Modal } from "bootstrap";
 import Alert, { CustomButton } from "../Alert";
@@ -43,6 +43,10 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, isMatchFinished, set
   const [roundWinner, setRoundWinner] = useState<string>("");
   const [matchWinner, setMatchWinner] = useState<string>("");
   const [isRoundFinished, setIsRoundFinished] = useState<boolean>(false);
+
+  const [rockCount, setRockCount] = useState<number>(0);
+  const [paperCount, setPaperCount] = useState<number>(0);
+  const [scissorCount, setScissorCount] = useState<number>(0);
 
   const [isShowingCountdown, setIsShowingCountdown] = useState<boolean>(false);
   const [coundownText, setCountdownText] = useState<string>("");
@@ -149,7 +153,7 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, isMatchFinished, set
 
         const willRematch = value[opponent];
         // console.log("opponent rematch?", willRematch);
-        
+
         // Turn off listener once opponent response is received
         off(rematchRef, "value");
         setIsWaitingForRematch(false);
@@ -161,6 +165,26 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, isMatchFinished, set
     } catch (error) {
       console.log("Couldn't listen to rematch");
       console.error(error);
+    }
+  }
+
+  /**
+   * Update the proper attack count depending on the user's attack.
+   * 
+   * These "counts" will be used later when the match is finished to update the user's profile
+   * @param userAttack The user's selected attack
+   */
+  const calcAttackStat = (userAttack: ATTACK_TYPES) => {
+    switch (userAttack) {
+      case ATTACK_TYPES.PAPER:
+        setPaperCount(paperCount + 1);
+        break;
+      case ATTACK_TYPES.ROCK:
+        setRockCount(rockCount + 1);
+        break;
+      case ATTACK_TYPES.SCISSORS:
+        setScissorCount(scissorCount + 1);
+        break;
     }
   }
 
@@ -230,18 +254,18 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, isMatchFinished, set
       setRoundWinner(`You lost round ${roundCount}`);
     }
 
-
     if (updatedUserWins === roundMajority) {
       doCountdown("** You win! **");
 
     } else if (updatedOpponentWins === roundMajority) {
       doCountdown("You lost");
 
+    } else {
+      setIsTimerActive(true);
     }
 
     setUserWins(updatedUserWins);
     setOpponentWins(updatedOpponentWins);
-    setIsTimerActive(true);
   }
 
   /**
@@ -257,6 +281,8 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, isMatchFinished, set
     setIsMatchFinished(true);
     setIsBetweenRounds(false);
     setIsTimerActive(false);
+    if (auth.currentUser?.uid) dbUpdatePlayerStats(lobbyType, auth.currentUser.uid, rockCount, paperCount, scissorCount);
+
     const timer = setInterval(() => {
       setCountdownText(text[--countdown]);
       if (countdown < 0) {
@@ -288,6 +314,7 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, isMatchFinished, set
 
   const onClickAttack = async (userAttack: ATTACK_TYPES) => {
     setUserAttackStr(userAttack);
+    calcAttackStat(userAttack);
     setIsBetweenRounds(true);
     setIsTimerActive(false); // Stop the timer
 
@@ -351,6 +378,9 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, isMatchFinished, set
     setIsShowingCountdown(false);
     setCountdownText("");
     setIsTimerActive(true);
+    setPaperCount(0);
+    setRockCount(0);
+    setScissorCount(0);
   }
 
   const onClickLeave = () => {

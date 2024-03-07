@@ -16,6 +16,12 @@ export enum LOBBY_KEYS {
   TYPE = "lobbyType",
 }
 
+export enum STATS_KEYS {
+  PAPER = "paper",
+  ROCK = "rock",
+  SCISSORS = "scissors",
+}
+
 export enum USERNAME_KEYS {
   ACTUAL = "actual", // username that has captialized letters
   USER = "user", // user Id
@@ -23,6 +29,7 @@ export enum USERNAME_KEYS {
 
 export enum USER_KEYS {
   EMAIL = "email",
+  STATS = "stats",
   TIME_REGISTERED = "timeRegistered",
   USERNAME = "username",
 }
