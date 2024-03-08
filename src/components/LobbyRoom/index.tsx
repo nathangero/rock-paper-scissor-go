@@ -182,15 +182,16 @@ export default function LobbyRoom() {
     <>
       <div>
         <div className="players">
-          <div>
-            <h3>P1</h3>
-            <h3 id="player-1-name"><b>{p1}</b></h3>
+          <div className="players-names">
+            <h3><u>P1</u></h3>
+            <h3><u>P2</u></h3>
           </div>
-          <div>
-            <h3>P2</h3>
+          <div className="players-names">
+            <h3 id="player-1-name"><b>{p1}</b></h3>
             <h3 id="player-2-name"><b>{p2}</b></h3>
           </div>
         </div>
+
         <hr />
 
         {!lobby ? null :

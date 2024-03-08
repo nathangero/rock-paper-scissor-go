@@ -1,9 +1,16 @@
 .players {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   justify-content: space-between;
   width: 40%;
   margin: 0 auto;
+}
+
+.players-names {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  text-wrap: wrap;
 }
 
 @media screen and (max-width: 992px) {
@@ -15,7 +22,7 @@
 
 @media screen and (max-width: 768px) {
   .players {
-    width: 60%;
+    width: 80%;
     margin: 0 auto;
   }
 }
