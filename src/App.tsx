@@ -31,7 +31,7 @@ function App() {
 
         setLoading(false);
       } else {
-        console.log("no user logged in");
+        // console.log("no user logged in");
         // Create a random username and add it to the store
         const tempName = makeRandomUsername();
         const tempPlayer = { username: tempName }

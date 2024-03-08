@@ -316,6 +316,8 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, isMatchFinished, set
     setIsMatchFinished(true);
     setIsBetweenRounds(false);
     setIsTimerActive(false);
+
+    // Only update stats for logged in users
     if (auth.currentUser?.uid) dbUpdatePlayerStats(lobbyType, auth.currentUser.uid, rockCount, paperCount, scissorCount);
 
     const timer = setInterval(() => {
