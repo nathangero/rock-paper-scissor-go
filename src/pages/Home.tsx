@@ -17,7 +17,7 @@ export default function Home() {
   const user = useAppSelector(state => state.user);
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
-  
+
   const [modalAlert, setModalAlert] = useState<Modal | null>(null);
   const [alertTitle, setAlertTitle] = useState('');
   const [alertBody, setAlertBody] = useState('');
@@ -49,28 +49,14 @@ export default function Home() {
   }, [isPrivateIdValid, isCreatingPrivate, isJoiningPrivate])
 
 
-  /**
-   * Randomly generates a username for players not logged in.
-   * @returns Randomly generated player name
-   */
-  const makeRandomUsername = (): string => {
-    let name = "player";
-    for (let i = 0; i < 10; i++) {
-      name += Math.floor(Math.random() * 10);
-    }
-
-    return name;
-  }
-
-
-  const joinLobby = async (lobbyType: LOBBY_TYPES, lobbyInfo: LobbyInfo, username: string) => {
+  const joinLobby = async (lobbyType: LOBBY_TYPES, lobbyInfo: LobbyInfo) => {
     if (!lobbyInfo || Object.keys(lobbyInfo).length === 0) return;
 
     // Deconstruct variables
     const { [LOBBY_KEYS.PLAYERS]: players } = lobbyInfo;
 
     // Update players
-    const updatedPlayers = { ...players, [username]: auth.currentUser?.uid };
+    const updatedPlayers = { ...players, [user.username]: auth.currentUser ? auth.currentUser?.uid : user.username };
 
     // Update players already in the lobby
     const playerNum = await dbGetLobbyPlayers(lobbyType, lobbyInfo[LOBBY_KEYS.ID]);
@@ -81,7 +67,7 @@ export default function Home() {
     // Get lobbyId
     const lobbyId = lobbyInfo[LOBBY_KEYS.ID];
 
-    // console.log("updatedLobby:", updatedLobby);
+    console.log("updatedLobby:", updatedLobby);
 
     let didJoin = false;
     switch (lobbyType) {
@@ -121,10 +107,10 @@ export default function Home() {
     }
   }
 
-  const createLobby = async (lobbyType: LOBBY_TYPES, username: string) => {
+  const createLobby = async (lobbyType: LOBBY_TYPES) => {
     try {
       setLoadingText("Creating a lobby...");
-      const userObj = { [username]: auth.currentUser ? auth.currentUser?.uid : username };
+      const userObj = { [user.username]: auth.currentUser ? auth.currentUser?.uid : user.username };
       const newLobby = await dbCreateLobby(lobbyType, userObj);
       // console.log("new lobby:", newLobby);
       if (newLobby) {
@@ -165,7 +151,7 @@ export default function Home() {
     try {
       setLoadingText("Creating private lobby...");
       loadingSpinner?.show();
-      const userObj = { [user.username]: auth.currentUser?.uid };
+      const userObj = { [user.username]: auth.currentUser ? auth.currentUser?.uid : user.username };
       const newLobby = await dbCreateLobby(LOBBY_TYPES.PRIVATE, userObj, privateLobbyId);
 
       if (newLobby) {
@@ -182,7 +168,7 @@ export default function Home() {
     try {
       setLoadingText("Joining private lobby...");
       loadingSpinner?.show();
-      const userObj = { [user.username]: auth.currentUser?.uid };
+      const userObj = { [user.username]: auth.currentUser ? auth.currentUser?.uid : user.username };
       const privateLobby = await dbJoinPrivateLobby(privateLobbyId, userObj);
 
       if (privateLobby) {
@@ -215,20 +201,19 @@ export default function Home() {
   const onClickFindLobby = async (lobbyType: LOBBY_TYPES) => {
     /**
      * TODO: Make random usernames for people who don't have accounts.
-     * in the db, their username is also their id.
-     * Make a check with auth.currentUser to prevent stats being updated for non existent users
+     * ✅ in the db, their username is also their id.
+     * ✅ Make a check with auth.currentUser to prevent stats being updated for non existent users
      * Make special text saying being logged in lets you see your stats and eventually ranked.
      */
 
     try {
       loadingSpinner?.show();
       const lobby = await dbSearchLobbies(lobbyType);
-      const username = auth.currentUser ? user.username : makeRandomUsername();
 
       if (lobby) {
         switch (lobbyType) {
           case LOBBY_TYPES.CASUAL:
-            joinLobby(lobbyType, lobby, username);
+            joinLobby(lobbyType, lobby);
             break;
 
           case LOBBY_TYPES.RANKED:
@@ -240,7 +225,7 @@ export default function Home() {
             break;
         }
       } else {
-        await createLobby(lobbyType, username);
+        await createLobby(lobbyType);
         // console.log("created lobby");
       }
 
@@ -252,7 +237,7 @@ export default function Home() {
   }
 
 
-  const onSubmitPrivateLobby = async (e: FormEvent)  => {
+  const onSubmitPrivateLobby = async (e: FormEvent) => {
     e.preventDefault();
     e.stopPropagation();
 
@@ -266,7 +251,7 @@ export default function Home() {
         setAlertBody("Please create a different lobby code");
         modalAlert?.show();
       }
-      
+
     }
 
     if (isJoiningPrivate) {
@@ -290,10 +275,10 @@ export default function Home() {
     <>
       <h1>Rock Paper Scissor, Go!</h1>
 
-      {user ?
-        <h4>Welcome back, {user?.username}!</h4> :
-        <h4>Play against others in Rock, Paper, Scissors and move up in rank!</h4>
-      }
+      <div className="mb-3">
+        <h4 className="mb-3">Play against others in Rock, Paper, Scissors and move up in rank!</h4>
+        <h4>{auth.currentUser ? `Welcome back ${user?.username}` : "Welcome"}!</h4>
+      </div>
 
       <div>
         <div className="mb-2">
@@ -314,7 +299,7 @@ export default function Home() {
                 <input className="form-control text-center private-lobby-code" value={privateLobbyId} onChange={onChangePrivateLobbyId} placeholder="Lobby Code" />
                 <p className="m-2">*Code must be 1-8 characters and only include letters, numbers, and dashes</p>
                 {isPrivateIdValid ? null : <p className="text-danger fs-3">Code is not valid.</p>}
-                <button id="create-join-private-lobby" type="submit" className="btn button-positive m-2" disabled>{isCreatingPrivate ? "Create Lobby" : "Join Lobby" }</button>
+                <button id="create-join-private-lobby" type="submit" className="btn button-positive m-2" disabled>{isCreatingPrivate ? "Create Lobby" : "Join Lobby"}</button>
               </form>
             }
           </div>
@@ -323,7 +308,7 @@ export default function Home() {
         <hr />
         <Link to={"/practice"}><button className="btn button-positive">Practice</button></Link>
       </div>
-      
+
 
       <div className="alert-modal-lobby-exists">
         <Alert title={alertTitle} body={alertBody} />

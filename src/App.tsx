@@ -31,12 +31,34 @@ function App() {
 
         setLoading(false);
       } else {
-        // console.log("no user logged in");
-        // Just remove the "Loading" text right away
+        console.log("no user logged in");
+        // Create a random username and add it to the store
+        const tempName = makeRandomUsername();
+        const tempPlayer = { username: tempName }
+
+        dispatch({
+          type: USER_ACTIONS.LOGIN,
+          user: tempPlayer
+        })
         setLoading(false);
       }
     })
   })
+
+
+
+  /**
+   * Randomly generates a username for players not logged in.
+   * @returns Randomly generated player name
+   */
+  const makeRandomUsername = (): string => {
+    let name = "player";
+    for (let i = 0; i < 10; i++) {
+      name += Math.floor(Math.random() * 10);
+    }
+
+    return name;
+  }
 
   if (loading) {
     return (
