@@ -15,10 +15,11 @@ import ShotClock from "../ShotClock";
 export default function OnlineMatch({ lobbyType, lobbyInfo, isMatchFinished, setIsMatchFinished }: OnlineMatch) {
   const roundCountMax = 5;
   const roundMajority = Math.ceil(roundCountMax / 2); // Amount of rounds needed to win
-  const opponentAfkTime = 25; // Countdown till opponent forfeits. Just in case opponent disconnects without updating the db.
+  const opponentAfkTime = 20; // Countdown till opponent forfeits. Just in case opponent disconnects without updating the db.
 
   const user = useAppSelector(state => state.user);
 
+  const [modalTimeout, setModalTimeout] = useState<Modal | null>(null);
   const [modalLeaveLobby, setModalLeaveLobby] = useState<Modal | null>(null);
   const [alertTitle, setAlertTitle] = useState<string>("");
   const [alertBody, setAlertBody] = useState<string>("");
@@ -32,7 +33,7 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, isMatchFinished, set
   const [isTimerActive, setIsTimerActive] = useState<boolean>(true);
   const [isBetweenRounds, setIsBetweenRounds] = useState<boolean>(false);
   const [isWaitingForRematch, setIsWaitingForRematch] = useState<boolean>(false);
-  
+
   const [opponentAfkSeconds, setOppAfkSeconds] = useState<number>(opponentAfkTime);
   const [isAfkTimerActive, setIsAfkTimerActive] = useState<boolean>(false);
 
@@ -66,6 +67,9 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, isMatchFinished, set
     // Set bootstrap modals
     const modalLeave = document.querySelector<HTMLDivElement>(".alert-modal-leave-lobby")?.querySelector<HTMLDivElement>("#alertModal");
     if (modalLeave) setModalLeaveLobby(new Modal(modalLeave));
+
+    const modalTimeout = document.querySelector<HTMLDivElement>(".alert-modal-timeout")?.querySelector<HTMLDivElement>("#alertModal");
+    if (modalTimeout) setModalTimeout(new Modal(modalTimeout));
   }, []);
 
   // Have a running timer for the opponent that will kick this 
@@ -76,21 +80,23 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, isMatchFinished, set
     if (!isAfkTimerActive) {
       // console.log("timer stopped, starting again with", isBetweenRounds ? roundBetweenTime : roundFullTime, "seconds")
       setOppAfkSeconds(opponentAfkTime); // Reset the time limit when timer is stopped
-      setIsAfkTimerActive(true); // Instantly start the timer again after resetting its value
+
+      if (!isMatchFinished) setIsAfkTimerActive(true); // During the match, instantly start the timer again after resetting its value
       return;
     }
 
     if (opponentAfkSeconds > 0) {
       timer = setTimeout(() => {
         setOppAfkSeconds(opponentAfkSeconds - 1);
+        console.log("opponent kick in", opponentAfkSeconds, "seconds");
       }, 1000);
     } else if (opponentAfkSeconds === 0) {
-      // console.log("time over!");
-      onTimeout("alert-modal-opp-afk");
+      // console.log("kicking opponent!");
+      onTimeout(opponent);
     }
 
     return () => clearTimeout(timer);
-  }, [isRoundFinished]);
+  }, [opponentAfkSeconds, isAfkTimerActive, isMatchFinished]);
 
 
   /**
@@ -148,6 +154,7 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, isMatchFinished, set
           // Set the appropriate flags to false to continue the game
           setIsResolvingDraw(false);
           setIsRoundFinished(false);
+          setIsAfkTimerActive(true);
           setIsRoundDraw(false);
 
           setIsBetweenRounds(false);
@@ -322,16 +329,23 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, isMatchFinished, set
     }, countdownInterval);
   }
 
-
-  const onTimeout = async (alertModalClass?: string) => {
+  /**
+   * Executes when the `ShotClock` runs out. 
+   * 
+   * If the opponent's username is given, then that means they were afk. So remove them from the lobby.
+   * 
+   * @param opponentName Opponent's username if the afk timer triggered
+   * @param alertModalClass Specific alert modal to show
+   */
+  const onTimeout = async (opponentName?: string) => {
     try {
-      await dbLeaveLobby(lobbyType, lobbyInfo[LOBBY_KEYS.ID], user.username);
+      await dbLeaveLobby(lobbyType, lobbyInfo[LOBBY_KEYS.ID], opponentName || user.username);
 
       // Remove the local storage item after the user leaves the lobby
       localStorage.removeItem(LOCAL_STORAGE_KEYS.LOBBY);
 
-      const modalTimeout = document.querySelector<HTMLDivElement>(alertModalClass ? alertModalClass : ".alert-modal-timeout")?.querySelector<HTMLDivElement>("#alertModal");
-      if (modalTimeout) new Modal(modalTimeout).show();
+      if (opponentName) return; // Don't show modal if kicking the opponent from the lobby;
+      modalTimeout?.show();
     } catch (error) {
       console.log("Couldn't leave lobby upon timeout");
       console.error(error);
@@ -352,6 +366,7 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, isMatchFinished, set
     }
 
     setIsRoundFinished(true);
+    setIsAfkTimerActive(true);
     await dbUpdateUserAttack(lobbyType, lobbyInfo[LOBBY_KEYS.ID], matchCount, roundCount, userAttackObj);
     await listenForOpponentAttack(userAttack);
   }
@@ -373,6 +388,7 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, isMatchFinished, set
 
   const onClickNextRound = () => {
     setIsRoundFinished(false);
+    setIsAfkTimerActive(true);
     setRoundCount(roundCount + 1);
     setUserAttackStr("");
     setOpponentAttackStr("");
@@ -399,10 +415,8 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, isMatchFinished, set
     setUserWins(0);
     setOpponentWins(0);
     setMatchDraws(0);
-    setIsRoundDraw(false);
     setRoundWinner("");
     setMatchWinner("");
-    setIsRoundFinished(false);
     setIsMatchFinished(false);
     setIsShowingCountdown(false);
     setCountdownText("");
@@ -472,7 +486,7 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, isMatchFinished, set
   const renderModalOppAfkTimeout = () => {
     return (
       <div className="modal-dialog modal-dialog-centered" style={{ zIndex: 9999 }}>
-        <div className="modal fade" id="alertModal" tabIndex={-1} aria-labelledby="alertModalLabel" aria-hidden="true">
+        <div className="modal fade" id="alertModalAfk" tabIndex={-1} aria-labelledby="alertModalLabel" aria-hidden="true">
           <div className="modal-dialog modal-dialog-centered">
             <div className="modal-content">
               <div className="modal-header">
@@ -643,10 +657,10 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, isMatchFinished, set
       <div className="alert-modal-timeout">
         {renderModalTimeout()}
       </div>
-      
-      <div className="alert-modal-opp-afk">
+
+      {/* <div className="alert-modal-opp-afk">
         {renderModalOppAfkTimeout()}
-      </div>
+      </div> */}
     </>
   )
 }

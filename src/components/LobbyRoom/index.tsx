@@ -21,6 +21,7 @@ export default function LobbyRoom() {
   const [alertTitle, setAlertTitle] = useState<string>("");
   const [alertBody, setAlertBody] = useState<string>("");
   const [alertButton, setAlertButton] = useState<CustomButton | null>(null);
+  const [showModal, setShowModal] = useState<boolean>(false);
 
   const [p1, setP1] = useState<string>("");
   const [p2, setP2] = useState<string>("");
@@ -52,8 +53,12 @@ export default function LobbyRoom() {
 
   useEffect(() => {
     // show the alert if the title was changed. Need to call the alert on this main thread.
-    if (alertTitle) alertModal?.show();
-  }, [alertTitle])
+    if (showModal) {
+      console.log("alertModal:", alertModal);
+      alertModal?.show();
+      setShowModal(false);
+    }
+  }, [showModal])
 
 
   const handleNoLobbyInfo = async () => {
@@ -99,12 +104,14 @@ export default function LobbyRoom() {
           setP2(newOpponent);
 
         } else if (!newOpponent && p2Name) {
+          console.log("opponent left");
           // If the opponent was in the lobby but then left, then notify the user
           setP2("");
           setAlertTitle("Opponent has left the match");
           setAlertBody("Waiting for another opponent to join");
           setAlertButton(null);
           setIsMatchFinished(false);
+          setShowModal(true);
         }
 
         // Update the lobby in the store so OnlineMatch component will update too

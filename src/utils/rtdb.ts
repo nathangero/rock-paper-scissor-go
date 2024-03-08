@@ -239,38 +239,6 @@ export const dbLeaveLobby = async (lobbyType: LOBBY_TYPES, lobbyId: string, user
   }
 }
 
-export const dbHandleOpponentAfk = async (lobbyType: LOBBY_TYPES, lobbyId: string, username: string): Promise<void> => {
-  try {
-    console.log("@dbHandleOpponentAfk");
-
-    const dbRef = `${DB_DOC_KEYS.LOBBIES}/${lobbyType}/${lobbyId}/${LOBBY_KEYS.PLAYERS}/${username}`;
-    // console.log("dbRef:", dbRef);
-
-    await remove(ref(db, dbRef));
-
-    // pull the current number and check if lobby should be closed or just subtract 1 "playerNum"
-    const lobbyRef = `${DB_DOC_KEYS.LOBBIES}/${lobbyType}/${lobbyId}`;
-    const snapshot = await get(child(ref(db), lobbyRef));
-    const numPlayers = snapshot.val()[LOBBY_KEYS.PLAYERS_NUM];
-
-    if (numPlayers - 1 < 1) {
-      // remove the whole lobby
-      await remove(ref(db, lobbyRef));
-    } else {
-      // Update the number of players
-      await update(ref(db, lobbyRef), { [LOBBY_KEYS.PLAYERS_NUM]: numPlayers - 1 });
-
-      // Remove the match history
-      const matchNumRef = `${DB_DOC_KEYS.LOBBIES}/${lobbyType}/${lobbyId}/${LOBBY_KEYS.MATCH_NUM}`;
-      await remove(ref(db, matchNumRef));
-    }
-
-  } catch (error) {
-    console.log("Couldn't leave lobby");
-    console.error(error);
-  }
-}
-
 export const dbGetLobbyPlayers = async (lobbyType: LOBBY_TYPES, lobbyId: string): Promise<number> => {
   try {
     // console.log("@dbGetLobbyPlayers")
