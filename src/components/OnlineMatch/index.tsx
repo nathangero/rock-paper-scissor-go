@@ -246,8 +246,6 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, isMatchFinished, set
 
   const updateMatch = async (roundResult: ROUND_RESULT) => {
     // console.log("@updateMatch");
-    // TODO: Make a hidden timer to close down the lobby if the opponent somehow leaves the lobby without triggering the db.
-    //       E.g. if the user exists their browser or device shuts down randomly.
 
     setIsBetweenRounds(true);
     if (roundResult === ROUND_RESULT.DRAW) {

@@ -199,13 +199,6 @@ export default function Home() {
   // ************** ON CLICK ************** \\
 
   const onClickFindLobby = async (lobbyType: LOBBY_TYPES) => {
-    /**
-     * TODO: Make random usernames for people who don't have accounts.
-     * ✅ in the db, their username is also their id.
-     * ✅ Make a check with auth.currentUser to prevent stats being updated for non existent users
-     * Make special text saying being logged in lets you see your stats and eventually ranked.
-     */
-
     try {
       loadingSpinner?.show();
       const lobby = await dbSearchLobbies(lobbyType);
