@@ -17,7 +17,7 @@ export class User {
     return this.email;
   }
 
-  getUsername(): string {
+  dbGetUsername(): string {
     return this.username;
   }
 

@@ -238,7 +238,7 @@ export default function Practice() {
                 <h3 className="countdown-text">{epicCoundownText}</h3>
                 <img src="assets/fist-cross-dictator-bang-svgrepo-com.svg" width={100} className="fist" alt="rock icon" />
               </> :
-              <Round roundCount={practiceRoundCount} roundMax={practiceRoundMax} roundProgress={roundProgress} isFinished={isPracticeRoundFinished} onClickAttack={onClickAttack} />
+              <Round roundCount={practiceRoundCount} roundMax={practiceRoundMax} roundProgress={roundProgress} onClickAttack={onClickAttack} />
             }
           </> :
           <AttackSelection onClickAttack={onClickAttack} />
@@ -308,7 +308,7 @@ export default function Practice() {
               <h4><b>{draws}</b></h4>
             </div>
             <div className="two-column-spacing">
-              <h4>Win rate:</h4>
+              <h4>Win ratio:</h4>
               <h4><b>{calcWinLossRatio()}%</b></h4>
             </div>
             <div className="two-column-spacing">
@@ -346,7 +346,7 @@ export default function Practice() {
             to={"/"}
             className="btn button-positive m2"
           >
-            <i className="bi bi-arrow-left"></i> <label>Home</label>
+            <i className="bi bi-arrow-left"></i> Home
           </Link>
 
           <button className="btn button-positive m-2" onClick={() => setIsPracticeMatch(!isPracticeRound)}>{isPracticeRound ? "Stop Match" : "Practice Match"}</button>

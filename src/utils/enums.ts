@@ -5,6 +5,16 @@ export enum ATTACK_TYPES {
   RANDOM = "random",
 }
 
+export enum LOBBY_TYPES {
+  CASUAL = "casual",
+  PRIVATE = "private",
+  RANKED = "ranked",
+}
+
+export enum LOCAL_STORAGE_KEYS {
+  LOBBY = "rpsgo-lobby",
+}
+
 export enum PLAYER_TYPES {
   USER,
   OPPONENT,
@@ -16,3 +26,13 @@ export enum ROUND_RESULT {
   LOSE = "lose",
   DRAW = "draw",
 }
+
+export enum ROUTER_LINKS {
+  HOME = "/",
+  LOBBY = "/lobby",
+  LOGIN = "/login",
+  PRACTICE = "/practice",
+  PROFILE = "/profile",
+}
+
+export const VERSION_NUM = "0.75b";

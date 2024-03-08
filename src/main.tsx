@@ -14,6 +14,8 @@ import Profile from "./components/Profile/index.tsx";
 import StoreProvider from "./redux/GlobalState.tsx";
 import Login from "./pages/Login.tsx";
 import Practice from "./components/Practice/index.tsx";
+import { ROUTER_LINKS } from "./utils/enums.ts";
+import Lobby from "./pages/Lobby.tsx";
 
 const router = createBrowserRouter([
   {
@@ -26,16 +28,20 @@ const router = createBrowserRouter([
         element: <Home />
       },
       {
-        path: "/profile/:id",
+        path: `${ROUTER_LINKS.PROFILE}/:id`,
         element: <Profile />
       },
       {
-        path: "/login",
+        path: ROUTER_LINKS.LOGIN,
         element: <Login />
       },
       {
-        path: "/practice",
+        path: ROUTER_LINKS.PRACTICE,
         element: <Practice />
+      },
+      {
+        path: `${ROUTER_LINKS.LOBBY}/:lobbyType`,
+        element: <Lobby />
       },
     ]
   }

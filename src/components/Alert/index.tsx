@@ -1,6 +1,20 @@
 
-export default function Alert({ centered = true, title, body }: AlertProps) {
+export default function Alert({ centered = true, title, body, customButton }: AlertProps) {
 
+  const renderCustomButton = () => {
+    if (!customButton) return;
+
+    const buttonColor = customButton["buttonColor"] ? customButton["buttonColor"] : "";
+    const buttonText = customButton["buttonText"] ? customButton["buttonText"] : "Got it";
+    const onClickAction = customButton["onClickAction"] ? customButton["onClickAction"] : () => { };
+
+    return (
+      <>
+        <button type="button" className={`btn btn-secondary me-2`} data-bs-dismiss="modal">Cancel</button>
+        <button type="button" className={`btn ${buttonColor || "btn-secondary"} ms-2`} data-bs-dismiss="modal" onClick={() => onClickAction()}>{buttonText}</button>
+      </>
+    )
+  }
 
   return (
     <div className="modal-dialog modal-dialog-centered" style={{ zIndex: 9999 }}>
@@ -18,7 +32,10 @@ export default function Alert({ centered = true, title, body }: AlertProps) {
               </div>
             }
             <div className="modal-body text-end">
-              <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Got it</button>
+              {customButton ?
+                renderCustomButton() :
+                <button type="button" className="btn btn-secondary" data-bs-dismiss="modal">Got it</button>
+              }
             </div>
           </div>
         </div>
@@ -28,7 +45,14 @@ export default function Alert({ centered = true, title, body }: AlertProps) {
 }
 
 interface AlertProps {
-  title: string,
-  body: string,
-  centered?: boolean,
+  centered?: boolean;
+  title: string;
+  body: string;
+  customButton?: CustomButton | null;
+}
+
+export interface CustomButton {
+  buttonColor?: string;
+  buttonText?: string;
+  onClickAction?: VoidFunction;
 }

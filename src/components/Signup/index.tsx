@@ -7,7 +7,7 @@ import { auth } from "../../../firebase.ts";
 
 import Alert from "../Alert/index.js";
 import LoadingSpinner from "../LoadingSpinner/index.jsx";
-import { addUser, doesUsernameExist } from "../../utils/rtdb.ts";
+import { dbAddUser, dbDoesUsernameExist } from "../../utils/rtdb.ts";
 import { useAppDispatch } from "../../redux/hooks.ts";
 import { USER_ACTIONS } from "../../redux/reducer.ts";
 
@@ -17,6 +17,8 @@ enum ALERT_TYPE {
 }
 
 export default function Signup() {
+  const NAME_LENGTH_MAX = 20;
+  const NAME_LENGTH_MIN = 3;
 
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
@@ -66,7 +68,7 @@ export default function Signup() {
    */
   const checkUsernameAvailability = async (username: string) => {
     try {
-      const isAvailable = await doesUsernameExist(username);
+      const isAvailable = await dbDoesUsernameExist(username);
       // console.log("isAvailable:", isAvailable);
       setIsCheckingUsernameAvailablility(false);
 
@@ -87,9 +89,11 @@ export default function Signup() {
    */
   const onChangeSignupUsername = ({ target }: ChangeEvent<HTMLInputElement>) => {
     const username = target.value;
-    setSignupUsername(username);
 
-    if (username.length < 3 || username.length >= 30) {
+    // Don't allow the user to go past the max length
+    if (username.length <= NAME_LENGTH_MAX) setSignupUsername(username);
+
+    if (username.length < NAME_LENGTH_MIN || username.length >= NAME_LENGTH_MAX) {
       setIsSignupUsernameValid(false);
       return;
     }
@@ -156,7 +160,7 @@ export default function Signup() {
 
       // console.log("auth.currentUser:", auth.currentUser.uid);
       const uid = auth.currentUser.uid;
-      const newUser = await addUser(uid, signupEmail, signupUsername);
+      const newUser = await dbAddUser(uid, signupEmail, signupUsername);
       dispatch({
         type: USER_ACTIONS.LOGIN,
         user: newUser
@@ -178,7 +182,7 @@ export default function Signup() {
   return (
     <>
       <form id="signup-form" className="" onSubmit={onSubmitSignup}>
-      <label htmlFor="signup-email" className="text-start fs-5">Email:</label>
+        <label htmlFor="signup-email" className="text-start fs-5">Email:</label>
         <input
           type="email"
           id="signup-email"
@@ -204,7 +208,7 @@ export default function Signup() {
         />
         <div className="mt-1">
           {!isSignupUsernameValid ? // First, show if username isn't valid
-            <p className="text-danger">*Username must be between 3-30 characters</p> :
+            <p className="text-danger">*Username must be between {NAME_LENGTH_MIN}-{NAME_LENGTH_MAX} characters</p> :
             <>
               {isCheckingUsernameAvailablility ? // Second, show user mongodb is checking for the username
                 <p className="text-secondary">Checking username availability...</p> :

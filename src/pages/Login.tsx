@@ -8,7 +8,7 @@ import Alert from "../components/Alert/index.js";
 import Signup from "../components/Signup/index.tsx";
 import LoadingSpinner from "../components/LoadingSpinner/index.js";
 import { useNavigate } from "react-router-dom";
-import { getUser } from "../utils/rtdb.ts";
+import { dbGetUser } from "../utils/rtdb.ts";
 import { useAppDispatch } from "../redux/hooks.ts";
 import { USER_ACTIONS } from "../redux/reducer.ts";
 // import { FirebaseError } from "@firebase/util";
@@ -116,8 +116,8 @@ export default function Login() {
 
       if (!auth.currentUser) throw ("couldn't login");
 
-      const user = await getUser(auth.currentUser.uid);
-      console.log("user from getUser:", user);
+      const user = await dbGetUser(auth.currentUser.uid);
+      // console.log("user from dbGetUser:", user);
       dispatch({
         type: USER_ACTIONS.LOGIN,
         user: user
@@ -237,8 +237,6 @@ export default function Login() {
   return (
     <section className="page-login">
       <div className="d-flex flex-column align-items-center">
-        {/* <Logo /> */}
-        {/* <img src="/icons8-dungeons-and-dragons-48.svg" width={200} height={200} className="img-fluid" alt="dungeons and dragons image provided by icons8"/> */}
         <div className="container-fluid">
           {!showSignup ?
             renderLogin() :

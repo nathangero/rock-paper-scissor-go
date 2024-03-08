@@ -3,8 +3,7 @@ import { ATTACK_TYPES, PLAYER_TYPES } from "../../utils/enums";
 import AttackSelection from "../AttackSelection";
 import React from "react";
 
-export default function Round({ roundCount, roundMax, roundProgress, isFinished, onClickAttack }: Round) {
-
+export default function Round({ roundCount, roundMax, roundProgress, onClickAttack }: Round) {
 
   const renderRoundIcon = (playerType: PLAYER_TYPES, index: number) => {
     return (
@@ -12,16 +11,16 @@ export default function Round({ roundCount, roundMax, roundProgress, isFinished,
         {playerType === PLAYER_TYPES.OTHER ?
           <>
             <div className="round-icon">
-            <img src="assets/circle-svgrepo-com.svg" width={30} alt="empty circle icon to show an unfinished round." />
+              <img src="/assets/circle-svgrepo-com.svg" width={30} alt="empty circle icon to show an unfinished round." />
             </div>
           </> :
           <>
             {playerType === PLAYER_TYPES.USER ?
               <div className="round-icon">
-                <img src="assets/crown-solid-svgrepo-com.svg" width={40} alt="crown icon for user winning a round." />
+                <img src="/assets/crown-solid-svgrepo-com.svg" width={40} alt="crown icon for user winning a round." />
               </div> :
               <div className="round-icon">
-                <img src="assets/circle-close-svgrepo-com.svg" width={40} alt="circle with x icon for user losing a round." />
+                <img src="/assets/circle-close-svgrepo-com.svg" width={40} alt="circle with x icon for user losing a round." />
               </div>
             }
           </>
@@ -38,7 +37,7 @@ export default function Round({ roundCount, roundMax, roundProgress, isFinished,
           renderRoundIcon(value, index)
         ))}
       </div>
-      <AttackSelection isFinished={isFinished} onClickAttack={onClickAttack} />
+      <AttackSelection onClickAttack={onClickAttack} />
     </>
   )
 }
@@ -47,6 +46,5 @@ interface Round {
   roundCount: number;
   roundMax: number;
   roundProgress: any[]; // eslint-disable-line @typescript-eslint/no-explicit-any
-  isFinished: boolean;
   onClickAttack: (attackType: ATTACK_TYPES) => void;
 }
