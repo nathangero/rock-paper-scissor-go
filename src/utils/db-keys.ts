@@ -7,13 +7,14 @@ export enum DB_DOC_KEYS {
 export enum LOBBY_KEYS {
   HOST = "host",
   ID = "id",
+  LAST_UPDATED = "lastUpdated",
+  MATCH_NUM = "matchNum", // Keeps track of match count for rematches
   PLAYERS = "players",
   PLAYERS_NUM = "playersNum",
   ROUNDS = "rounds",
-  WINNER = "winner",
-  MATCH_NUM = "matchNum", // Keeps track of match count for rematches
   REMATCH = "rematch",
   TYPE = "lobbyType",
+  WINNER = "winner",
 }
 
 export enum STATS_KEYS {

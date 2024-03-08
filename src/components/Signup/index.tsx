@@ -90,7 +90,7 @@ export default function Signup() {
   const onChangeSignupUsername = ({ target }: ChangeEvent<HTMLInputElement>) => {
     const username = target.value;
 
-    // Don't allow the user to 
+    // Don't allow the user to go past the max length
     if (username.length <= NAME_LENGTH_MAX) setSignupUsername(username);
 
     if (username.length < NAME_LENGTH_MIN || username.length >= NAME_LENGTH_MAX) {

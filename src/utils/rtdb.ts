@@ -268,6 +268,13 @@ export const dbUpdateUserAttack = async (lobbyType: LOBBY_TYPES, lobbyId: string
 
     await update(ref(db, dbRef), userAttack)
 
+    const lastUpdate = {
+      [LOBBY_KEYS.LAST_UPDATED]: new Date().getTime(), // Keep track of the last update for this lobby.
+    }
+    const lobbyRef = `${DB_DOC_KEYS.LOBBIES}/${lobbyType}/${lobbyId}`;
+
+    await update(ref(db, lobbyRef), lastUpdate)
+
     return true;
   } catch (error) {
     console.log("Couldn't update user attack");
