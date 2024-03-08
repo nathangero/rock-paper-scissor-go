@@ -49,14 +49,28 @@ export default function Home() {
   }, [isPrivateIdValid, isCreatingPrivate, isJoiningPrivate])
 
 
-  const joinLobby = async (lobbyType: LOBBY_TYPES, lobbyInfo: LobbyInfo) => {
+  /**
+   * Randomly generates a username for players not logged in.
+   * @returns Randomly generated player name
+   */
+  const makeRandomUsername = (): string => {
+    let name = "player";
+    for (let i = 0; i < 10; i++) {
+      name += Math.floor(Math.random() * 10);
+    }
+
+    return name;
+  }
+
+
+  const joinLobby = async (lobbyType: LOBBY_TYPES, lobbyInfo: LobbyInfo, username: string) => {
     if (!lobbyInfo || Object.keys(lobbyInfo).length === 0) return;
 
     // Deconstruct variables
     const { [LOBBY_KEYS.PLAYERS]: players } = lobbyInfo;
 
     // Update players
-    const updatedPlayers = { ...players, [user.username]: auth.currentUser?.uid };
+    const updatedPlayers = { ...players, [username]: auth.currentUser?.uid };
 
     // Update players already in the lobby
     const playerNum = await dbGetLobbyPlayers(lobbyType, lobbyInfo[LOBBY_KEYS.ID]);
@@ -107,10 +121,10 @@ export default function Home() {
     }
   }
 
-  const createLobby = async (lobbyType: LOBBY_TYPES) => {
+  const createLobby = async (lobbyType: LOBBY_TYPES, username: string) => {
     try {
       setLoadingText("Creating a lobby...");
-      const userObj = { [user.username]: auth.currentUser?.uid };
+      const userObj = { [username]: auth.currentUser ? auth.currentUser?.uid : username };
       const newLobby = await dbCreateLobby(lobbyType, userObj);
       // console.log("new lobby:", newLobby);
       if (newLobby) {
@@ -199,14 +213,22 @@ export default function Home() {
   // ************** ON CLICK ************** \\
 
   const onClickFindLobby = async (lobbyType: LOBBY_TYPES) => {
+    /**
+     * TODO: Make random usernames for people who don't have accounts.
+     * in the db, their username is also their id.
+     * Make a check with auth.currentUser to prevent stats being updated for non existent users
+     * Make special text saying being logged in lets you see your stats and eventually ranked.
+     */
+
     try {
       loadingSpinner?.show();
       const lobby = await dbSearchLobbies(lobbyType);
+      const username = auth.currentUser ? user.username : makeRandomUsername();
 
       if (lobby) {
         switch (lobbyType) {
           case LOBBY_TYPES.CASUAL:
-            joinLobby(lobbyType, lobby);
+            joinLobby(lobbyType, lobby, username);
             break;
 
           case LOBBY_TYPES.RANKED:
@@ -218,7 +240,7 @@ export default function Home() {
             break;
         }
       } else {
-        await createLobby(lobbyType);
+        await createLobby(lobbyType, username);
         // console.log("created lobby");
       }
 
