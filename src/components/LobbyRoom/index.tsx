@@ -6,7 +6,7 @@ import { LOBBY_TYPES, LOCAL_STORAGE_KEYS, ROUTER_LINKS } from "../../utils/enums
 import { Modal } from "bootstrap";
 import OnlineMatch from "../OnlineMatch";
 import { onValue, ref } from "firebase/database";
-import { db } from "../../../firebase";
+import { auth, db } from "../../../firebase";
 import { USER_ACTIONS } from "../../redux/reducer";
 import { dbLeaveLobby } from "../../utils/rtdb";
 import Alert, { CustomButton } from "../Alert";
@@ -211,7 +211,10 @@ export default function LobbyRoom() {
         }
 
         <br /><br />
-        {isMatchFinished ? null :
+        {isMatchFinished ?
+          <>
+            {auth.currentUser ? null : <p>If you log in, you can keep track of your stats.</p>}
+          </> :
           <button className="btn button-negative" onClick={() => onClickLeaveMatch()}>{p2 ? "Forfeit Match" : "Leave Match"}</button>
         }
 

@@ -277,7 +277,8 @@ export default function Home() {
 
       <div className="mb-3">
         <h4 className="mb-3">Play against others in Rock, Paper, Scissors and move up in rank!</h4>
-        <h4>{auth.currentUser ? `Welcome back ${user?.username}` : "Welcome"}!</h4>
+        <h4 className="mb-2">{auth.currentUser ? `Welcome back ${user?.username}` : "Welcome"}!</h4>
+        {auth.currentUser ? null : <p>If you log in, you can keep track of your stats and play ranked (when ready).</p>}
       </div>
 
       <div>
