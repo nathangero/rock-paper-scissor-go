@@ -54,9 +54,8 @@ export default function LobbyRoom() {
   useEffect(() => {
     // show the alert if the title was changed. Need to call the alert on this main thread.
     if (showModal) {
-      console.log("alertModal:", alertModal);
       alertModal?.show();
-      setShowModal(false);
+      setShowModal(false); // Set to false so the modal can appear again.
     }
   }, [showModal])
 

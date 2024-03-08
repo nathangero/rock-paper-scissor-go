@@ -15,7 +15,7 @@ import ShotClock from "../ShotClock";
 export default function OnlineMatch({ lobbyType, lobbyInfo, isMatchFinished, setIsMatchFinished }: OnlineMatch) {
   const roundCountMax = 5;
   const roundMajority = Math.ceil(roundCountMax / 2); // Amount of rounds needed to win
-  const opponentAfkTime = 20; // Countdown till opponent forfeits. Just in case opponent disconnects without updating the db.
+  const opponentAfkTime = 22; // Countdown till opponent forfeits. Just in case opponent disconnects without updating the db.
 
   const user = useAppSelector(state => state.user);
 
@@ -78,17 +78,19 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, isMatchFinished, set
     let timer: NodeJS.Timeout;
 
     if (!isAfkTimerActive) {
-      // console.log("timer stopped, starting again with", isBetweenRounds ? roundBetweenTime : roundFullTime, "seconds")
+      // console.log("afk timer stopped, starting again with", opponentAfkTime, "seconds")
       setOppAfkSeconds(opponentAfkTime); // Reset the time limit when timer is stopped
 
-      if (!isMatchFinished) setIsAfkTimerActive(true); // During the match, instantly start the timer again after resetting its value
+      // Instantly start the timer again after resetting its value
+      setIsAfkTimerActive(true);
       return;
     }
 
-    if (opponentAfkSeconds > 0) {
+    // countdown the afk timer for as long as the match is still going
+    if (opponentAfkSeconds > 0 && !isMatchFinished) {
       timer = setTimeout(() => {
         setOppAfkSeconds(opponentAfkSeconds - 1);
-        console.log("opponent kick in", opponentAfkSeconds, "seconds");
+        // console.log("opponent kick in", opponentAfkSeconds, "seconds");
       }, 1000);
     } else if (opponentAfkSeconds === 0) {
       // console.log("kicking opponent!");
@@ -154,7 +156,6 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, isMatchFinished, set
           // Set the appropriate flags to false to continue the game
           setIsResolvingDraw(false);
           setIsRoundFinished(false);
-          setIsAfkTimerActive(true);
           setIsRoundDraw(false);
 
           setIsBetweenRounds(false);
@@ -360,13 +361,13 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, isMatchFinished, set
     calcAttackStat(userAttack);
     setIsBetweenRounds(true);
     setIsTimerActive(false); // Stop the timer
+    setIsAfkTimerActive(false);
 
     const userAttackObj = {
       [user.username]: userAttack
     }
 
     setIsRoundFinished(true);
-    setIsAfkTimerActive(true);
     await dbUpdateUserAttack(lobbyType, lobbyInfo[LOBBY_KEYS.ID], matchCount, roundCount, userAttackObj);
     await listenForOpponentAttack(userAttack);
   }
@@ -375,20 +376,20 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, isMatchFinished, set
     await dbHandleRoundDraw(lobbyType, lobbyId, matchCount, roundCount, user.username);
     await listenForDrawResolution();
     setIsResolvingDraw(true);
+    setIsAfkTimerActive(false);
     setRoundWinner("");
     setUserAttackStr("");
     setOpponentAttackStr("");
     setRoundWinner("");
     setIsBetweenRounds(false);
     setIsTimerActive(false);
-    // setIsTimerActive(true);
     setTimeout(() => setIsTimerActive(false), 500);
   }
 
 
   const onClickNextRound = () => {
     setIsRoundFinished(false);
-    setIsAfkTimerActive(true);
+    setIsAfkTimerActive(false);
     setRoundCount(roundCount + 1);
     setUserAttackStr("");
     setOpponentAttackStr("");
@@ -486,7 +487,7 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, isMatchFinished, set
   const renderModalOppAfkTimeout = () => {
     return (
       <div className="modal-dialog modal-dialog-centered" style={{ zIndex: 9999 }}>
-        <div className="modal fade" id="alertModalAfk" tabIndex={-1} aria-labelledby="alertModalLabel" aria-hidden="true">
+        <div className="modal fade" id="alertModal" tabIndex={-1} aria-labelledby="alertModalLabel" aria-hidden="true">
           <div className="modal-dialog modal-dialog-centered">
             <div className="modal-content">
               <div className="modal-header">
@@ -658,9 +659,9 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, isMatchFinished, set
         {renderModalTimeout()}
       </div>
 
-      {/* <div className="alert-modal-opp-afk">
+      <div className="alert-modal-opp-afk">
         {renderModalOppAfkTimeout()}
-      </div> */}
+      </div>
     </>
   )
 }
