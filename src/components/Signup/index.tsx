@@ -10,6 +10,8 @@ import LoadingSpinner from "../LoadingSpinner/index.jsx";
 import { dbAddUser, dbDoesUsernameExist } from "../../utils/rtdb.ts";
 import { useAppDispatch } from "../../redux/hooks.ts";
 import { USER_ACTIONS } from "../../redux/reducer.ts";
+import { bannedWords } from "../../utils/banned-words.ts";
+import ContentFilterBadWord from "../../utils/bc-ProfanityBlock.ts";
 
 enum ALERT_TYPE {
   INVALID_SIGNUP_USERNAME = "invalid_signup_username",
@@ -36,6 +38,7 @@ export default function Signup() {
   const [signupPassword, setSignupPassword] = useState('');
 
   const [isSignupUsernameValid, setIsSignupUsernameValid] = useState(false);
+  const [isUsernameProfane, setIsUsernameProfane] = useState<boolean>(false);
   const [isCheckingUsernameAvailablility, setIsCheckingUsernameAvailablility] = useState(false);
   const [isSignupUsernameAvailable, setIsSignupUsernameAvailable] = useState(false);
   const [isSignupEmailValid, setIsSignupEmailValid] = useState(false);
@@ -56,7 +59,7 @@ export default function Signup() {
   // Disables Sign Up button if username and password criteria all pass
   useEffect(() => {
     const signupButton = document.querySelector(".button-signup");
-    if (signupButton && isSignupUsernameValid && !isCheckingUsernameAvailablility && isSignupUsernameAvailable && isSignupEmailValid && isSignupPasswordValid) signupButton.removeAttribute("disabled");
+    if (signupButton && isSignupUsernameValid && !isUsernameProfane && !isCheckingUsernameAvailablility && isSignupUsernameAvailable && isSignupEmailValid && isSignupPasswordValid) signupButton.removeAttribute("disabled");
     else if (signupButton) signupButton.setAttribute("disabled", "");
   }, [isSignupUsernameValid, isCheckingUsernameAvailablility, isSignupUsernameAvailable, isSignupEmailValid, isSignupPasswordValid]);
 
@@ -89,6 +92,20 @@ export default function Signup() {
    */
   const onChangeSignupUsername = ({ target }: ChangeEvent<HTMLInputElement>) => {
     const username = target.value;
+
+    const filter = new ContentFilterBadWord();
+
+    // Prevent banned words
+    if (filter.containsBadWords(username)) {
+      setIsUsernameProfane(true);
+      setIsSignupUsernameValid(false);
+      setSignupUsername(username)
+      return;
+
+    } else {
+      setIsUsernameProfane(false);
+    }
+
 
     // Don't allow the user to go past the max length
     if (username.length <= NAME_LENGTH_MAX) setSignupUsername(username);
@@ -207,21 +224,26 @@ export default function Signup() {
           autoComplete="new-password"
         />
         <div className="mt-1">
-          {!isSignupUsernameValid ? // First, show if username isn't valid
-            <p className="text-danger">*Username must be between {NAME_LENGTH_MIN}-{NAME_LENGTH_MAX} characters</p> :
+          {isUsernameProfane ?
+            <h3 className="text-danger">Please make another username</h3> :
             <>
-              {isCheckingUsernameAvailablility ? // Second, show user mongodb is checking for the username
-                <p className="text-secondary">Checking username availability...</p> :
+              {!isSignupUsernameValid ? // First, show if username isn't valid
+                <p className="text-danger">*Username must be between {NAME_LENGTH_MIN}-{NAME_LENGTH_MAX} characters</p> :
                 <>
-                  {isSignupUsernameAvailable ? // Lastly, after timer is done, show availability
-                    <p className="text-success"><i className="bi bi-check-circle"></i> Username is available</p> :
-                    <p className="text-danger"><i className="bi bi-x-circle"></i> Username is taken</p>
+                  {isCheckingUsernameAvailablility ? // Second, show user mongodb is checking for the username
+                    <p className="text-secondary">Checking username availability...</p> :
+                    <>
+                      {isSignupUsernameAvailable ? // Lastly, after timer is done, show availability
+                        <p className="text-success"><i className="bi bi-check-circle"></i> Username is available</p> :
+                        <p className="text-danger"><i className="bi bi-x-circle"></i> Username is taken</p>
+                      }
+                    </>
                   }
                 </>
               }
             </>
-
           }
+
         </div>
 
         <label htmlFor="signup-password" className="fs-5 mb-0">Password:</label>

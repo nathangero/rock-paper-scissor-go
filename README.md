@@ -46,6 +46,8 @@ Firebase is a really nice "quick and easy" solution for a simple app like this. 
 
 [TypeScript - Disable "any" eslint error](https://sharepoint.stackexchange.com/questions/305265/how-to-deal-with-lint-warning-unexpected-any-specify-a-different-type)
 
+[ProfanityBlock class](https://github.com/The-Best-Codes/bc-ProfanityBlock)
+
 ### Resources
 
 [Color Scheme](https://coolors.co/ffbc42-004e98-a30000)
