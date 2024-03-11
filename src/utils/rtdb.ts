@@ -61,6 +61,42 @@ export const dbGetUser = async (uid: string): Promise<object> => {
   }
 }
 
+export const dbGetUserFromUsername = async (username: string): Promise<ProfileInfo | null> => {
+  try {
+    const user: any = {}; // eslint-disable-line @typescript-eslint/no-explicit-any
+    const usernameRef = `${DB_DOC_KEYS.USERNAMES}/${username}`;
+
+    const snapshotUsername = await get(child(ref(db), usernameRef));
+    const usernameValue = snapshotUsername.val();
+    // console.log("usernameValue:", usernameValue);
+
+    const actualUsername = usernameValue[USERNAME_KEYS.ACTUAL];
+    user[USER_KEYS.USERNAME] = actualUsername;
+
+    const uid = usernameValue[USERNAME_KEYS.USER];
+
+    const statsRef = `${DB_DOC_KEYS.USERS}/${uid}/${USER_KEYS.STATS}`;
+    const snapshotStats = await get(child(ref(db), statsRef));
+    const statsValue = snapshotStats.val();
+    // console.log("statsValue:", statsValue);
+    user[USER_KEYS.STATS] = statsValue;
+
+
+    const timeRegisteredRef = `${DB_DOC_KEYS.USERS}/${uid}/${USER_KEYS.TIME_REGISTERED}`;
+    const snapshotTimeRegistered = await get(child(ref(db), timeRegisteredRef));
+    const timeRegisteredValue = snapshotTimeRegistered.val();
+
+    user[USER_KEYS.TIME_REGISTERED] = timeRegisteredValue;
+    // console.log("user:", user);
+
+    return user;
+  } catch (error: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
+    console.log("couldn't get user from username");
+    console.error(error);
+    return null;
+  }
+}
+
 /**
  * Checks the database in the "usernames" document if the username already exists or not.
  * 
