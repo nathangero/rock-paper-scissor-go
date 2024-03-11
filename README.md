@@ -44,7 +44,7 @@ Firebase is a really nice "quick and easy" solution for a simple app like this. 
 
 Home Page showing "For Fun" and "Practice" modes available.
 
-![Home Page](https://github.com/nathangero/rock-paper-scissor-go/assets/25491849/c73178ee-cbc4-4ce7-a124-33e3ed0ab270)]
+![Home Page](https://github.com/nathangero/rock-paper-scissor-go/assets/25491849/c73178ee-cbc4-4ce7-a124-33e3ed0ab270)
 
 ## Credits
 
