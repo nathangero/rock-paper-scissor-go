@@ -10,7 +10,6 @@ import LoadingSpinner from "../LoadingSpinner/index.jsx";
 import { dbAddUser, dbDoesUsernameExist } from "../../utils/rtdb.ts";
 import { useAppDispatch } from "../../redux/hooks.ts";
 import { USER_ACTIONS } from "../../redux/reducer.ts";
-import { bannedWords } from "../../utils/banned-words.ts";
 import ContentFilterBadWord from "../../utils/bc-ProfanityBlock.ts";
 
 enum ALERT_TYPE {
