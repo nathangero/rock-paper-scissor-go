@@ -12,7 +12,7 @@ export default function Profile() {
 
   const { id: paramUser } = useParams();
 
-  const [user, setUser] = useState<ProfileInfo | null>(null);
+  const [user, setUser] = useState<ProfileInfo>({});
   const [isLoadingUser, setIsLoadingUser] = useState<boolean>(true);
 
   useEffect(() => {
@@ -45,6 +45,37 @@ export default function Profile() {
     return `Joined: ${month}/${year}`;
   }
 
+
+  const renderStatsAttack = () => {
+    return (
+      <>
+        {!user[USER_KEYS.STATS] ? <h4>No games played yet</h4> :
+          <>
+            {Object.keys(user[USER_KEYS.STATS]).map((key, index) => (
+              <React.Fragment key={index}>
+                <h3><u>{key.charAt(0).toUpperCase() + key.slice(1)}</u></h3>
+                <div className="container-table">
+                  <div className="d-flex justify-content-between">
+                    <h4>Rocks:</h4>
+                    <h4>{user[USER_KEYS.STATS][key][ATTACK_TYPES.ROCK]}</h4>
+                  </div>
+                  <div className="d-flex justify-content-between">
+                    <h4>Paper:</h4>
+                    <h4>{user[USER_KEYS.STATS][key][ATTACK_TYPES.PAPER]}</h4>
+                  </div>
+                  <div className="d-flex justify-content-between">
+                    <h4>Scissors:</h4>
+                    <h4>{user[USER_KEYS.STATS][key][ATTACK_TYPES.SCISSORS]}</h4>
+                  </div>
+                </div>
+              </React.Fragment>
+            ))}
+          </>
+        }
+      </>
+    )
+  }
+
   return (
     <>
       {isLoadingUser ?
@@ -58,30 +89,7 @@ export default function Profile() {
               <br />
               <>
                 <h3>Player Match Statistics</h3>
-                {!user[USER_KEYS.STATS] ? <h4>No games played yet</h4> :
-                  <>
-                    {Object.keys(user[USER_KEYS.STATS]).map((key, index) => (
-                      <React.Fragment key={index}>
-                        <h3><u>{key.charAt(0).toUpperCase() + key.slice(1)}</u></h3>
-                        <div className="container-table">
-                          <div className="d-flex justify-content-between">
-                            <h4>Rocks:</h4>
-                            <h4>{user[USER_KEYS.STATS][key][ATTACK_TYPES.ROCK]}</h4>
-                          </div>
-                          <div className="d-flex justify-content-between">
-                            <h4>Paper:</h4>
-                            <h4>{user[USER_KEYS.STATS][key][ATTACK_TYPES.PAPER]}</h4>
-                          </div>
-                          <div className="d-flex justify-content-between">
-                            <h4>Scissors:</h4>
-                            <h4>{user[USER_KEYS.STATS][key][ATTACK_TYPES.SCISSORS]}</h4>
-                          </div>
-                        </div>
-                      </React.Fragment>
-                    ))}
-                  </>
-                }
-
+                {renderStatsAttack()}
               </>
             </>
           }

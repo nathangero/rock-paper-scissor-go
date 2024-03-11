@@ -61,7 +61,7 @@ export const dbGetUser = async (uid: string): Promise<object> => {
   }
 }
 
-export const dbGetUserFromUsername = async (username: string): Promise<ProfileInfo | null> => {
+export const dbGetUserFromUsername = async (username: string): Promise<ProfileInfo> => {
   try {
     const user: any = {}; // eslint-disable-line @typescript-eslint/no-explicit-any
     const usernameRef = `${DB_DOC_KEYS.USERNAMES}/${username}`;
@@ -71,7 +71,7 @@ export const dbGetUserFromUsername = async (username: string): Promise<ProfileIn
     const usernameValue = snapshotUsername.val();
     // console.log("usernameValue:", usernameValue);
 
-    if (!usernameValue) return null;
+    if (!usernameValue) return {};
 
     const actualUsername = usernameValue[USERNAME_KEYS.ACTUAL];
     user[USER_KEYS.USERNAME] = actualUsername;
@@ -95,7 +95,7 @@ export const dbGetUserFromUsername = async (username: string): Promise<ProfileIn
   } catch (error: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
     console.log("couldn't get user from username");
     console.error(error);
-    return null;
+    return {};
   }
 }
 
