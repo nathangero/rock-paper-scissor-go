@@ -77,7 +77,7 @@ export default function Navbar() {
                 {!user?.email ? null :
                   <li>
                     <Link
-                      to={`${NAV_LINKS.PROFILE}/me`}
+                      to={`${NAV_LINKS.PROFILE}/${user.username}`}
                       className={`${location.pathname.includes(NAV_LINKS.PROFILE) ? "nav-link active" : "nav-link"}`}
                     >
                       Profile

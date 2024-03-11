@@ -65,10 +65,13 @@ export const dbGetUserFromUsername = async (username: string): Promise<ProfileIn
   try {
     const user: any = {}; // eslint-disable-line @typescript-eslint/no-explicit-any
     const usernameRef = `${DB_DOC_KEYS.USERNAMES}/${username}`;
+    // console.log("usernameRef:", usernameRef);
 
     const snapshotUsername = await get(child(ref(db), usernameRef));
     const usernameValue = snapshotUsername.val();
     // console.log("usernameValue:", usernameValue);
+
+    if (!usernameValue) return null;
 
     const actualUsername = usernameValue[USERNAME_KEYS.ACTUAL];
     user[USER_KEYS.USERNAME] = actualUsername;
@@ -80,7 +83,6 @@ export const dbGetUserFromUsername = async (username: string): Promise<ProfileIn
     const statsValue = snapshotStats.val();
     // console.log("statsValue:", statsValue);
     user[USER_KEYS.STATS] = statsValue;
-
 
     const timeRegisteredRef = `${DB_DOC_KEYS.USERS}/${uid}/${USER_KEYS.TIME_REGISTERED}`;
     const snapshotTimeRegistered = await get(child(ref(db), timeRegisteredRef));
