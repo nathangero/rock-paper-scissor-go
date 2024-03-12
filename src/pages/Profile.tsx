@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import { useAppSelector } from "../redux/hooks"
 import { useEffect, useState } from "react";
 import { dbGetUserFromUsername } from "../utils/rtdb";
-import { USER_KEYS } from "../utils/db-keys";
+import { STATS_KEYS, USER_KEYS } from "../utils/db-keys";
 import { ATTACK_TYPES } from "../utils/enums";
 
 export default function Profile() {
@@ -57,15 +57,15 @@ export default function Profile() {
                 <div className="container-table">
                   <div className="d-flex justify-content-between">
                     <h4>Rocks:</h4>
-                    <h4>{user[USER_KEYS.STATS][key][ATTACK_TYPES.ROCK]}</h4>
+                    <h4>{user[USER_KEYS.STATS][key][STATS_KEYS.ROCK]}</h4>
                   </div>
                   <div className="d-flex justify-content-between">
                     <h4>Paper:</h4>
-                    <h4>{user[USER_KEYS.STATS][key][ATTACK_TYPES.PAPER]}</h4>
+                    <h4>{user[USER_KEYS.STATS][key][STATS_KEYS.PAPER]}</h4>
                   </div>
                   <div className="d-flex justify-content-between">
                     <h4>Scissors:</h4>
-                    <h4>{user[USER_KEYS.STATS][key][ATTACK_TYPES.SCISSORS]}</h4>
+                    <h4>{user[USER_KEYS.STATS][key][STATS_KEYS.SCISSORS]}</h4>
                   </div>
                 </div>
               </React.Fragment>

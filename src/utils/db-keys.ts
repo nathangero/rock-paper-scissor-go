@@ -18,9 +18,11 @@ export enum LOBBY_KEYS {
 }
 
 export enum STATS_KEYS {
+  LOSSES = "losses",
   PAPER = "paper",
   ROCK = "rock",
   SCISSORS = "scissors",
+  WINS = "wins",
 }
 
 export enum USERNAME_KEYS {
