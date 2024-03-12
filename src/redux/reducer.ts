@@ -2,6 +2,7 @@ export enum USER_ACTIONS {
   LOGIN = "LOGIN",
   LOGOUT = "LOGOUT",
   JOIN_LOBBY = "JOIN_LOBBY",
+  LEAVE_LOBBY = "LEAVE_LOBBY",
 }
 
 
@@ -29,6 +30,12 @@ export const reducer = (state = initialState, action: any) => { // eslint-disabl
       return {
         ...state,
         lobby: action.lobby,
+      }
+
+    case USER_ACTIONS.LEAVE_LOBBY:
+      return {
+        ...state,
+        lobby: null,
       }
 
     default:

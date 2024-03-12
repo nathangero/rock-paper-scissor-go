@@ -61,6 +61,44 @@ export const dbGetUser = async (uid: string): Promise<object> => {
   }
 }
 
+export const dbGetUserFromUsername = async (username: string): Promise<ProfileInfo> => {
+  try {
+    const user: any = {}; // eslint-disable-line @typescript-eslint/no-explicit-any
+    const usernameRef = `${DB_DOC_KEYS.USERNAMES}/${username}`;
+    // console.log("usernameRef:", usernameRef);
+
+    const snapshotUsername = await get(child(ref(db), usernameRef));
+    const usernameValue = snapshotUsername.val();
+    // console.log("usernameValue:", usernameValue);
+
+    if (!usernameValue) return {};
+
+    const actualUsername = usernameValue[USERNAME_KEYS.ACTUAL];
+    user[USER_KEYS.USERNAME] = actualUsername;
+
+    const uid = usernameValue[USERNAME_KEYS.USER];
+
+    const statsRef = `${DB_DOC_KEYS.USERS}/${uid}/${USER_KEYS.STATS}`;
+    const snapshotStats = await get(child(ref(db), statsRef));
+    const statsValue = snapshotStats.val();
+    // console.log("statsValue:", statsValue);
+    user[USER_KEYS.STATS] = statsValue;
+
+    const timeRegisteredRef = `${DB_DOC_KEYS.USERS}/${uid}/${USER_KEYS.TIME_REGISTERED}`;
+    const snapshotTimeRegistered = await get(child(ref(db), timeRegisteredRef));
+    const timeRegisteredValue = snapshotTimeRegistered.val();
+
+    user[USER_KEYS.TIME_REGISTERED] = timeRegisteredValue;
+    // console.log("user:", user);
+
+    return user;
+  } catch (error: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
+    console.log("couldn't get user from username");
+    console.error(error);
+    return {};
+  }
+}
+
 /**
  * Checks the database in the "usernames" document if the username already exists or not.
  * 
@@ -336,7 +374,7 @@ export const dbUpdateRematch = async (lobbyType: LOBBY_TYPES, lobbyId: string, m
   }
 }
 
-export const dbUpdatePlayerStats = async (lobbyType: LOBBY_TYPES, userId: string, rockCount: number, paperCount: number, scissorCount: number) => {
+export const dbUpdatePlayerStats = async (lobbyType: LOBBY_TYPES, userId: string, rockCount: number, paperCount: number, scissorCount: number, didWin: boolean) => {
   try {
     const dbRef = `${DB_DOC_KEYS.USERS}/${userId}/${USER_KEYS.STATS}/${lobbyType}`;
 
@@ -348,6 +386,13 @@ export const dbUpdatePlayerStats = async (lobbyType: LOBBY_TYPES, userId: string
     stats[STATS_KEYS.PAPER] = stats[STATS_KEYS.PAPER] ? (stats[STATS_KEYS.PAPER] + paperCount) : paperCount;
     stats[STATS_KEYS.ROCK] = stats[STATS_KEYS.ROCK] ? (stats[STATS_KEYS.ROCK] + rockCount) : rockCount;
     stats[STATS_KEYS.SCISSORS] = stats[STATS_KEYS.SCISSORS] ? (stats[STATS_KEYS.SCISSORS] + scissorCount) : scissorCount;
+
+    // Update if user won or lost that match
+    if (didWin) {
+      stats[STATS_KEYS.WINS] = stats[STATS_KEYS.WINS] ? (stats[STATS_KEYS.WINS] + 1) : 1;
+    } else {
+      stats[STATS_KEYS.LOSSES] = stats[STATS_KEYS.LOSSES] ? (stats[STATS_KEYS.LOSSES] + 1) : 1;
+    }
 
     await update(ref(db, dbRef), stats);
 

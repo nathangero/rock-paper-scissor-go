@@ -8,14 +8,14 @@ import "bootstrap-icons/font/bootstrap-icons.css";
 
 
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import Home from "./pages/Home.tsx";
-import Error from "./pages/Error.tsx";
-import Profile from "./components/Profile/index.tsx";
-import StoreProvider from "./redux/GlobalState.tsx";
-import Login from "./pages/Login.tsx";
-import Practice from "./components/Practice/index.tsx";
 import { ROUTER_LINKS } from "./utils/enums.ts";
+import StoreProvider from "./redux/GlobalState.tsx";
+import Error from "./pages/Error.tsx";
+import Home from "./pages/Home.tsx";
+import Login from "./pages/Login.tsx";
+import Profile from "./pages/Profile.tsx";
 import Lobby from "./pages/Lobby.tsx";
+import Practice from "./components/Practice/index.tsx";
 
 const router = createBrowserRouter([
   {
