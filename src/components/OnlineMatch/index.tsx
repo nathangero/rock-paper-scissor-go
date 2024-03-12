@@ -2,7 +2,7 @@ import "./style.css";
 import "./swing-animation.css";
 import React, { useEffect, useState } from "react";
 import { ATTACK_TYPES, LOBBY_TYPES, LOCAL_STORAGE_KEYS, PLAYER_TYPES, ROUND_RESULT, ROUTER_LINKS } from "../../utils/enums";
-import { useAppSelector } from "../../redux/hooks";
+import { useAppDispatch, useAppSelector } from "../../redux/hooks";
 import { DB_DOC_KEYS, LOBBY_KEYS } from "../../utils/db-keys";
 import { dbHandleRoundDraw, dbLeaveLobby, dbUpdateMatch, dbUpdatePlayerStats, dbUpdateRematch, dbUpdateUserAttack } from "../../utils/rtdb";
 import { off, onValue, ref } from "firebase/database";
@@ -11,6 +11,7 @@ import AttackSelection from "../AttackSelection";
 import { Modal } from "bootstrap";
 import Alert, { CustomButton } from "../Alert";
 import ShotClock from "../ShotClock";
+import { USER_ACTIONS } from "../../redux/reducer";
 
 export default function OnlineMatch({ lobbyType, lobbyInfo, isMatchFinished, setIsMatchFinished }: OnlineMatch) {
   const roundCountMax = 5;
@@ -18,6 +19,7 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, isMatchFinished, set
   const opponentAfkTime = 22; // Countdown till opponent forfeits. Just in case opponent disconnects without updating the db.
 
   const user = useAppSelector(state => state.user);
+  const dispatch = useAppDispatch();
 
   const [modalTimeout, setModalTimeout] = useState<Modal | null>(null);
   const [modalLeaveLobby, setModalLeaveLobby] = useState<Modal | null>(null);
@@ -442,6 +444,11 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, isMatchFinished, set
     try {
       await dbUpdateRematch(lobbyType, lobbyId, matchCount, user.username, false);
       await dbLeaveLobby(lobbyType, lobbyInfo[LOBBY_KEYS.ID], user.username);
+
+      // Clear the store's lobby to have the navbar reappear
+      dispatch({
+        type: USER_ACTIONS.LEAVE_LOBBY,
+      });
 
       // Remove the local storage item after the user leaves the lobby
       localStorage.removeItem(LOCAL_STORAGE_KEYS.LOBBY);

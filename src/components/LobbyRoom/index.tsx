@@ -67,6 +67,12 @@ export default function LobbyRoom() {
 
       const lobbyStorage = JSON.parse(storage);
       await dbLeaveLobby(lobbyStorage[LOBBY_KEYS.TYPE], lobbyStorage[LOBBY_KEYS.ID], user.username);
+      console.log("@handleNoLobbyInfo")
+      console.log("dispatch leave lobby")
+      // Clear the store's lobby to have the navbar reappear
+      dispatch({
+        type: USER_ACTIONS.LEAVE_LOBBY,
+      });
 
       // Remove the local storage item after the user leaves the lobby
       localStorage.removeItem(LOCAL_STORAGE_KEYS.LOBBY);
@@ -138,6 +144,11 @@ export default function LobbyRoom() {
   const onConfirmLeaveMatch = async () => {
     try {
       await dbLeaveLobby(lobby[LOBBY_KEYS.TYPE], lobby[LOBBY_KEYS.ID], user.username);
+
+      // Clear the store's lobby to have the navbar reappear
+      dispatch({
+        type: USER_ACTIONS.LEAVE_LOBBY,
+      });
 
       // Remove the local storage item after the user leaves the lobby
       localStorage.removeItem(LOCAL_STORAGE_KEYS.LOBBY);
