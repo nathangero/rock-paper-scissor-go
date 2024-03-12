@@ -374,7 +374,7 @@ export const dbUpdateRematch = async (lobbyType: LOBBY_TYPES, lobbyId: string, m
   }
 }
 
-export const dbUpdatePlayerStats = async (lobbyType: LOBBY_TYPES, userId: string, rockCount: number, paperCount: number, scissorCount: number) => {
+export const dbUpdatePlayerStats = async (lobbyType: LOBBY_TYPES, userId: string, rockCount: number, paperCount: number, scissorCount: number, didWin: boolean) => {
   try {
     const dbRef = `${DB_DOC_KEYS.USERS}/${userId}/${USER_KEYS.STATS}/${lobbyType}`;
 
@@ -386,6 +386,13 @@ export const dbUpdatePlayerStats = async (lobbyType: LOBBY_TYPES, userId: string
     stats[STATS_KEYS.PAPER] = stats[STATS_KEYS.PAPER] ? (stats[STATS_KEYS.PAPER] + paperCount) : paperCount;
     stats[STATS_KEYS.ROCK] = stats[STATS_KEYS.ROCK] ? (stats[STATS_KEYS.ROCK] + rockCount) : rockCount;
     stats[STATS_KEYS.SCISSORS] = stats[STATS_KEYS.SCISSORS] ? (stats[STATS_KEYS.SCISSORS] + scissorCount) : scissorCount;
+
+    // Update if user won or lost that match
+    if (didWin) {
+      stats[STATS_KEYS.WINS] = stats[STATS_KEYS.WINS] ? (stats[STATS_KEYS.WINS] + 1) : 1;
+    } else {
+      stats[STATS_KEYS.LOSSES] = stats[STATS_KEYS.LOSSES] ? (stats[STATS_KEYS.LOSSES] + 1) : 1;
+    }
 
     await update(ref(db, dbRef), stats);
 

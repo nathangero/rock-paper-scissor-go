@@ -45,11 +45,9 @@ export default function Profile() {
     return `Joined: ${month}/${year}`;
   }
 
-  const calcWinLossRatio = (lobbyType: string): string | number => {
-    const wins = user[USER_KEYS.STATS][lobbyType][STATS_KEYS.WINS];
-    const losses = user[USER_KEYS.STATS][lobbyType][STATS_KEYS.LOSSES];
-
-    if (wins === 0) return 0;
+  const calcWinLossRatio = (wins: number, losses: number): string | number => {
+    if (!wins || !losses) return 0; // If one isn't defined, just show 0
+    else if (wins === 0) return 0;
     else if (wins > 0 && losses === 0) return 100;
     return (wins / losses).toFixed(2);
   }
@@ -89,26 +87,24 @@ export default function Profile() {
 
 
   const renderStatsWinLoss = (lobbyType: string) => {
-    const hasWinsLosses = user[USER_KEYS.STATS][lobbyType][STATS_KEYS.WINS] >= 0 && user[USER_KEYS.STATS][lobbyType][STATS_KEYS.LOSSES] >= 0;
+    const wins = user[USER_KEYS.STATS][lobbyType][STATS_KEYS.WINS];
+    const losses = user[USER_KEYS.STATS][lobbyType][STATS_KEYS.LOSSES];
+
     return (
       <>
-        {!hasWinsLosses ? null :
-          <>
-            <hr />
-            <div className="d-flex justify-content-between">
-              <h4>Wins:</h4>
-              <h4>{user[USER_KEYS.STATS][lobbyType][STATS_KEYS.WINS]}</h4>
-            </div>
-            <div className="d-flex justify-content-between">
-              <h4>Losses:</h4>
-              <h4>{user[USER_KEYS.STATS][lobbyType][STATS_KEYS.LOSSES]}</h4>
-            </div>
-            <div className="d-flex justify-content-between">
-              <h4>Win/Loss Ratio:</h4>
-              <h4>{calcWinLossRatio(lobbyType)}%</h4>
-            </div>
-          </>
-        }
+        <hr />
+        <div className="d-flex justify-content-between">
+          <h4>Wins:</h4>
+          <h4>{wins ? wins : 0}</h4>
+        </div>
+        <div className="d-flex justify-content-between">
+          <h4>Losses:</h4>
+          <h4>{losses ? losses : 0}</h4>
+        </div>
+        <div className="d-flex justify-content-between">
+          <h4>Win/Loss Ratio:</h4>
+          <h4>{calcWinLossRatio(wins, losses)}%</h4>
+        </div>
       </>
     )
 

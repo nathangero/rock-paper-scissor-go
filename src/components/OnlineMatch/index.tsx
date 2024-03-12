@@ -290,10 +290,10 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, isMatchFinished, set
     }
 
     if (updatedUserWins === roundMajority) {
-      doCountdown("** You win! **");
+      doCountdown(true);
 
     } else if (updatedOpponentWins === roundMajority) {
-      doCountdown("You lost");
+      doCountdown(false);
 
     } else {
       setIsTimerActive(true);
@@ -304,10 +304,10 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, isMatchFinished, set
   }
 
   /**
-   * 
-   * @param winnerText What will be displayed to the user when the match ends
+   * Run a countdown that will show the user text indicating the end of a match
+   * @param didUserWin Determines if the user won the match or not.
    */
-  const doCountdown = (winnerText: string) => {
+  const doCountdown = (didUserWin: boolean) => {
     const countdownInterval = 600;
     const text = ["SCISSORS", "PAPER", "ROCK"];
     let countdown = text.length;
@@ -318,14 +318,14 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, isMatchFinished, set
     setIsTimerActive(false);
 
     // Only update stats for logged in users
-    if (auth.currentUser?.uid) dbUpdatePlayerStats(lobbyType, auth.currentUser.uid, rockCount, paperCount, scissorCount);
+    if (auth.currentUser?.uid) dbUpdatePlayerStats(lobbyType, auth.currentUser.uid, rockCount, paperCount, scissorCount, didUserWin);
 
     const timer = setInterval(() => {
       setCountdownText(text[--countdown]);
       if (countdown < 0) {
         clearInterval(timer);
         setIsShowingCountdown(false);
-        setMatchWinner(winnerText);
+        setMatchWinner(didUserWin ? "** You win! **" : "You lost");
       }
     }, countdownInterval);
   }
