@@ -4,7 +4,6 @@ import { useAppSelector } from "../redux/hooks"
 import { useEffect, useState } from "react";
 import { dbGetUserFromUsername } from "../utils/rtdb";
 import { STATS_KEYS, USER_KEYS } from "../utils/db-keys";
-import { ATTACK_TYPES } from "../utils/enums";
 
 export default function Profile() {
 
