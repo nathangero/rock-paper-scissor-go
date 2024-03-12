@@ -45,28 +45,39 @@ export default function Profile() {
     return `Joined: ${month}/${year}`;
   }
 
+  const calcWinLossRatio = (lobbyType: string): string | number => {
+    const wins = user[USER_KEYS.STATS][lobbyType][STATS_KEYS.WINS];
+    const losses = user[USER_KEYS.STATS][lobbyType][STATS_KEYS.LOSSES];
+
+    if (wins === 0) return 0;
+    else if (wins > 0 && losses === 0) return 100;
+    return (wins / losses).toFixed(2);
+  }
+
+  // *************** RENDER FUNCTIONS *************** \\
 
   const renderStatsAttack = () => {
     return (
       <>
         {!user[USER_KEYS.STATS] ? <h4>No games played yet</h4> :
           <>
-            {Object.keys(user[USER_KEYS.STATS]).map((key, index) => (
+            {Object.keys(user[USER_KEYS.STATS]).map((lobbyType, index) => (
               <React.Fragment key={index}>
-                <h3><u>{key.charAt(0).toUpperCase() + key.slice(1)}</u></h3>
+                <h3><u>{lobbyType.charAt(0).toUpperCase() + lobbyType.slice(1)}</u></h3>
                 <div className="container-table">
                   <div className="d-flex justify-content-between">
                     <h4>Rocks:</h4>
-                    <h4>{user[USER_KEYS.STATS][key][STATS_KEYS.ROCK]}</h4>
+                    <h4>{user[USER_KEYS.STATS][lobbyType][STATS_KEYS.ROCK]}</h4>
                   </div>
                   <div className="d-flex justify-content-between">
                     <h4>Paper:</h4>
-                    <h4>{user[USER_KEYS.STATS][key][STATS_KEYS.PAPER]}</h4>
+                    <h4>{user[USER_KEYS.STATS][lobbyType][STATS_KEYS.PAPER]}</h4>
                   </div>
                   <div className="d-flex justify-content-between">
                     <h4>Scissors:</h4>
-                    <h4>{user[USER_KEYS.STATS][key][STATS_KEYS.SCISSORS]}</h4>
+                    <h4>{user[USER_KEYS.STATS][lobbyType][STATS_KEYS.SCISSORS]}</h4>
                   </div>
+                  {renderStatsWinLoss(lobbyType)}
                 </div>
               </React.Fragment>
             ))}
@@ -74,6 +85,33 @@ export default function Profile() {
         }
       </>
     )
+  }
+
+
+  const renderStatsWinLoss = (lobbyType: string) => {
+    const hasWinsLosses = user[USER_KEYS.STATS][lobbyType][STATS_KEYS.WINS] >= 0 && user[USER_KEYS.STATS][lobbyType][STATS_KEYS.LOSSES] >= 0;
+    return (
+      <>
+        {!hasWinsLosses ? null :
+          <>
+            <hr />
+            <div className="d-flex justify-content-between">
+              <h4>Wins:</h4>
+              <h4>{user[USER_KEYS.STATS][lobbyType][STATS_KEYS.WINS]}</h4>
+            </div>
+            <div className="d-flex justify-content-between">
+              <h4>Losses:</h4>
+              <h4>{user[USER_KEYS.STATS][lobbyType][STATS_KEYS.LOSSES]}</h4>
+            </div>
+            <div className="d-flex justify-content-between">
+              <h4>Win/Loss Ratio:</h4>
+              <h4>{calcWinLossRatio(lobbyType)}%</h4>
+            </div>
+          </>
+        }
+      </>
+    )
+
   }
 
   return (
