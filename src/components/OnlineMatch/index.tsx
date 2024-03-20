@@ -18,6 +18,7 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, isMatchFinished, set
   const ROUND_MAJORITY = Math.ceil(ROUND_COUNT_MAX / 2); // Amount of rounds needed to win
   const OPPONENT_AFK_TIME = 22; // Countdown till opponent forfeits. Just in case opponent disconnects without updating the db.
   const RANKED_MATCH_MAX = 5; // Best of 5
+  const RANKED_MAJORITY = Math.ceil(RANKED_MATCH_MAX / 2); // Amount of ranked matches needed to win
 
   const user = useAppSelector(state => state.user);
   const dispatch = useAppDispatch();
@@ -44,14 +45,19 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, isMatchFinished, set
   const [roundCount, setRoundCount] = useState<number>(1);
   const [roundProgress, setRoundProgress] = useState<PLAYER_TYPES[]>(Array.from({ length: ROUND_COUNT_MAX }, () => PLAYER_TYPES.OTHER)); // eslint-disable-line @typescript-eslint/no-explicit-any
   const [matchProgress, setMatchProgress] = useState<PLAYER_TYPES[]>(Array.from({ length: RANKED_MATCH_MAX }, () => PLAYER_TYPES.OTHER)); // eslint-disable-line @typescript-eslint/no-explicit-any
-  const [userWins, setUserWins] = useState<number>(0);
-  const [opponentWins, setOpponentWins] = useState<number>(0);
+  const [userRoundWins, setUserRoundWins] = useState<number>(0);
+  const [opponentRoundWins, setOpponentRoundWins] = useState<number>(0);
+  const [userMatchWins, setUserMatchWins] = useState<number>(0);
+  const [opponentMatchWins, setOpponentMatchWins] = useState<number>(0);
   const [matchDraws, setMatchDraws] = useState<number>(0);
-  const [isRoundDraw, setIsRoundDraw] = useState<boolean>(false);
-  const [isResolvingDraw, setIsResolvingDraw] = useState<boolean>(false);
   const [roundWinner, setRoundWinner] = useState<string>("");
   const [matchWinner, setMatchWinner] = useState<string>("");
+  const [rankedMatchWinner, setRankedMatchWinner] = useState<string>("");
+
+  const [isRoundDraw, setIsRoundDraw] = useState<boolean>(false);
+  const [isResolvingDraw, setIsResolvingDraw] = useState<boolean>(false);
   const [isRoundFinished, setIsRoundFinished] = useState<boolean>(false);
+  const [isRankedMatchFinished, setIsRankedMatchFinished] = useState<boolean>(false);
 
   const [rockCount, setRockCount] = useState<number>(0);
   const [paperCount, setPaperCount] = useState<number>(0);
@@ -264,8 +270,8 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, isMatchFinished, set
     }
 
     // Use temp variables to see if there'll be a winner
-    let updatedUserWins = userWins;
-    let updatedOpponentWins = opponentWins;
+    let updatedUserWins = userRoundWins;
+    let updatedOpponentWins = opponentRoundWins;
     const updatedRoundProgress = [...roundProgress];
 
     // Update the player's win count and update the round progress element
@@ -294,24 +300,52 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, isMatchFinished, set
       setRoundWinner(`You lost round ${roundCount}`);
     }
 
-    const updatedMatchProgress = [...matchProgress];
     if (updatedUserWins === ROUND_MAJORITY) {
-      updatedMatchProgress[matchCount - 1] = PLAYER_TYPES.USER;
-      setMatchProgress(updatedMatchProgress);
+      updateRankedMatch(true);
       doCountdown(true);
 
     } else if (updatedOpponentWins === ROUND_MAJORITY) {
-      updatedMatchProgress[matchCount - 1] = PLAYER_TYPES.OPPONENT;
-      setMatchProgress(updatedMatchProgress);
+      updateRankedMatch(false);
       doCountdown(false);
 
     } else {
       setIsTimerActive(true);
     }
 
-    setUserWins(updatedUserWins);
-    setOpponentWins(updatedOpponentWins);
+    setUserRoundWins(updatedUserWins);
+    setOpponentRoundWins(updatedOpponentWins);
   }
+
+
+  const updateRankedMatch = (didUserWin: boolean) => {
+    // Use temp variables to see if there'll be a winner
+    let updatedUserWins = userMatchWins;
+    let updatedOpponentWins = opponentMatchWins;
+    const updatedMatchProgress = [...matchProgress];
+
+    if (didUserWin) {
+      updatedUserWins++;
+      updatedMatchProgress[matchCount] = PLAYER_TYPES.USER;
+      setMatchProgress(updatedMatchProgress);
+
+      setMatchWinner(`You won match ${matchCount + 1}`);
+    } else {
+      updatedOpponentWins++;
+      updatedMatchProgress[matchCount] = PLAYER_TYPES.OPPONENT;
+      setMatchProgress(updatedMatchProgress);
+
+      setMatchWinner(`You lost match ${matchCount + 1}`);
+    }
+
+    if (updatedUserWins === RANKED_MAJORITY || updatedOpponentWins === RANKED_MAJORITY) {
+      setRankedMatchWinner(didUserWin ? "** You win! **" : "You lost")
+      setIsRankedMatchFinished(true);
+    }
+
+    setUserMatchWins(updatedUserWins);
+    setOpponentMatchWins(updatedOpponentWins);
+  }
+
 
   /**
    * Run a countdown that will show the user text indicating the end of a match
@@ -423,12 +457,13 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, isMatchFinished, set
 
     setRoundCount(1);
     setRoundProgress(Array.from({ length: ROUND_COUNT_MAX }, () => PLAYER_TYPES.OTHER));
-    setUserWins(0);
-    setOpponentWins(0);
+    setUserRoundWins(0);
+    setOpponentRoundWins(0);
     setMatchDraws(0);
     setRoundWinner("");
     setMatchWinner("");
     setIsMatchFinished(false);
+    setIsRankedMatchFinished(false);
     setIsShowingCountdown(false);
     setCountdownText("");
     setIsTimerActive(true);
@@ -570,6 +605,66 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, isMatchFinished, set
   }
 
 
+  const renderMatchFinished = () => {
+    return (
+      <>
+        {isRankedMatchFinished ?
+          <h3 className="match-end-text">{rankedMatchWinner}</h3> :
+          <h3 className="match-end-text">{matchWinner}</h3>
+        }
+
+        <div className="d-flex justify-content-center">
+
+          {isWaitingForRematch ?
+            <div className="d-flex flex-column">
+              <h3>Waiting for opponent's response...</h3>
+              <button className="btn button-negative m-2" onClick={() => onClickLeave()}>Leave</button>
+            </div> :
+            <>
+
+              {lobbyType === LOBBY_TYPES.RANKED && isRankedMatchFinished ?
+                <div className="d-flex flex-column">
+                  <h3>show ranked point change here</h3>
+                  <button className="btn button-negative m-2" onClick={() => onClickLeave()}>Leave</button>
+                </div> : // Allow infinite rematching outside of ranked matches
+                <>
+                  <button className="btn button-negative m-2" onClick={() => onClickLeave()}>Leave</button>
+                  <button className="btn button-positive m-2 fs-5" onClick={() => onClickRematch()}>REMATCH</button>
+                </>
+              }
+            </>
+          }
+        </div>
+      </>
+    )
+  }
+
+
+  const renderRoundFinished = () => {
+    return (
+      <>
+        <h3>{roundWinner}</h3>
+        {isRoundDraw ?
+          <>
+            {isResolvingDraw ? <h3>Waiting for opponent...</h3> :
+              <button className="btn button-positive" onClick={() => onClickRepeatRound()}>Repeat Round</button>
+            }
+          </> :
+          <>
+            {isResolvingDraw ? <h3>Waiting for opponent...</h3> :
+              <>
+                {opponentAttackStr ?
+                  <button className="btn button-positive" onClick={() => onClickNextRound()}>Next Round</button> :
+                  <h3>Waiting for opponent...</h3>
+                }
+              </>
+            }
+          </>
+        }
+      </>
+    )
+  }
+
   const renderMatch = () => {
     return (
       <>
@@ -581,48 +676,12 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, isMatchFinished, set
           ))}
         </div>
 
-
-
         {isMatchFinished ?
-          <>
-            <h3 className="match-end-text">{matchWinner}</h3>
-            <div className="d-flex justify-content-center">
-
-              {isWaitingForRematch ?
-                <div className="d-flex flex-column">
-                  <h3>Waiting for opponent's response...</h3>
-                  <button className="btn button-negative m-2" onClick={() => onClickLeave()}>Leave</button>
-                </div> :
-                <>
-                  <button className="btn button-negative m-2" onClick={() => onClickLeave()}>Leave</button>
-                  <button className="btn button-positive m-2 fs-5" onClick={() => onClickRematch()}>REMATCH</button>
-                </>
-              }
-            </div>
-          </> :
+          renderMatchFinished() :
           <>
             {/* <ShotClock isActive={isTimerActive} isBetweenRounds={isBetweenRounds} onTimeout={() => onTimeout()} /> */}
             {isRoundFinished ?
-              <>
-                <h3>{roundWinner}</h3>
-                {isRoundDraw ?
-                  <>
-                    {isResolvingDraw ? <h3>Waiting for opponent...</h3> :
-                      <button className="btn button-positive" onClick={() => onClickRepeatRound()}>Repeat Round</button>
-                    }
-                  </> :
-                  <>
-                    {isResolvingDraw ? <h3>Waiting for opponent...</h3> :
-                      <>
-                        {opponentAttackStr ?
-                          <button className="btn button-positive" onClick={() => onClickNextRound()}>Next Round</button> :
-                          <h3>Waiting for opponent...</h3>
-                        }
-                      </>
-                    }
-                  </>
-                }
-              </> :
+              renderRoundFinished() :
               <AttackSelection onClickAttack={onClickAttack} />
             }
           </>
@@ -655,11 +714,11 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, isMatchFinished, set
 
             <div className="two-column-spacing">
               <h4>Wins:</h4>
-              <h4><b>{userWins}</b></h4>
+              <h4><b>{userRoundWins}</b></h4>
             </div>
             <div className="two-column-spacing">
               <h4>Losses:</h4>
-              <h4><b>{opponentWins}</b></h4>
+              <h4><b>{opponentRoundWins}</b></h4>
             </div>
             <div className="two-column-spacing">
               <h4>Draws:</h4>
@@ -667,7 +726,7 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, isMatchFinished, set
             </div>
             <div className="two-column-spacing">
               <h4>Total rounds:</h4>
-              <h4><b>{userWins + opponentWins + matchDraws}</b></h4>
+              <h4><b>{userRoundWins + opponentRoundWins + matchDraws}</b></h4>
             </div>
           </div>
         }
