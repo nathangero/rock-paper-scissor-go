@@ -199,10 +199,10 @@ export const dbCreateLobby = async (lobbyType: LOBBY_TYPES, user: object, lobbyI
 
 export const dbJoinLobby = async (lobbyType: LOBBY_TYPES, lobbyId: string, lobbyInfo: LobbyInfo): Promise<boolean> => {
   try {
-    console.log("@dbJoinLobby")
+    // console.log("@dbJoinLobby")
     const dbRef = `${DB_DOC_KEYS.LOBBIES}/${lobbyType}/${lobbyId}`;
-    console.log("lobbyId:", lobbyId);
-    console.log("dbRef:", dbRef);
+    // console.log("lobbyId:", lobbyId);
+    // console.log("dbRef:", dbRef);
 
     await update(ref(db, dbRef), lobbyInfo);
 

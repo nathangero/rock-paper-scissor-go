@@ -67,22 +67,13 @@ export default function Home() {
     // Get lobbyId
     const lobbyId = lobbyInfo[LOBBY_KEYS.ID];
 
-    console.log("updatedLobby:", updatedLobby);
+    // console.log("updatedLobby:", updatedLobby);
 
-    let didJoin = false;
-    switch (lobbyType) {
-      case LOBBY_TYPES.CASUAL:
-        didJoin = await dbJoinLobby(LOBBY_TYPES.CASUAL, lobbyId, updatedLobby)
-        break;
-
-      case LOBBY_TYPES.RANKED:
-        console.log("search for ranked")
-        break;
-    }
+    const didJoin = await dbJoinLobby(lobbyType, lobbyId, updatedLobby);
 
     if (didJoin) {
       // console.log("MOVE USER TO LOBBY PAGE AND START THE MATCH");
-      setLoadingText("Joining lobby!");
+      setLoadingText(`Joining ${lobbyType} lobby!`);
       setTimeout(() => {
         loadingSpinner?.hide();
         updatedLobby[LOBBY_KEYS.ID] = lobbyId; // Add the lobby id before adding it to the store
@@ -102,14 +93,14 @@ export default function Home() {
       }, 1000);
 
     } else {
-      console.log("Couldn't join the lobby. Could be full.");
+      console.log(`Couldn't join ${lobbyType} lobby. Could be full.`);
       loadingSpinner?.hide();
     }
   }
 
   const createLobby = async (lobbyType: LOBBY_TYPES) => {
     try {
-      setLoadingText("Creating a lobby...");
+      setLoadingText(`Creating a ${lobbyType} lobby...`);
       const userObj = { [user.username]: auth.currentUser ? auth.currentUser?.uid : user.username };
       const newLobby = await dbCreateLobby(lobbyType, userObj);
       // console.log("new lobby:", newLobby);
@@ -117,7 +108,7 @@ export default function Home() {
         joinLobbyHelper(lobbyType, newLobby);
       }
     } catch (error) {
-      console.log("Couldn't create lobby");
+      console.log(`Couldn't create ${lobbyType} lobby`);
       console.error(error);
       loadingSpinner?.hide();
     }
@@ -204,19 +195,7 @@ export default function Home() {
       const lobby = await dbSearchLobbies(lobbyType);
 
       if (lobby) {
-        switch (lobbyType) {
-          case LOBBY_TYPES.CASUAL:
-            joinLobby(lobbyType, lobby);
-            break;
-
-          case LOBBY_TYPES.RANKED:
-            console.log("search for ranked")
-            loadingSpinner?.hide();
-            setAlertTitle("Feature not implemented yet");
-            setAlertBody("Please wait for a future update! :)");
-            modalAlert?.show();
-            break;
-        }
+        joinLobby(lobbyType, lobby);
       } else {
         await createLobby(lobbyType);
         // console.log("created lobby");
@@ -277,7 +256,7 @@ export default function Home() {
       <div>
         <div className="mb-2">
           <button className="btn button-positive mx-2" onClick={() => setIsPlayingCasual(!isPlayingCasual)}>Play For Fun</button>
-          {isPlayingCasual ? null : <button className={`btn button-positive mx-2 ${!user?.email ? "disabled" : ""}`} onClick={() => onClickFindLobby(LOBBY_TYPES.RANKED)} disabled >Play For Rank</button>}
+          {isPlayingCasual ? null : <button className={`btn button-positive mx-2 ${!user?.email ? "disabled" : ""}`} onClick={() => onClickFindLobby(LOBBY_TYPES.RANKED)} >Play For Rank</button>}
         </div>
 
         {!isPlayingCasual ? null :

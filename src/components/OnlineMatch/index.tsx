@@ -14,9 +14,10 @@ import ShotClock from "../ShotClock";
 import { USER_ACTIONS } from "../../redux/reducer";
 
 export default function OnlineMatch({ lobbyType, lobbyInfo, isMatchFinished, setIsMatchFinished }: OnlineMatch) {
-  const roundCountMax = 5;
-  const roundMajority = Math.ceil(roundCountMax / 2); // Amount of rounds needed to win
-  const opponentAfkTime = 22; // Countdown till opponent forfeits. Just in case opponent disconnects without updating the db.
+  const ROUND_COUNT_MAX = 5;
+  const ROUND_MAJORITY = Math.ceil(ROUND_COUNT_MAX / 2); // Amount of rounds needed to win
+  const OPPONENT_AFK_TIME = 22; // Countdown till opponent forfeits. Just in case opponent disconnects without updating the db.
+  const RANKED_MATCH_MAX = 5; // Best of 5
 
   const user = useAppSelector(state => state.user);
   const dispatch = useAppDispatch();
@@ -36,12 +37,13 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, isMatchFinished, set
   const [isBetweenRounds, setIsBetweenRounds] = useState<boolean>(false);
   const [isWaitingForRematch, setIsWaitingForRematch] = useState<boolean>(false);
 
-  const [opponentAfkSeconds, setOppAfkSeconds] = useState<number>(opponentAfkTime);
+  const [opponentAfkSeconds, setOppAfkSeconds] = useState<number>(OPPONENT_AFK_TIME);
   const [isAfkTimerActive, setIsAfkTimerActive] = useState<boolean>(false);
 
   const [matchCount, setMatchCount] = useState<number>(0);
   const [roundCount, setRoundCount] = useState<number>(1);
-  const [roundProgress, setRoundProgress] = useState<PLAYER_TYPES[]>(Array.from({ length: roundCountMax }, () => PLAYER_TYPES.OTHER)); // eslint-disable-line @typescript-eslint/no-explicit-any
+  const [roundProgress, setRoundProgress] = useState<PLAYER_TYPES[]>(Array.from({ length: ROUND_COUNT_MAX }, () => PLAYER_TYPES.OTHER)); // eslint-disable-line @typescript-eslint/no-explicit-any
+  const [matchProgress, setMatchProgress] = useState<PLAYER_TYPES[]>(Array.from({ length: RANKED_MATCH_MAX }, () => PLAYER_TYPES.OTHER)); // eslint-disable-line @typescript-eslint/no-explicit-any
   const [userWins, setUserWins] = useState<number>(0);
   const [opponentWins, setOpponentWins] = useState<number>(0);
   const [matchDraws, setMatchDraws] = useState<number>(0);
@@ -76,12 +78,13 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, isMatchFinished, set
 
   // Have a running timer for the opponent that will kick this 
   useEffect(() => {
+    return; // DEBUG
     if (!lobbyInfo) return;
     let timer: NodeJS.Timeout;
 
     if (!isAfkTimerActive) {
-      // console.log("afk timer stopped, starting again with", opponentAfkTime, "seconds")
-      setOppAfkSeconds(opponentAfkTime); // Reset the time limit when timer is stopped
+      // console.log("afk timer stopped, starting again with", OPPONENT_AFK_TIME, "seconds")
+      setOppAfkSeconds(OPPONENT_AFK_TIME); // Reset the time limit when timer is stopped
 
       // Instantly start the timer again after resetting its value
       setIsAfkTimerActive(true);
@@ -291,10 +294,10 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, isMatchFinished, set
       setRoundWinner(`You lost round ${roundCount}`);
     }
 
-    if (updatedUserWins === roundMajority) {
+    if (updatedUserWins === ROUND_MAJORITY) {
       doCountdown(true);
 
-    } else if (updatedOpponentWins === roundMajority) {
+    } else if (updatedOpponentWins === ROUND_MAJORITY) {
       doCountdown(false);
 
     } else {
@@ -414,7 +417,7 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, isMatchFinished, set
     setIsRoundDraw(false);
 
     setRoundCount(1);
-    setRoundProgress(Array.from({ length: roundCountMax }, () => PLAYER_TYPES.OTHER));
+    setRoundProgress(Array.from({ length: ROUND_COUNT_MAX }, () => PLAYER_TYPES.OTHER));
     setUserWins(0);
     setOpponentWins(0);
     setMatchDraws(0);
@@ -515,6 +518,28 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, isMatchFinished, set
     )
   }
 
+
+  const renderMatchCount = () => {
+    return (
+      <>
+        {lobbyType === LOBBY_TYPES.RANKED ?
+          <>
+            <h2>Match {matchCount + 1} / {RANKED_MATCH_MAX}</h2 >
+            <div className="round-progress">
+              {matchProgress.map((value, index) => (
+                renderRoundIcon(value, index)
+              ))}
+            </div>
+          </> :
+          <>
+            <h2>Match {roundCount}</h2>
+          </>
+        }
+      </>
+    )
+  }
+
+
   const renderRoundIcon = (playerType: PLAYER_TYPES, index: number) => {
     return (
       <React.Fragment key={index}>
@@ -543,7 +568,8 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, isMatchFinished, set
   const renderMatch = () => {
     return (
       <>
-        <h2>Round {roundCount} / {roundCountMax}</h2>
+        {renderMatchCount()}
+        <h2>Round {roundCount} / {ROUND_COUNT_MAX}</h2>
         <div className="round-progress">
           {roundProgress.map((value, index) => (
             renderRoundIcon(value, index)
@@ -570,7 +596,7 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, isMatchFinished, set
             </div>
           </> :
           <>
-            <ShotClock isActive={isTimerActive} isBetweenRounds={isBetweenRounds} onTimeout={() => onTimeout()} />
+            {/* <ShotClock isActive={isTimerActive} isBetweenRounds={isBetweenRounds} onTimeout={() => onTimeout()} /> */}
             {isRoundFinished ?
               <>
                 <h3>{roundWinner}</h3>
@@ -601,6 +627,7 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, isMatchFinished, set
       </>
     )
   }
+
 
   const renderStats = () => {
     return (
