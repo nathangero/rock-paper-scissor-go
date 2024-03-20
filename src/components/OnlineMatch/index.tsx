@@ -305,7 +305,7 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, isMatchFinished, set
       doCountdown(true);
 
     } else if (updatedOpponentWins === ROUND_MAJORITY) {
-      if (lobbyType === LOBBY_TYPES.RANKED) updateRankedMatch(true);
+      if (lobbyType === LOBBY_TYPES.RANKED) updateRankedMatch(false);
       doCountdown(false);
 
     } else {
