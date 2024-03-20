@@ -352,7 +352,7 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, isMatchFinished, set
    * @param didUserWin Determines if the user won the match or not.
    */
   const doCountdown = (didUserWin: boolean) => {
-    const countdownInterval = 300;
+    const countdownInterval = 400;
     const text = ["SCISSORS", "PAPER", "ROCK"];
     let countdown = text.length;
 
