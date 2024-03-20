@@ -294,10 +294,15 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, isMatchFinished, set
       setRoundWinner(`You lost round ${roundCount}`);
     }
 
+    const updatedMatchProgress = [...matchProgress];
     if (updatedUserWins === ROUND_MAJORITY) {
+      updatedMatchProgress[matchCount - 1] = PLAYER_TYPES.USER;
+      setMatchProgress(updatedMatchProgress);
       doCountdown(true);
 
     } else if (updatedOpponentWins === ROUND_MAJORITY) {
+      updatedMatchProgress[matchCount - 1] = PLAYER_TYPES.OPPONENT;
+      setMatchProgress(updatedMatchProgress);
       doCountdown(false);
 
     } else {
