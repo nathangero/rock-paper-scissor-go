@@ -1,5 +1,5 @@
 import "./style.css";
-import "./swing-animation.css";
+import "../../animations/swing-animation.css";
 import React, { useEffect, useState } from "react";
 import { ATTACK_TYPES, LOBBY_TYPES, LOCAL_STORAGE_KEYS, PLAYER_TYPES, ROUND_RESULT, ROUTER_LINKS } from "../../utils/enums";
 import { useAppDispatch, useAppSelector } from "../../redux/hooks";
@@ -301,11 +301,11 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, isMatchFinished, set
     }
 
     if (updatedUserWins === ROUND_MAJORITY) {
-      updateRankedMatch(true);
+      if (lobbyType === LOBBY_TYPES.RANKED) updateRankedMatch(true);
       doCountdown(true);
 
     } else if (updatedOpponentWins === ROUND_MAJORITY) {
-      updateRankedMatch(false);
+      if (lobbyType === LOBBY_TYPES.RANKED) updateRankedMatch(true);
       doCountdown(false);
 
     } else {
@@ -352,7 +352,7 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, isMatchFinished, set
    * @param didUserWin Determines if the user won the match or not.
    */
   const doCountdown = (didUserWin: boolean) => {
-    const countdownInterval = 600;
+    const countdownInterval = 300;
     const text = ["SCISSORS", "PAPER", "ROCK"];
     let countdown = text.length;
 
@@ -473,6 +473,12 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, isMatchFinished, set
   }
 
   const onClickLeave = () => {
+    // If the ranked match is over, automatically let the user leave.
+    if (lobbyType === LOBBY_TYPES.RANKED && isRankedMatchFinished) {
+      onConfirmLeave();
+      return;
+    }
+
     setAlertTitle("Leaving the Lobby");
     setAlertBody("Are you sure you want to leave?");
     setAlertButton({
@@ -572,7 +578,7 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, isMatchFinished, set
             </div>
           </> :
           <>
-            <h2>Match {roundCount}</h2>
+            <h2>Match {matchCount}</h2>
           </>
         }
       </>
@@ -739,7 +745,7 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, isMatchFinished, set
       {isShowingCountdown ?
         <>
           <h3 className="countdown-text">{coundownText}</h3>
-          <img src="/assets/fist-cross-dictator-bang-svgrepo-com.svg" width={100} className="fist" alt="rock icon" />
+          <img src="/assets/fist-cross-dictator-bang-svgrepo-com.svg" width={100} className="fist" alt="fist icon" />
         </> :
         renderMatch()
       }
