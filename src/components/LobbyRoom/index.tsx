@@ -58,6 +58,7 @@ export default function LobbyRoom() {
     listenForOpponentStatus(lobby[LOBBY_KEYS.TYPE], lobby[LOBBY_KEYS.ID]);
   }, []);
 
+  // This allows the modal to be reused within different Firebase listener threads
   useEffect(() => {
     if (showModal) {
       alertModal?.show();
@@ -65,9 +66,9 @@ export default function LobbyRoom() {
     }
   }, [showModal])
 
+  // This allows the modal to be reused within different Firebase listener threads
   useEffect(() => {
     if (showOppQuitModal) {
-      console.log("showing modal opponent quit")
       modalOpponentQuit?.show();
       setShowOppQuitModal(false); // Set to false so the modal can appear again.
     }
@@ -161,7 +162,8 @@ export default function LobbyRoom() {
     const lobbyType = lobby[LOBBY_KEYS.TYPE];
 
     setAlertTitle(p2 ? `Forfeit ${lobbyType.charAt(0).toUpperCase() + lobbyType.slice(1)} Match` : "Leave Match");
-    if (lobbyType === LOBBY_TYPES.RANKED) {
+    if (lobbyType === LOBBY_TYPES.RANKED && p2) {
+      // If ranked and has an opponent, show user they'll be penalized
       setAlertBody("Are you sure you want to quit mid-match? You will be penalized.");
       setAlertButton({
         buttonColor: "button-negative",
@@ -169,13 +171,14 @@ export default function LobbyRoom() {
         onClickAction: () => onConfirmLeaveMatch(),
       });
       alertModal?.show();
-      return
+    } else {
+      setAlertBody("Are you sure you want to leave the match?");
+      setAlertButton({ buttonColor: "button-negative", buttonText: "Yes", onClickAction: () => onConfirmLeaveMatch() });
+      alertModal?.show();
     }
-
-    setAlertBody("Are you sure you want to leave the match?");
-    setAlertButton({ buttonColor: "button-negative", buttonText: "Yes", onClickAction: () => onConfirmLeaveMatch() });
-    alertModal?.show();
   }
+
+
 
   /**
    * 
