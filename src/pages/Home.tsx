@@ -85,11 +85,10 @@ export default function Home() {
 
         const lobbyStorage = {
           [LOBBY_KEYS.ID]: lobbyId,
-          [LOBBY_KEYS.TYPE]: lobbyType,
         }
 
         localStorage.setItem(LOCAL_STORAGE_KEYS.LOBBY, JSON.stringify(lobbyStorage));
-        navigate(`${ROUTER_LINKS.LOBBY}/${lobbyType}`);
+        navigate(`${ROUTER_LINKS.LOBBY}/${lobbyType}`, { replace: true });
       }, 1000);
 
     } else {
@@ -129,11 +128,10 @@ export default function Home() {
 
       const lobbyStorage = {
         [LOBBY_KEYS.ID]: lobbyInfo[LOBBY_KEYS.ID],
-        [LOBBY_KEYS.TYPE]: lobbyType,
       }
 
       localStorage.setItem(LOCAL_STORAGE_KEYS.LOBBY, JSON.stringify(lobbyStorage));
-      navigate(`${ROUTER_LINKS.LOBBY}/${lobbyType}`);
+      navigate(`${ROUTER_LINKS.LOBBY}/${lobbyType}`, { replace: true });
     }, 1000);
   }
 

@@ -5,17 +5,20 @@ import { DB_DOC_KEYS, LOBBY_KEYS } from "../../utils/db-keys";
 import { LOBBY_TYPES, LOCAL_STORAGE_KEYS, ROUTER_LINKS } from "../../utils/enums";
 import { Modal } from "bootstrap";
 import OnlineMatch from "../OnlineMatch";
-import { onValue, ref } from "firebase/database";
+import { off, onValue, ref } from "firebase/database";
 import { auth, db } from "../../../firebase";
 import { USER_ACTIONS } from "../../redux/reducer";
 import { dbLeaveLobby } from "../../utils/rtdb";
 import Alert, { CustomButton } from "../Alert";
+import { useParams } from "react-router-dom";
 
 export default function LobbyRoom() {
 
   const user = useAppSelector(state => state.user);
   const lobby = useAppSelector(state => state.lobby);
   const dispatch = useAppDispatch();
+
+  const { lobbyType } = useParams<string>();
 
   const [alertModal, setAlertModal] = useState<Modal | null>(null);
   const [alertTitle, setAlertTitle] = useState<string>("");
@@ -54,8 +57,10 @@ export default function LobbyRoom() {
       else setP2(username);
     });
 
+
+
     // Always listen for opponent status for joining and leaving
-    listenForOpponentStatus(lobby[LOBBY_KEYS.TYPE], lobby[LOBBY_KEYS.ID]);
+    listenForOpponentStatus(getLobbyType(), lobby[LOBBY_KEYS.ID]);
   }, []);
 
   // This allows the modal to be reused within different Firebase listener threads
@@ -75,13 +80,26 @@ export default function LobbyRoom() {
   }, [showOppQuitModal])
 
 
+  const getLobbyType = (): LOBBY_TYPES => {
+    switch (lobbyType) {
+      case LOBBY_TYPES.CASUAL:
+        return LOBBY_TYPES.CASUAL;
+      case LOBBY_TYPES.PRIVATE:
+        return LOBBY_TYPES.PRIVATE;
+      case LOBBY_TYPES.RANKED:
+        return LOBBY_TYPES.RANKED;
+      default:
+        return LOBBY_TYPES.CASUAL;
+    }
+  }
+
   const handleNoLobbyInfo = async () => {
     try {
       const storage = localStorage.getItem(LOCAL_STORAGE_KEYS.LOBBY);
       if (!storage) return;
 
       const lobbyStorage = JSON.parse(storage);
-      await dbLeaveLobby(lobbyStorage[LOBBY_KEYS.TYPE], lobbyStorage[LOBBY_KEYS.ID], user.username);
+      await dbLeaveLobby(getLobbyType(), lobbyStorage[LOBBY_KEYS.ID], user.username);
       // console.log("@handleNoLobbyInfo")
       // console.log("dispatch leave lobby")
 
@@ -128,9 +146,14 @@ export default function LobbyRoom() {
           console.log("opponent left");
           // If ranked, make the remaining user leave the lobby too
           if (lobbyType === LOBBY_TYPES.RANKED) {
-            setP2("");
-            setShowOppQuitModal(true);
-            await onConfirmLeaveMatch(true);
+            if (!isMatchFinished) {
+              setP2("");
+              setShowOppQuitModal(true);
+              await onConfirmLeaveMatch(true);
+            } else {
+              // Turn off the listener if the match is over
+              off(opponentRef, "value");
+            }
           } else {
             // If the opponent was in the lobby but then left, then notify the user
             setP2("");
@@ -159,7 +182,7 @@ export default function LobbyRoom() {
   }
 
   const onClickLeaveMatch = () => {
-    const lobbyType = lobby[LOBBY_KEYS.TYPE];
+    const lobbyType = getLobbyType();
 
     setAlertTitle(p2 ? `Forfeit ${lobbyType.charAt(0).toUpperCase() + lobbyType.slice(1)} Match` : "Leave Match");
     if (lobbyType === LOBBY_TYPES.RANKED && p2) {
@@ -189,7 +212,7 @@ export default function LobbyRoom() {
    */
   const onConfirmLeaveMatch = async (noForceRedirect?: boolean) => {
     try {
-      await dbLeaveLobby(lobby[LOBBY_KEYS.TYPE], lobby[LOBBY_KEYS.ID], user.username);
+      await dbLeaveLobby(getLobbyType(), lobby[LOBBY_KEYS.ID], user.username);
 
       // Clear the store's lobby to have the navbar reappear
       dispatch({
@@ -283,10 +306,10 @@ export default function LobbyRoom() {
         {!lobby ? null :
           <>
             {p2 && lobby ?
-              <OnlineMatch lobbyType={lobby[LOBBY_KEYS.TYPE]} lobbyInfo={lobby} isMatchFinished={isMatchFinished} setIsMatchFinished={setIsMatchFinished} /> :
+              <OnlineMatch lobbyType={getLobbyType()} lobbyInfo={lobby} isMatchFinished={isMatchFinished} setIsMatchFinished={setIsMatchFinished} /> :
               <>
                 <h4>Waiting for an opponent...</h4>
-                {lobby[LOBBY_KEYS.TYPE] === LOBBY_TYPES.PRIVATE ?
+                {getLobbyType() === LOBBY_TYPES.PRIVATE ?
                   <>
                     <p className="fs-3">Your lobby code: <b>{lobby[LOBBY_KEYS.ID]}</b></p>
                   </> : null

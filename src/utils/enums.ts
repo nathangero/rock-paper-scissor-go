@@ -33,6 +33,7 @@ export enum ROUTER_LINKS {
   LOGIN = "/login",
   PRACTICE = "/practice",
   PROFILE = "/profile",
+  FINISHED = "/finished",
 }
 
 export const VERSION_NUM = "0.80b";

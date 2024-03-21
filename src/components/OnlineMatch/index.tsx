@@ -12,6 +12,7 @@ import { Modal } from "bootstrap";
 import Alert, { CustomButton } from "../Alert";
 import ShotClock from "../ShotClock";
 import { USER_ACTIONS } from "../../redux/reducer";
+import { useNavigate } from "react-router-dom";
 
 export default function OnlineMatch({ lobbyType, lobbyInfo, isMatchFinished, setIsMatchFinished }: OnlineMatch) {
   const ROUND_COUNT_MAX = 5;
@@ -22,6 +23,8 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, isMatchFinished, set
 
   const user = useAppSelector(state => state.user);
   const dispatch = useAppDispatch();
+
+  const navigate = useNavigate();
 
   const [modalTimeout, setModalTimeout] = useState<Modal | null>(null);
   const [modalLeaveLobby, setModalLeaveLobby] = useState<Modal | null>(null);
@@ -340,6 +343,8 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, isMatchFinished, set
     if (updatedUserWins === RANKED_MAJORITY || updatedOpponentWins === RANKED_MAJORITY) {
       setRankedMatchWinner(didUserWin ? "** You win! **" : "You lost")
       setIsRankedMatchFinished(true);
+      navigate(ROUTER_LINKS.FINISHED, { replace: true });
+
     }
 
     setUserMatchWins(updatedUserWins);
@@ -578,7 +583,7 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, isMatchFinished, set
             </div>
           </> :
           <>
-            <h2>Match {matchCount}</h2>
+            <h2>Match {matchCount + 1}</h2>
           </>
         }
       </>
@@ -624,7 +629,9 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, isMatchFinished, set
           {isWaitingForRematch ?
             <div className="d-flex flex-column">
               <h3>Waiting for opponent's response...</h3>
-              <button className="btn button-negative m-2" onClick={() => onClickLeave()}>Leave</button>
+              {lobbyType === LOBBY_TYPES.RANKED ? <br /> :
+                <button className="btn button-negative m-2" onClick={() => onClickLeave()}>Leave</button>
+              }
             </div> :
             <>
 
