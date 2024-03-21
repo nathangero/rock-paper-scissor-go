@@ -23,6 +23,9 @@ export default function LobbyRoom() {
   const [alertButton, setAlertButton] = useState<CustomButton | null>(null);
   const [showModal, setShowModal] = useState<boolean>(false);
 
+  const [modalOpponentQuit, setModalOpponentQuit] = useState<Modal | null>(null);
+  const [showOppQuitModal, setShowOppQuitModal] = useState<boolean>(false);
+
   const [p1, setP1] = useState<string>("");
   const [p2, setP2] = useState<string>("");
 
@@ -40,6 +43,10 @@ export default function LobbyRoom() {
     const modalLeave = document.querySelector<HTMLDivElement>(".alert-modal-lobby-room")?.querySelector<HTMLDivElement>("#alertModal");
     if (modalLeave) setAlertModal(new Modal(modalLeave));
 
+    const modalOppQuit = document.querySelector<HTMLDivElement>(".alert-modal-opponent-quit")?.querySelector<HTMLDivElement>("#alertOppQuit");
+    if (modalOppQuit) setModalOpponentQuit(new Modal(modalOppQuit));
+
+
     // Get the player names
     const players = lobby[LOBBY_KEYS.PLAYERS];
     Object.keys(players)?.map((username) => {
@@ -52,12 +59,19 @@ export default function LobbyRoom() {
   }, []);
 
   useEffect(() => {
-    // show the alert if the title was changed. Need to call the alert on this main thread.
     if (showModal) {
       alertModal?.show();
       setShowModal(false); // Set to false so the modal can appear again.
     }
   }, [showModal])
+
+  useEffect(() => {
+    if (showOppQuitModal) {
+      console.log("showing modal opponent quit")
+      modalOpponentQuit?.show();
+      setShowOppQuitModal(false); // Set to false so the modal can appear again.
+    }
+  }, [showOppQuitModal])
 
 
   const handleNoLobbyInfo = async () => {
@@ -67,8 +81,9 @@ export default function LobbyRoom() {
 
       const lobbyStorage = JSON.parse(storage);
       await dbLeaveLobby(lobbyStorage[LOBBY_KEYS.TYPE], lobbyStorage[LOBBY_KEYS.ID], user.username);
-      console.log("@handleNoLobbyInfo")
-      console.log("dispatch leave lobby")
+      // console.log("@handleNoLobbyInfo")
+      // console.log("dispatch leave lobby")
+
       // Clear the store's lobby to have the navbar reappear
       dispatch({
         type: USER_ACTIONS.LEAVE_LOBBY,
@@ -110,13 +125,21 @@ export default function LobbyRoom() {
 
         } else if (!newOpponent && p2Name) {
           console.log("opponent left");
-          // If the opponent was in the lobby but then left, then notify the user
-          setP2("");
-          setAlertTitle("Opponent has left the match");
-          setAlertBody("Waiting for another opponent to join");
-          setAlertButton(null);
-          setIsMatchFinished(false);
-          setShowModal(true);
+          // If ranked, make the remaining user leave the lobby too
+          if (lobbyType === LOBBY_TYPES.RANKED) {
+            setP2("");
+            setShowOppQuitModal(true);
+            await onConfirmLeaveMatch(true);
+          } else {
+            // If the opponent was in the lobby but then left, then notify the user
+            setP2("");
+            setAlertTitle("Opponent has left the match");
+            setAlertBody("Waiting for another opponent to join");
+            setAlertButton(null);
+            setIsMatchFinished(false);
+            setShowModal(true);
+          }
+
         }
 
         // Update the lobby in the store so OnlineMatch component will update too
@@ -154,7 +177,11 @@ export default function LobbyRoom() {
     alertModal?.show();
   }
 
-  const onConfirmLeaveMatch = async () => {
+  /**
+   * 
+   * @param noForceRedirect If `true`, does NOT force the user to the main menu. If `false`, DOES for the user to the main menu
+   */
+  const onConfirmLeaveMatch = async (noForceRedirect?: boolean) => {
     try {
       await dbLeaveLobby(lobby[LOBBY_KEYS.TYPE], lobby[LOBBY_KEYS.ID], user.username);
 
@@ -165,7 +192,7 @@ export default function LobbyRoom() {
 
       // Remove the local storage item after the user leaves the lobby
       localStorage.removeItem(LOCAL_STORAGE_KEYS.LOBBY);
-      window.location.href = ROUTER_LINKS.HOME;
+      if (!noForceRedirect) window.location.href = ROUTER_LINKS.HOME; // Auto redirect the user if not specifically specified
     } catch (error) {
       console.log("Couldn't leave match");
       console.error(error);
@@ -192,6 +219,35 @@ export default function LobbyRoom() {
                   </div>
                   <div className="modal-body text-end">
                     <button type="button" className="btn button-negative" data-bs-dismiss="modal" onClick={() => window.location.href = ROUTER_LINKS.HOME}>Go Back</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </>
+    )
+  }
+
+
+  const alertModalRankedOppQuit = () => {
+    return (
+      <>
+        <div className="alert-modal-opponent-quit">
+          <div className="modal-dialog modal-dialog-centered" style={{ zIndex: 9999 }}>
+            <div className="modal fade" id="alertOppQuit" tabIndex={-1} aria-labelledby="alertModalLabel" aria-hidden="false">
+              <div className="modal-dialog modal-dialog-centered">
+                <div className="modal-content">
+                  <div className="modal-header">
+                    <h5 className="modal-title">Opponent Quit</h5>
+                  </div>
+                  <div className="modal-body custom-modal-body">
+                    <p className="modal-title text-center fs-5">
+                      Your opponent has quit. You'll be returned to the Main Menu and not be penalized.
+                    </p>
+                  </div>
+                  <div className="modal-body text-end">
+                    <button type="button" className="btn button-negative" data-bs-dismiss="modal" onClick={() => window.location.href = ROUTER_LINKS.HOME}>Got it</button>
                   </div>
                 </div>
               </div>
@@ -245,6 +301,7 @@ export default function LobbyRoom() {
       </div>
 
       {alertModalLostConnection()}
+      {alertModalRankedOppQuit()}
 
       <div className="alert-modal-lobby-room">
         <Alert title={alertTitle} body={alertBody} customButton={alertButton} />
