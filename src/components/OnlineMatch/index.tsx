@@ -634,7 +634,7 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, isMatchFinished, set
                   <button className="btn button-negative m-2" onClick={() => onClickLeave()}>Leave</button>
                 </div> : // Allow infinite rematching outside of ranked matches
                 <>
-                  <button className="btn button-negative m-2" onClick={() => onClickLeave()}>Leave</button>
+                  {/* <button className="btn button-negative m-2" onClick={() => onClickLeave()}>Leave</button> */}
                   <button className="btn button-positive m-2 fs-5" onClick={() => onClickRematch()}>REMATCH</button>
                 </>
               }

@@ -135,7 +135,20 @@ export default function LobbyRoom() {
   }
 
   const onClickLeaveMatch = () => {
-    setAlertTitle(p2 ? "Forfeit Match" : "Leave Match");
+    const lobbyType = lobby[LOBBY_KEYS.TYPE];
+
+    setAlertTitle(p2 ? `Forfeit ${lobbyType.charAt(0).toUpperCase() + lobbyType.slice(1)} Match` : "Leave Match");
+    if (lobbyType === LOBBY_TYPES.RANKED) {
+      setAlertBody("Are you sure you want to quit mid-match? You will be penalized.");
+      setAlertButton({
+        buttonColor: "button-negative",
+        buttonText: "Yes, penalize me",
+        onClickAction: () => onConfirmLeaveMatch(),
+      });
+      alertModal?.show();
+      return
+    }
+
     setAlertBody("Are you sure you want to leave the match?");
     setAlertButton({ buttonColor: "button-negative", buttonText: "Yes", onClickAction: () => onConfirmLeaveMatch() });
     alertModal?.show();
