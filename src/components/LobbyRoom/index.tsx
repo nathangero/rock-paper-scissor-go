@@ -181,7 +181,10 @@ export default function LobbyRoom() {
 
 
   /**
+   * Remove the user from the lobby in the db.
+   * Remove the lobby info from the browser's local storage.
    * 
+   * Can decide if the user will be redirected as of this function call or not.
    * @param noForceRedirect If `true`, does NOT force the user to the main menu. If `false`, DOES for the user to the main menu
    */
   const onConfirmLeaveMatch = async (noForceRedirect?: boolean) => {
