@@ -13,6 +13,10 @@ import Alert, { CustomButton } from "../Alert";
 import ShotClock from "../ShotClock";
 import { USER_ACTIONS } from "../../redux/reducer";
 import { useNavigate } from "react-router-dom";
+import MatchStats from "../MatchStats";
+import MatchProgressIcon from "../MatchProgressIcon";
+import MatchRoundFinished from "../MatchRoundFinished";
+import MatchFinished from "../MatchFinished";
 
 export default function OnlineMatch({ lobbyType, lobbyInfo, isMatchFinished, setIsMatchFinished }: OnlineMatch) {
   const ROUND_COUNT_MAX = 5;
@@ -575,7 +579,7 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, isMatchFinished, set
   }
 
 
-  const renderMatchCount = () => {
+  const renderMatch = () => {
     return (
       <>
         {lobbyType === LOBBY_TYPES.RANKED ?
@@ -583,7 +587,9 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, isMatchFinished, set
             <h2>Match {matchCount + 1} / {RANKED_MATCH_MAX}</h2 >
             <div className="round-progress">
               {matchProgress.map((value, index) => (
-                renderRoundIcon(value, index)
+                <React.Fragment key={index}>
+                  <MatchProgressIcon playerType={value} />
+                </React.Fragment>
               ))}
             </div>
           </> :
@@ -591,162 +597,50 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, isMatchFinished, set
             <h2>Match {matchCount + 1}</h2>
           </>
         }
-      </>
-    )
-  }
 
-
-  const renderRoundIcon = (playerType: PLAYER_TYPES, index: number) => {
-    return (
-      <React.Fragment key={index}>
-        {playerType === PLAYER_TYPES.OTHER ?
-          <>
-            <div className="round-icon">
-              <img src="/assets/circle-svgrepo-com.svg" width={30} alt="empty circle icon to show an unfinished round." />
-            </div>
-          </> :
-          <>
-            {playerType === PLAYER_TYPES.USER ?
-              <div className="round-icon">
-                <img src="/assets/crown-solid-svgrepo-com.svg" width={40} alt="crown icon for user winning a round." />
-              </div> :
-              <div className="round-icon">
-                <img src="/assets/circle-close-svgrepo-com.svg" width={40} alt="circle with x icon for user losing a round." />
-              </div>
-            }
-          </>
-        }
-      </React.Fragment>
-    )
-  }
-
-
-  const renderMatchFinished = () => {
-    return (
-      <>
-        {isRankedMatchFinished ?
-          <h3 className="match-end-text">{rankedMatchWinner}</h3> :
-          <h3 className="match-end-text">{matchWinner}</h3>
-        }
-
-        <div className="d-flex justify-content-center">
-
-          {isWaitingForRematch ?
-            <div className="d-flex flex-column">
-              <h3>Waiting for opponent's response...</h3>
-              {lobbyType === LOBBY_TYPES.RANKED ? <br /> :
-                <button className="btn button-negative m-2" onClick={() => onClickLeave()}>Leave</button>
-              }
-            </div> :
-            <>
-
-              {lobbyType === LOBBY_TYPES.RANKED && isRankedMatchFinished ?
-                <div className="d-flex flex-column">
-                  <h3>show ranked point change here</h3>
-                  <button className="btn button-negative m-2" onClick={() => onClickLeave()}>Leave</button>
-                </div> : // Allow infinite rematching outside of ranked matches
-                <>
-                  {/* <button className="btn button-negative m-2" onClick={() => onClickLeave()}>Leave</button> */}
-                  <button className="btn button-positive m-2 fs-5" onClick={() => onClickRematch()}>REMATCH</button>
-                </>
-              }
-            </>
-          }
-        </div>
-      </>
-    )
-  }
-
-
-  const renderRoundFinished = () => {
-    return (
-      <>
-        <h3>{roundWinner}</h3>
-        {isRoundDraw ?
-          <>
-            {isResolvingDraw ? <h3>Waiting for opponent...</h3> :
-              <button className="btn button-positive" onClick={() => onClickRepeatRound()}>Repeat Round</button>
-            }
-          </> :
-          <>
-            {isResolvingDraw ? <h3>Waiting for opponent...</h3> :
-              <>
-                {opponentAttackStr ?
-                  <button className="btn button-positive" onClick={() => onClickNextRound()}>Next Round</button> :
-                  <h3>Waiting for opponent...</h3>
-                }
-              </>
-            }
-          </>
-        }
-      </>
-    )
-  }
-
-  const renderMatch = () => {
-    return (
-      <>
-        {renderMatchCount()}
         <h2>Round {roundCount} / {ROUND_COUNT_MAX}</h2>
         <div className="round-progress">
           {roundProgress.map((value, index) => (
-            renderRoundIcon(value, index)
+            <React.Fragment key={index}>
+              <MatchProgressIcon playerType={value} />
+            </React.Fragment>
           ))}
         </div>
 
         {isMatchFinished ?
-          renderMatchFinished() :
+          <MatchFinished
+            lobbyType={lobbyType}
+            matchWinner={matchWinner}
+            rankedMatchWinner={rankedMatchWinner}
+            isRankedMatchFinished={isRankedMatchFinished}
+            isWaitingForRematch={isWaitingForRematch}
+            onClickLeave={onClickLeave}
+            onClickRematch={onClickRematch}
+          /> :
           <>
             {/* <ShotClock isActive={isTimerActive} isBetweenRounds={isBetweenRounds} onTimeout={() => onTimeout()} /> */}
             {isRoundFinished ?
-              renderRoundFinished() :
+              <MatchRoundFinished
+                opponentAttackStr={opponentAttackStr}
+                roundWinner={roundWinner}
+                isRoundDraw={isRoundDraw}
+                isResolvingDraw={isResolvingDraw}
+                onClickRepeatRound={onClickRepeatRound}
+                onClickNextRound={onClickNextRound}
+              /> :
               <AttackSelection onClickAttack={onClickAttack} />
             }
           </>
         }
 
-        {renderStats()}
-      </>
-    )
-  }
-
-
-  const renderStats = () => {
-    return (
-      <>
         {isShowingCountdown ? null :
-          <div id="casual-round-stats" className="container-table">
-            <div className="mb-3">
-              <div className="two-column-spacing">
-                <h4>You:</h4>
-                <h4><b>{userAttackStr || "Waiting..."}</b></h4>
-              </div>
-
-              <div className="two-column-spacing">
-                <h4>Opponent:</h4>
-                <h4><b>{opponentAttackStr || "Waiting..."}</b></h4>
-              </div>
-            </div>
-
-            <hr />
-
-            <div className="two-column-spacing">
-              <h4>Wins:</h4>
-              <h4><b>{userRoundWins}</b></h4>
-            </div>
-            <div className="two-column-spacing">
-              <h4>Losses:</h4>
-              <h4><b>{opponentRoundWins}</b></h4>
-            </div>
-            <div className="two-column-spacing">
-              <h4>Draws:</h4>
-              <h4><b>{matchDraws}</b></h4>
-            </div>
-            <div className="two-column-spacing">
-              <h4>Total rounds:</h4>
-              <h4><b>{userRoundWins + opponentRoundWins + matchDraws}</b></h4>
-            </div>
-          </div>
+          <MatchStats
+            userAttackStr={userAttackStr}
+            opponentAttackStr={opponentAttackStr}
+            userRoundWins={userRoundWins}
+            opponentRoundWins={opponentRoundWins}
+            matchDraws={matchDraws}
+          />
         }
       </>
     )
