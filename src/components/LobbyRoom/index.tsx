@@ -146,7 +146,11 @@ export default function LobbyRoom() {
           console.log("opponent left");
           // If ranked, make the remaining user leave the lobby too
           if (lobbyType === LOBBY_TYPES.RANKED) {
-            if (!isMatchFinished) {
+            // Check if the url has "finished" in it
+            const splitUrl = window.location.pathname.split("/");
+            const isFinished = splitUrl[splitUrl.length - 1] === ROUTER_LINKS.FINISHED.slice(1);
+
+            if (!isFinished) {
               setP2("");
               setShowOppQuitModal(true);
               await onConfirmLeaveMatch(true);

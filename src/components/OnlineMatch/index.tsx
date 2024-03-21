@@ -343,8 +343,9 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, isMatchFinished, set
     if (updatedUserWins === RANKED_MAJORITY || updatedOpponentWins === RANKED_MAJORITY) {
       setRankedMatchWinner(didUserWin ? "** You win! **" : "You lost")
       setIsRankedMatchFinished(true);
-      navigate(ROUTER_LINKS.FINISHED, { replace: true });
 
+      // Update the url for the ranked game
+      navigate(`${lobbyType}${ROUTER_LINKS.FINISHED}`, { replace: true });
     }
 
     setUserMatchWins(updatedUserWins);
@@ -365,6 +366,9 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, isMatchFinished, set
     setIsMatchFinished(true);
     setIsBetweenRounds(false);
     setIsTimerActive(false);
+
+    // Update the url if game is not ranked.
+    if (lobbyType !== LOBBY_TYPES.RANKED) navigate(`${lobbyType}${ROUTER_LINKS.FINISHED}`, { replace: true });
 
     // Only update stats for logged in users
     if (auth.currentUser?.uid) dbUpdatePlayerStats(lobbyType, auth.currentUser.uid, rockCount, paperCount, scissorCount, didUserWin);
@@ -456,6 +460,7 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, isMatchFinished, set
   }
 
   const onConfirmRematch = () => {
+    navigate(`${lobbyType}`, { replace: true });
     setMatchCount(matchCount + 1); // Increment the match count
     setIsRoundFinished(false);
     setIsRoundDraw(false);
