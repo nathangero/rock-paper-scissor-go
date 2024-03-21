@@ -80,19 +80,9 @@ export default function LobbyRoom() {
   }, [showOppQuitModal])
 
 
-  const getLobbyType = (): LOBBY_TYPES => {
-    switch (lobbyType) {
-      case LOBBY_TYPES.CASUAL:
-        return LOBBY_TYPES.CASUAL;
-      case LOBBY_TYPES.PRIVATE:
-        return LOBBY_TYPES.PRIVATE;
-      case LOBBY_TYPES.RANKED:
-        return LOBBY_TYPES.RANKED;
-      default:
-        return LOBBY_TYPES.CASUAL;
-    }
-  }
-
+  /**
+   * Gets the localStorage to get the lobby id. Then removes the user from the lobby in the db.
+   */
   const handleNoLobbyInfo = async () => {
     try {
       const storage = localStorage.getItem(LOCAL_STORAGE_KEYS.LOBBY);
@@ -185,6 +175,7 @@ export default function LobbyRoom() {
     }
   }
 
+
   const onClickLeaveMatch = () => {
     const lobbyType = getLobbyType();
 
@@ -205,6 +196,24 @@ export default function LobbyRoom() {
     }
   }
 
+
+  /**
+   * Uses the `lobbyType` variable taken from the url parameter and returns the appropriate LOBBY_TYPES enum value
+   * 
+   * @returns The determined LOBBY_TYPES enum value
+   */
+  const getLobbyType = (): LOBBY_TYPES => {
+    switch (lobbyType) {
+      case LOBBY_TYPES.CASUAL:
+        return LOBBY_TYPES.CASUAL;
+      case LOBBY_TYPES.PRIVATE:
+        return LOBBY_TYPES.PRIVATE;
+      case LOBBY_TYPES.RANKED:
+        return LOBBY_TYPES.RANKED;
+      default:
+        return LOBBY_TYPES.CASUAL;
+    }
+  }
 
 
   /**
