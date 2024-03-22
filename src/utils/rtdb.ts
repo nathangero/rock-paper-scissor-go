@@ -170,7 +170,7 @@ export const dbCheckPrivateLobby = async (lobbyId: string): Promise<boolean> => 
 }
 
 
-export const dbCreateLobby = async (lobbyType: LOBBY_TYPES, user: object, lobbyId?: string): Promise<LobbyInfo | null> => {
+export const dbCreateLobby = async (lobbyType: LOBBY_TYPES, user: object, lobbyId?: string, lobbySettings?: object): Promise<LobbyInfo | null> => {
   try {
     const dbRef = `${DB_DOC_KEYS.LOBBIES}/${lobbyType}`;
     const newLobbyId = lobbyId ? lobbyId : push(child(ref(db), dbRef)).key; // Create a new lobby id if one isn't provided 
@@ -185,6 +185,12 @@ export const dbCreateLobby = async (lobbyType: LOBBY_TYPES, user: object, lobbyI
       [LOBBY_KEYS.PLAYERS_NUM]: 1, // The player creating this lobby
       [LOBBY_KEYS.TYPE]: lobbyType,
     };
+
+    // TODO
+    // if (lobbyType === LOBBY_TYPES.PRIVATE && !lobbySettings) {
+    //   const enableShotClock = lobbySettings[LOBBY_KEYS.SHOT_CLOCK] ? lobbySettings[LOBBY_KEYS.SHOT_CLOCK] : true
+    //   newLobby[LOBBY_KEYS.SHOT_CLOCK]: enableShotClock
+    // }
 
     await set(ref(db, lobbyRef), newLobby);
     // console.log("successfully created a lobby!");

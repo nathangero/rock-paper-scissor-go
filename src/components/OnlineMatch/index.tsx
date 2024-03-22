@@ -89,10 +89,13 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, isMatchFinished, set
     if (modalTimeout) setModalTimeout(new Modal(modalTimeout));
   }, []);
 
-  // Have a running timer for the opponent that will kick this 
+  // Have a running timer for the opponent so they can be kicked. 
   useEffect(() => {
-    return; // DEBUG
     if (!lobbyInfo) return;
+
+    const enableShotClock = lobbyInfo[LOBBY_KEYS.SHOT_CLOCK];
+    if (!enableShotClock) return;
+
     let timer: NodeJS.Timeout;
 
     if (!isAfkTimerActive) {
@@ -618,7 +621,7 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, isMatchFinished, set
             onClickRematch={onClickRematch}
           /> :
           <>
-            {/* <ShotClock isActive={isTimerActive} isBetweenRounds={isBetweenRounds} onTimeout={() => onTimeout()} /> */}
+            {lobbyInfo[LOBBY_KEYS.SHOT_CLOCK] ? <ShotClock isActive={isTimerActive} isBetweenRounds={isBetweenRounds} onTimeout={() => onTimeout()} /> : null}
             {isRoundFinished ?
               <MatchRoundFinished
                 opponentAttackStr={opponentAttackStr}

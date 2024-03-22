@@ -13,6 +13,7 @@ export enum LOBBY_KEYS {
   PLAYERS_NUM = "playersNum",
   ROUNDS = "rounds",
   REMATCH = "rematch",
+  SHOT_CLOCK = "shotClock",
   TYPE = "lobbyType",
   WINNER = "winner",
 }

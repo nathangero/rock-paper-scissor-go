@@ -32,6 +32,10 @@ export default function Home() {
   const [privateLobbyId, setPrivateLobbyId] = useState<string>("");
   const [isPrivateIdValid, setIsPrivateIdValid] = useState<boolean>(false);
 
+
+  // In private lobbies, allow the creator to enable or disable the shot clock
+  const [isShotClockActive, setIsShotClockActive] = useState<boolean>(true);
+
   useEffect(() => {
     // Initialize bootstrap modals 
     const loadingSpinner = document.querySelector<HTMLDivElement>(".loading-spinner")?.querySelector<HTMLDivElement>("#modal-loading-spinner");
@@ -120,6 +124,7 @@ export default function Home() {
       // If needed, add the lobby id before adding it to the store
       if (lobbyId) lobbyInfo[LOBBY_KEYS.ID] = lobbyId;
       lobbyInfo[LOBBY_KEYS.TYPE] = lobbyType;
+      lobbyInfo[LOBBY_KEYS.SHOT_CLOCK] = isShotClockActive;
 
       dispatch({
         type: USER_ACTIONS.JOIN_LOBBY,
@@ -141,7 +146,7 @@ export default function Home() {
       setLoadingText("Creating private lobby...");
       loadingSpinner?.show();
       const userObj = { [user.username]: auth.currentUser ? auth.currentUser?.uid : user.username };
-      const newLobby = await dbCreateLobby(LOBBY_TYPES.PRIVATE, userObj, privateLobbyId);
+      const newLobby = await dbCreateLobby(LOBBY_TYPES.PRIVATE, userObj, privateLobbyId, privateSettings);
 
       if (newLobby) {
         joinLobbyHelper(LOBBY_TYPES.PRIVATE, newLobby);
@@ -270,6 +275,15 @@ export default function Home() {
                 <input className="form-control text-center private-lobby-code" value={privateLobbyId} onChange={onChangePrivateLobbyId} placeholder="Lobby Code" />
                 <p className="m-2">*Code must be 1-8 characters and only include letters, numbers, and dashes</p>
                 {isPrivateIdValid ? null : <p className="text-danger fs-3">Code is not valid.</p>}
+                <>
+                  {isCreatingPrivate ?
+                    <div className="d-flex justify-content-center align-items-baseline fs-5">
+                      <input id="setting-shot-clock" type="checkbox" className="m-2" style={{ cursor: "pointer" }} checked={isShotClockActive} onChange={() => setIsShotClockActive(!isShotClockActive)} />
+                      <label htmlFor="setting-shot-clock" style={{ cursor: "pointer" }}>Use Shot Clock</label>
+                    </div>
+                    : null
+                  }
+                </>
                 <button id="create-join-private-lobby" type="submit" className="btn button-positive m-2" disabled>{isCreatingPrivate ? "Create Lobby" : "Join Lobby"}</button>
               </form>
             }
