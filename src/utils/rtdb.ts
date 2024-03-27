@@ -2,6 +2,7 @@ import { child, equalTo, get, limitToFirst, orderByChild, push, query, ref, remo
 import { db } from "../../firebase";
 import { DB_DOC_KEYS, LOBBY_KEYS, STATS_KEYS, USERNAME_KEYS, USER_KEYS } from "./db-keys";
 import { LOBBY_TYPES } from "./enums";
+import calcRp from "./calc-rp";
 
 
 /**
@@ -89,6 +90,39 @@ export const dbGetUserFromUsername = async (username: string): Promise<ProfileIn
     const timeRegisteredValue = snapshotTimeRegistered.val();
 
     user[USER_KEYS.TIME_REGISTERED] = timeRegisteredValue;
+    // console.log("user:", user);
+
+    return user;
+  } catch (error: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
+    console.log("couldn't get user from username");
+    console.error(error);
+    return {};
+  }
+}
+
+export const dbGetUserStatsRanked = async (username: string): Promise<ProfileInfo> => {
+  try {
+    const user: any = {}; // eslint-disable-line @typescript-eslint/no-explicit-any
+    const usernameRef = `${DB_DOC_KEYS.USERNAMES}/${username}`;
+    // console.log("usernameRef:", usernameRef);
+
+    const snapshotUsername = await get(child(ref(db), usernameRef));
+    const usernameValue = snapshotUsername.val();
+    // console.log("usernameValue:", usernameValue);
+
+    if (!usernameValue) return {};
+
+    const actualUsername = usernameValue[USERNAME_KEYS.ACTUAL];
+    user[USER_KEYS.USERNAME] = actualUsername;
+
+    const uid = usernameValue[USERNAME_KEYS.USER];
+
+    const statsRef = `${DB_DOC_KEYS.USERS}/${uid}/${USER_KEYS.STATS}/${LOBBY_TYPES.RANKED}`;
+    const snapshotStats = await get(child(ref(db), statsRef));
+    const statsValue = snapshotStats.val() || {};
+    // console.log("statsValue:", statsValue);
+    user[USER_KEYS.STATS] = statsValue;
+
     // console.log("user:", user);
 
     return user;
@@ -374,7 +408,10 @@ export const dbUpdateRematch = async (lobbyType: LOBBY_TYPES, lobbyId: string, m
   }
 }
 
-export const dbUpdatePlayerStats = async (lobbyType: LOBBY_TYPES, userId: string, rockCount: number, paperCount: number, scissorCount: number, didWin: boolean) => {
+
+// ************** USER STAT UPDATES ************** \\
+
+export const dbUpdateUserStats = async (lobbyType: LOBBY_TYPES, userId: string, rockCount: number, paperCount: number, scissorCount: number, didWin: boolean) => {
   try {
     const dbRef = `${DB_DOC_KEYS.USERS}/${userId}/${USER_KEYS.STATS}/${lobbyType}`;
 
@@ -399,6 +436,26 @@ export const dbUpdatePlayerStats = async (lobbyType: LOBBY_TYPES, userId: string
 
   } catch (error) {
     console.log("couldn't update user stats");
+    console.error(error);
+  }
+}
+
+
+export const dbUpdateUserRank = async (lobbyType: LOBBY_TYPES, userId: string, opponentRp: number, didWin: boolean) => {
+  try {
+    // Get the user's current RP rank
+    const userRpRef = `${DB_DOC_KEYS.USERS}/${userId}/${USER_KEYS.STATS}/${lobbyType}/${STATS_KEYS.RP}`;
+    const userRp = (await get(child(ref(db), userRpRef))).val() || 0;
+
+    // Calculate points here
+    const updatedRp = calcRp(userRp, opponentRp, didWin);
+    const newRp = { [STATS_KEYS.RP]: updatedRp }
+
+    const statsRef = `${DB_DOC_KEYS.USERS}/${userId}/${USER_KEYS.STATS}/${lobbyType}`;
+    await update(ref(db, statsRef), newRp);
+
+  } catch (error) {
+    console.log("couldn't update ranked points");
     console.error(error);
   }
 }

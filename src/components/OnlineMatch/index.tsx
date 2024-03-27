@@ -3,8 +3,8 @@ import "../../animations/swing-animation.css";
 import React, { useEffect, useState } from "react";
 import { ATTACK_TYPES, LOBBY_TYPES, LOCAL_STORAGE_KEYS, PLAYER_TYPES, ROUND_RESULT, ROUTER_LINKS } from "../../utils/enums";
 import { useAppDispatch, useAppSelector } from "../../redux/hooks";
-import { DB_DOC_KEYS, LOBBY_KEYS } from "../../utils/db-keys";
-import { dbHandleRoundDraw, dbLeaveLobby, dbUpdateMatch, dbUpdatePlayerStats, dbUpdateRematch, dbUpdateUserAttack } from "../../utils/rtdb";
+import { DB_DOC_KEYS, LOBBY_KEYS, STATS_KEYS } from "../../utils/db-keys";
+import { dbHandleRoundDraw, dbLeaveLobby, dbUpdateMatch, dbUpdateRematch, dbUpdateUserAttack, dbUpdateUserRank, dbUpdateUserStats } from "../../utils/rtdb";
 import { off, onValue, ref } from "firebase/database";
 import { auth, db } from "../../../firebase";
 import AttackSelection from "../AttackSelection";
@@ -18,7 +18,7 @@ import MatchProgressIcon from "../MatchProgressIcon";
 import MatchRoundFinished from "../MatchRoundFinished";
 import MatchFinished from "../MatchFinished";
 
-export default function OnlineMatch({ lobbyType, lobbyInfo, isMatchFinished, setIsMatchFinished }: OnlineMatch) {
+export default function OnlineMatch({ lobbyType, lobbyInfo, opponentStats, isMatchFinished, setIsMatchFinished }: OnlineMatch) {
   const ROUND_COUNT_MAX = 5;
   const ROUND_MAJORITY = Math.ceil(ROUND_COUNT_MAX / 2); // Amount of rounds needed to win
   const OPPONENT_AFK_TIME = 22; // Countdown till opponent forfeits. Just in case opponent disconnects without updating the db.
@@ -324,7 +324,7 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, isMatchFinished, set
   }
 
 
-  const updateRankedMatch = (didUserWin: boolean) => {
+  const updateRankedMatch = async (didUserWin: boolean) => {
     // Use temp variables to see if there'll be a winner
     let updatedUserWins = userMatchWins;
     let updatedOpponentWins = opponentMatchWins;
@@ -347,6 +347,7 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, isMatchFinished, set
     if (updatedUserWins === RANKED_MAJORITY || updatedOpponentWins === RANKED_MAJORITY) {
       setRankedMatchWinner(didUserWin ? "** You win! **" : "You lost")
       setIsRankedMatchFinished(true);
+      if (auth.currentUser?.uid) await dbUpdateUserRank(lobbyType, auth.currentUser.uid, opponentStats[STATS_KEYS.RP], didUserWin);
 
       // Update the url for the ranked game
       navigate(`${lobbyType}${ROUTER_LINKS.FINISHED}`, { replace: true });
@@ -361,7 +362,7 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, isMatchFinished, set
    * Run a countdown that will show the user text indicating the end of a match
    * @param didUserWin Determines if the user won the match or not.
    */
-  const doCountdown = (didUserWin: boolean) => {
+  const doCountdown = async (didUserWin: boolean) => {
     const countdownInterval = 400;
     const text = ["SCISSORS", "PAPER", "ROCK"];
     let countdown = text.length;
@@ -375,7 +376,7 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, isMatchFinished, set
     if (lobbyType !== LOBBY_TYPES.RANKED) navigate(`${lobbyType}${ROUTER_LINKS.FINISHED}`, { replace: true });
 
     // Only update stats for logged in users
-    if (auth.currentUser?.uid) dbUpdatePlayerStats(lobbyType, auth.currentUser.uid, rockCount, paperCount, scissorCount, didUserWin);
+    if (auth.currentUser?.uid) await dbUpdateUserStats(lobbyType, auth.currentUser.uid, rockCount, paperCount, scissorCount, didUserWin);
 
     const timer = setInterval(() => {
       setCountdownText(text[--countdown]);
@@ -679,6 +680,7 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, isMatchFinished, set
 interface OnlineMatch {
   lobbyType: LOBBY_TYPES;
   lobbyInfo: LobbyInfo;
+  opponentStats: ProfileInfo;
   isMatchFinished: boolean;
   setIsMatchFinished: React.Dispatch<React.SetStateAction<boolean>>;
 }

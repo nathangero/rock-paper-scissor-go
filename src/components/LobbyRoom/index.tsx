@@ -8,7 +8,7 @@ import OnlineMatch from "../OnlineMatch";
 import { off, onValue, ref } from "firebase/database";
 import { auth, db } from "../../../firebase";
 import { USER_ACTIONS } from "../../redux/reducer";
-import { dbLeaveLobby } from "../../utils/rtdb";
+import { dbGetUserStatsRanked, dbLeaveLobby } from "../../utils/rtdb";
 import Alert, { CustomButton } from "../Alert";
 import { useParams } from "react-router-dom";
 
@@ -31,6 +31,7 @@ export default function LobbyRoom() {
 
   const [p1, setP1] = useState<string>("");
   const [p2, setP2] = useState<string>("");
+  const [p2Stats, setP2Stats] = useState<object>({});
 
   const [isMatchFinished, setIsMatchFinished] = useState<boolean>(false);
 
@@ -128,9 +129,26 @@ export default function LobbyRoom() {
         const p2Name = document.getElementById("player-2-name")?.lastChild?.textContent;
         // console.log("p2Name:", p2Name);
 
+
+        // TODO: SEE IF MOVING THIS DISPATCH CODE TO HERE WILL CAUSE ISSUES
+
+        // Update the lobby in the store so OnlineMatch component will update too
+        const updatedLobby = { ...lobby, [LOBBY_KEYS.PLAYERS]: players, [LOBBY_KEYS.PLAYERS_NUM]: Object.keys(players).length };
+
+        dispatch({
+          type: USER_ACTIONS.JOIN_LOBBY,
+          lobby: updatedLobby,
+        });
+
         if (newOpponent) {
           // If there's a new opponent, set their name
           setP2(newOpponent);
+          // Get the user's ranked stats
+          if (lobbyType === LOBBY_TYPES.RANKED) {
+            const p2Stats = await dbGetUserStatsRanked(newOpponent);
+            console.log("p2Stats:", p2Stats);
+            setP2Stats(p2Stats);
+          }
 
         } else if (!newOpponent && p2Name) {
           console.log("opponent left");
@@ -142,6 +160,7 @@ export default function LobbyRoom() {
 
             if (!isFinished) {
               setP2("");
+              setP2Stats({});
               setShowOppQuitModal(true);
               await onConfirmLeaveMatch(true);
             } else {
@@ -151,6 +170,7 @@ export default function LobbyRoom() {
           } else {
             // If the opponent was in the lobby but then left, then notify the user
             setP2("");
+            setP2Stats({});
             setAlertTitle("Opponent has left the match");
             setAlertBody("Waiting for another opponent to join");
             setAlertButton(null);
@@ -159,14 +179,6 @@ export default function LobbyRoom() {
           }
 
         }
-
-        // Update the lobby in the store so OnlineMatch component will update too
-        const updatedLobby = { ...lobby, [LOBBY_KEYS.PLAYERS]: players, [LOBBY_KEYS.PLAYERS_NUM]: Object.keys(players).length };
-
-        dispatch({
-          type: USER_ACTIONS.JOIN_LOBBY,
-          lobby: updatedLobby,
-        });
       });
 
     } catch (error) {
@@ -319,7 +331,7 @@ export default function LobbyRoom() {
         {!lobby ? null :
           <>
             {p2 && lobby ?
-              <OnlineMatch lobbyType={getLobbyType()} lobbyInfo={lobby} isMatchFinished={isMatchFinished} setIsMatchFinished={setIsMatchFinished} /> :
+              <OnlineMatch lobbyType={getLobbyType()} lobbyInfo={lobby} opponentStats={p2Stats} isMatchFinished={isMatchFinished} setIsMatchFinished={setIsMatchFinished} /> :
               <>
                 <h4>Waiting for an opponent...</h4>
                 {getLobbyType() === LOBBY_TYPES.PRIVATE ?
