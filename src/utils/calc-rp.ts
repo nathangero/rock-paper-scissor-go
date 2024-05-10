@@ -10,11 +10,11 @@ const SUB_POINTS = (ADD_POINTS / 2) + 1; // Lose more than half of earning point
  * @param opponentRank Opponent's rank. Factors into the calculation.
  */
 const calcRp = (userRp: number, opponentRp: number, didWin: boolean): number => {
-  console.log("@calcRp")
+  // console.log("@calcRp")
   const userRank = getRank(userRp);
   const opponentRank = getRank(opponentRp);
   const rankDiff = RANK_TIER_PRIORITY[userRank] - RANK_TIER_PRIORITY[opponentRank];
-  console.log("rankDiff:", rankDiff);
+
   let pointsChange = 0;
 
   if (didWin) {
@@ -30,11 +30,8 @@ const calcRp = (userRp: number, opponentRp: number, didWin: boolean): number => 
       pointsChange -= getBonus(rankDiff);
     }
   }
-  console.log("pointsChange:", pointsChange);
 
   const updatedPoints = userRp + pointsChange;
-  console.log("userRp:", userRp);
-  console.log("updatedPoints:", updatedPoints);
 
   // Don't let RP go below 0.
   return updatedPoints >= 0 ? updatedPoints : 0;
