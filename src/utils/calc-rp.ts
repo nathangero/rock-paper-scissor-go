@@ -10,11 +10,11 @@ const SUB_POINTS = (ADD_POINTS / 2) + 1; // Lose more than half of earning point
  * @param opponentRank Opponent's rank. Factors into the calculation.
  */
 const calcRp = (userRp: number, opponentRp: number, didWin: boolean): number => {
-
+  console.log("@calcRp")
   const userRank = getRank(userRp);
   const opponentRank = getRank(opponentRp);
   const rankDiff = RANK_TIER_PRIORITY[userRank] - RANK_TIER_PRIORITY[opponentRank];
-
+  console.log("rankDiff:", rankDiff);
   let pointsChange = 0;
 
   if (didWin) {
@@ -30,8 +30,11 @@ const calcRp = (userRp: number, opponentRp: number, didWin: boolean): number => 
       pointsChange -= getBonus(rankDiff);
     }
   }
+  console.log("pointsChange:", pointsChange);
 
   const updatedPoints = userRp + pointsChange;
+  console.log("userRp:", userRp);
+  console.log("updatedPoints:", updatedPoints);
 
   // Don't let RP go below 0.
   return updatedPoints >= 0 ? updatedPoints : 0;
@@ -39,27 +42,27 @@ const calcRp = (userRp: number, opponentRp: number, didWin: boolean): number => 
 
 
 const getRank = (userRp: number): RANK_TIERS => {
-  if (userRp > RANK_TIER_RANGE.WOOD) {
+  if (userRp <= RANK_TIER_RANGE.WOOD) {
     return RANK_TIERS.WOOD;
-  } else if (userRp > RANK_TIER_RANGE.STONE) {
+  } else if (userRp <= RANK_TIER_RANGE.STONE) {
     return RANK_TIERS.STONE;
-  } else if (userRp > RANK_TIER_RANGE.COPPER) {
+  } else if (userRp <= RANK_TIER_RANGE.COPPER) {
     return RANK_TIERS.COPPER;
-  } else if (userRp > RANK_TIER_RANGE.SILVER) {
+  } else if (userRp <= RANK_TIER_RANGE.SILVER) {
     return RANK_TIERS.SILVER;
-  } else if (userRp > RANK_TIER_RANGE.GOLD) {
+  } else if (userRp <= RANK_TIER_RANGE.GOLD) {
     return RANK_TIERS.GOLD;
-  } else if (userRp > RANK_TIER_RANGE.PLATINUM) {
+  } else if (userRp <= RANK_TIER_RANGE.PLATINUM) {
     return RANK_TIERS.PLATINUM;
-  } else if (userRp > RANK_TIER_RANGE.AMETHYST) {
+  } else if (userRp <= RANK_TIER_RANGE.AMETHYST) {
     return RANK_TIERS.AMETHYST;
-  } else if (userRp > RANK_TIER_RANGE.RUBY) {
+  } else if (userRp <= RANK_TIER_RANGE.RUBY) {
     return RANK_TIERS.RUBY;
-  } else if (userRp > RANK_TIER_RANGE.DIAMOND) {
+  } else if (userRp <= RANK_TIER_RANGE.DIAMOND) {
     return RANK_TIERS.DIAMOND;
-  } else if (userRp > RANK_TIER_RANGE.IRIDIUM) {
-    return RANK_TIERS.IRIDIUM;
   } else if (userRp <= RANK_TIER_RANGE.IRIDIUM) {
+    return RANK_TIERS.IRIDIUM;
+  } else if (userRp > RANK_TIER_RANGE.IRIDIUM) {
     return RANK_TIERS.STAINLESS_STEEL;
   } else {
     return RANK_TIERS.WOOD;

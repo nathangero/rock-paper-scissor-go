@@ -146,7 +146,7 @@ export default function LobbyRoom() {
           // Get the user's ranked stats
           if (lobbyType === LOBBY_TYPES.RANKED) {
             const p2Stats = await dbGetUserStatsRanked(newOpponent);
-            console.log("p2Stats:", p2Stats);
+            // console.log("p2Stats:", p2Stats);
             setP2Stats(p2Stats);
           }
 
