@@ -308,11 +308,11 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, opponentStats, isMat
     }
 
     if (updatedUserWins === ROUND_MAJORITY) {
-      if (lobbyType === LOBBY_TYPES.RANKED) updateRankedMatch(true);
+      if (lobbyType === LOBBY_TYPES.RANKED) await updateRankedMatch(true);
       doCountdown(true);
 
     } else if (updatedOpponentWins === ROUND_MAJORITY) {
-      if (lobbyType === LOBBY_TYPES.RANKED) updateRankedMatch(false);
+      if (lobbyType === LOBBY_TYPES.RANKED) await updateRankedMatch(false);
       doCountdown(false);
 
     } else {
