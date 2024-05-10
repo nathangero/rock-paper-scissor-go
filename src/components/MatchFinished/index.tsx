@@ -1,6 +1,6 @@
 import { LOBBY_TYPES } from "../../utils/enums";
 
-export default function MatchFinished({ lobbyType, matchWinner, rankedMatchWinner, isRankedMatchFinished, isWaitingForRematch, onClickLeave, onClickRematch }: MatchFinished) {
+export default function MatchFinished({ lobbyType, matchWinner, rankedMatchWinner, rankedPointChange, isRankedMatchFinished, isWaitingForRematch, onClickLeave, onClickRematch }: MatchFinished) {
 
   return (
     <>
@@ -25,7 +25,7 @@ export default function MatchFinished({ lobbyType, matchWinner, rankedMatchWinne
                 {isRankedMatchFinished ?
                   <>
                     <div className="d-flex flex-column">
-                      <h3>show ranked point change here</h3>
+                      <h3>{rankedPointChange}</h3>
                       <button className="btn button-negative m-2" onClick={() => onClickLeave()}>Leave</button>
                     </div>
                   </> : // Only show rematch button in unfinished ranked match
@@ -48,6 +48,7 @@ interface MatchFinished {
   lobbyType: LOBBY_TYPES;
   matchWinner: string;
   rankedMatchWinner: string;
+  rankedPointChange: string;
   isRankedMatchFinished: boolean;
   isWaitingForRematch: boolean;
   onClickLeave: React.Dispatch<React.SetStateAction<void>>;

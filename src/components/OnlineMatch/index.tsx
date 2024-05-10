@@ -60,6 +60,7 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, opponentStats, isMat
   const [roundWinner, setRoundWinner] = useState<string>("");
   const [matchWinner, setMatchWinner] = useState<string>("");
   const [rankedMatchWinner, setRankedMatchWinner] = useState<string>("");
+  const [rankedPointChange, setRankedPointChange] = useState<string>("");
 
   const [isRoundDraw, setIsRoundDraw] = useState<boolean>(false);
   const [isResolvingDraw, setIsResolvingDraw] = useState<boolean>(false);
@@ -347,7 +348,11 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, opponentStats, isMat
     if (updatedUserWins === RANKED_MAJORITY || updatedOpponentWins === RANKED_MAJORITY) {
       setRankedMatchWinner(didUserWin ? "** You win! **" : "You lost")
       setIsRankedMatchFinished(true);
-      if (auth.currentUser?.uid) await dbUpdateUserRank(lobbyType, auth.currentUser.uid, opponentStats[STATS_KEYS.RP], didUserWin);
+      if (auth.currentUser?.uid) {
+        const pointChanges = await dbUpdateUserRank(lobbyType, auth.currentUser.uid, opponentStats[STATS_KEYS.RP], didUserWin);
+        if (pointChanges[1]) setRankedPointChange(`RP: ${pointChanges[0]} → ${pointChanges[1]}`);
+        else setRankedPointChange("Couldn't update points, please contact dev");
+      }
 
       // Update the url for the ranked game
       navigate(`${lobbyType}${ROUTER_LINKS.FINISHED}`, { replace: true });
@@ -613,6 +618,7 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, opponentStats, isMat
             lobbyType={lobbyType}
             matchWinner={matchWinner}
             rankedMatchWinner={rankedMatchWinner}
+            rankedPointChange={rankedPointChange}
             isRankedMatchFinished={isRankedMatchFinished}
             isWaitingForRematch={isWaitingForRematch}
             onClickLeave={onClickLeave}

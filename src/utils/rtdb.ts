@@ -441,7 +441,7 @@ export const dbUpdateUserStats = async (lobbyType: LOBBY_TYPES, userId: string, 
 }
 
 
-export const dbUpdateUserRank = async (lobbyType: LOBBY_TYPES, userId: string, opponentRp: number, didWin: boolean) => {
+export const dbUpdateUserRank = async (lobbyType: LOBBY_TYPES, userId: string, opponentRp: number, didWin: boolean): Promise<Array<number>> => {
   try {
     // Get the user's current RP rank
     const userRpRef = `${DB_DOC_KEYS.USERS}/${userId}/${USER_KEYS.STATS}/${lobbyType}/${STATS_KEYS.RP}`;
@@ -454,8 +454,10 @@ export const dbUpdateUserRank = async (lobbyType: LOBBY_TYPES, userId: string, o
     const statsRef = `${DB_DOC_KEYS.USERS}/${userId}/${USER_KEYS.STATS}/${lobbyType}`;
     await update(ref(db, statsRef), newRp);
 
+    return [userRp, updatedRp];
   } catch (error) {
     console.log("couldn't update ranked points");
     console.error(error);
+    return [];
   }
 }

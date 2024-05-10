@@ -129,9 +129,6 @@ export default function LobbyRoom() {
         const p2Name = document.getElementById("player-2-name")?.lastChild?.textContent;
         // console.log("p2Name:", p2Name);
 
-
-        // TODO: SEE IF MOVING THIS DISPATCH CODE TO HERE WILL CAUSE ISSUES
-
         // Update the lobby in the store so OnlineMatch component will update too
         const updatedLobby = { ...lobby, [LOBBY_KEYS.PLAYERS]: players, [LOBBY_KEYS.PLAYERS_NUM]: Object.keys(players).length };
 
