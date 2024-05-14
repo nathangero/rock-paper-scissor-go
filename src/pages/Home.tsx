@@ -257,7 +257,7 @@ export default function Home() {
 
       <div>
         <div className="mb-2">
-          <button className={`${isPlayingCasual ? "btn button-negative mx-2" : "btn button-positive mx-2"}`} onClick={() => setIsPlayingCasual(!isPlayingCasual)}>{isPlayingCasual ? "← Play For Fun" : "Play For Fun"}</button>
+          <button className={`${isPlayingCasual ? "btn button-negative mx-2" : "btn button-positive mx-2"}`} onClick={() => setIsPlayingCasual(!isPlayingCasual)}>{isPlayingCasual ? <>&#8592; Play For Fun</> : "Play For Fun"}</button>
           {isPlayingCasual ? null : <button className={`btn button-positive mx-2 ${!user?.email ? "disabled" : ""}`} onClick={() => modalAlertRanked?.toggle()} >Play For Rank</button>}
         </div>
 
