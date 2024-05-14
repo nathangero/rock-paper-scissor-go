@@ -18,6 +18,7 @@ export default function Home() {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
 
+  const [modalAlertRanked, setModalRanked] = useState<Modal | null>(null);
   const [modalAlert, setModalAlert] = useState<Modal | null>(null);
   const [alertTitle, setAlertTitle] = useState('');
   const [alertBody, setAlertBody] = useState('');
@@ -39,6 +40,9 @@ export default function Home() {
 
     const modalLobbyExists = document.querySelector<HTMLDivElement>(".alert-modal-lobby-exists")?.querySelector<HTMLDivElement>("#alertModal");
     if (modalLobbyExists) setModalAlert(new Modal(modalLobbyExists));
+
+    const modalRankedMatch = document.querySelector<HTMLDivElement>(".alert-modal-search-ranked")?.querySelector<HTMLDivElement>("#alertModal");
+    if (modalRankedMatch) setModalRanked(new Modal(modalRankedMatch));
   }, []);
 
   useEffect(() => {
@@ -280,6 +284,17 @@ export default function Home() {
         <Link to={"/practice"}><button className="btn button-positive">Practice</button></Link>
       </div>
 
+      <div className="alert-modal-search-ranked">
+        <Alert
+          title={"Search for a Ranked Match?"}
+          body={""}
+          customButton={{
+            buttonColor: "button-positive",
+            buttonText: "Yes!",
+            onClickAction: () => onClickFindLobby(LOBBY_TYPES.RANKED),
+          }}
+        />
+      </div>
 
       <div className="alert-modal-lobby-exists">
         <Alert title={alertTitle} body={alertBody} />

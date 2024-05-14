@@ -403,7 +403,7 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, opponentStats, isMat
    */
   const onTimeout = async (opponentName?: string) => {
     try {
-      // If this is a ranked match and the user (not opponent) timed out,
+      // If this is a ranked match and the user (not opponent) timed out, penalize their ranked points
       if (lobbyType === LOBBY_TYPES.RANKED && !opponentName) {
         if (auth.currentUser?.uid) await dbUpdateUserRank(lobbyType, auth.currentUser.uid, opponentStats[STATS_KEYS.RP], false);
       }
