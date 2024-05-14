@@ -92,7 +92,7 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, opponentStats, isMat
 
   // Have a running timer for the opponent that will kick this 
   useEffect(() => {
-    return; // DEBUG
+    // return; // DEBUG
     if (!lobbyInfo) return;
     let timer: NodeJS.Timeout;
 
@@ -403,6 +403,10 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, opponentStats, isMat
    */
   const onTimeout = async (opponentName?: string) => {
     try {
+      // If this is a ranked match and the user (not opponent) timed out,
+      if (lobbyType === LOBBY_TYPES.RANKED && !opponentName) {
+        if (auth.currentUser?.uid) await dbUpdateUserRank(lobbyType, auth.currentUser.uid, opponentStats[STATS_KEYS.RP], false);
+      }
       await dbLeaveLobby(lobbyType, lobbyInfo[LOBBY_KEYS.ID], opponentName || user.username);
 
       // Remove the local storage item after the user leaves the lobby
@@ -625,7 +629,7 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, opponentStats, isMat
             onClickRematch={onClickRematch}
           /> :
           <>
-            {/* <ShotClock isActive={isTimerActive} isBetweenRounds={isBetweenRounds} onTimeout={() => onTimeout()} /> */}
+            <ShotClock isActive={isTimerActive} isBetweenRounds={isBetweenRounds} onTimeout={() => onTimeout()} />
             {isRoundFinished ?
               <MatchRoundFinished
                 opponentAttackStr={opponentAttackStr}
