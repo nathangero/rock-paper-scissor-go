@@ -1,14 +1,14 @@
 import "./style.css";
 import { useAppDispatch, useAppSelector } from "../../redux/hooks";
 import { useEffect, useState } from "react";
-import { DB_DOC_KEYS, LOBBY_KEYS } from "../../utils/db-keys";
+import { DB_DOC_KEYS, LOBBY_KEYS, STATS_KEYS } from "../../utils/db-keys";
 import { LOBBY_TYPES, LOCAL_STORAGE_KEYS, ROUTER_LINKS } from "../../utils/enums";
 import { Modal } from "bootstrap";
 import OnlineMatch from "../OnlineMatch";
 import { off, onValue, ref } from "firebase/database";
 import { auth, db } from "../../../firebase";
 import { USER_ACTIONS } from "../../redux/reducer";
-import { dbGetUserStatsRanked, dbLeaveLobby } from "../../utils/rtdb";
+import { dbGetUserStatsRanked, dbLeaveLobby, dbUpdateUserRank } from "../../utils/rtdb";
 import Alert, { CustomButton } from "../Alert";
 import { useParams } from "react-router-dom";
 
@@ -31,7 +31,7 @@ export default function LobbyRoom() {
 
   const [p1, setP1] = useState<string>("");
   const [p2, setP2] = useState<string>("");
-  const [p2Stats, setP2Stats] = useState<object>({});
+  const [p2Stats, setP2Stats] = useState<ProfileInfo>({});
 
   const [isMatchFinished, setIsMatchFinished] = useState<boolean>(false);
 
@@ -195,7 +195,10 @@ export default function LobbyRoom() {
       setAlertButton({
         buttonColor: "button-negative",
         buttonText: "Yes, penalize me",
-        onClickAction: () => onConfirmLeaveMatch(),
+        onClickAction: async () => {
+          if (auth.currentUser?.uid) await dbUpdateUserRank(lobbyType, auth.currentUser.uid, p2Stats[STATS_KEYS.RP], false);
+          onConfirmLeaveMatch()
+        },
       });
       alertModal?.show();
     } else {

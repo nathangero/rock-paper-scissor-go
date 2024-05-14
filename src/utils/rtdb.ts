@@ -450,6 +450,7 @@ export const dbUpdateUserRank = async (lobbyType: LOBBY_TYPES, userId: string, o
     // Calculate points here
     const updatedRp = calcRp(userRp, opponentRp, didWin);
     const newRp = { [STATS_KEYS.RP]: updatedRp }
+    console.log("newRp:", newRp);
 
     const statsRef = `${DB_DOC_KEYS.USERS}/${userId}/${USER_KEYS.STATS}/${lobbyType}`;
     await update(ref(db, statsRef), newRp);
