@@ -265,8 +265,8 @@ export default function Home() {
           <div className="d-flex flex-column align-items-center">
             <div className="d-flex flex-sm-row flex-column justify-content-center flex-wrap mb-3">
               <button className={`btn button-positive m-2 ${(isCreatingPrivate || isJoiningPrivate) ? "hidden" : ""}`} onClick={() => onClickFindLobby(LOBBY_TYPES.CASUAL)}>Find Casual Game</button>
-              <button className={`btn button-positive m-2 ${isJoiningPrivate ? "hidden" : ""}`} onClick={() => onClickShowCreateLobbyId()}>Create Private Game</button>
-              <button className={`btn button-positive m-2 ${isCreatingPrivate ? "hidden" : ""}`} onClick={() => onClickShowJoinLobbyId()}>Join Private Game</button>
+              <button className={`btn ${isCreatingPrivate ? "button-negative" : "button-positive"} m-2 ${isJoiningPrivate ? "hidden" : ""}`} onClick={() => onClickShowCreateLobbyId()}>{isCreatingPrivate ? <><i className="bi bi-arrow-left"></i> Create Private Game</> : "Create Private Game"}</button>
+              <button className={`btn ${isJoiningPrivate ? "button-negative" : "button-positive"} m-2 ${isCreatingPrivate ? "hidden" : ""}`} onClick={() => onClickShowJoinLobbyId()}>{isJoiningPrivate ? <><i className="bi bi-arrow-left"></i> Join Private Game</> : "Join Private Game"}</button>
             </div>
 
             {!isCreatingPrivate && !isJoiningPrivate ? null :
