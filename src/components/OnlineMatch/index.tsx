@@ -640,7 +640,7 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, opponentRp, isMatchF
             />
           </> :
           <>
-            {/* <ShotClock isActive={isTimerActive} isBetweenRounds={isBetweenRounds} onTimeout={() => onTimeout()} /> */}
+            <ShotClock isActive={isTimerActive} isBetweenRounds={isBetweenRounds} onTimeout={() => onTimeout()} />
             {isRoundFinished ?
               <MatchRoundFinished
                 opponentAttackStr={opponentAttackStr}
