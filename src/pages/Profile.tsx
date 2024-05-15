@@ -47,6 +47,8 @@ export default function Profile() {
   }
 
   const getUserRank = (): string => {
+    if (!user[USER_KEYS.STATS][LOBBY_TYPES.RANKED] || !user[USER_KEYS.STATS][LOBBY_TYPES.RANKED][STATS_KEYS.RP]) return "";
+
     const userRp = user[USER_KEYS.STATS][LOBBY_TYPES.RANKED][STATS_KEYS.RP];
     const rank = getRank(userRp);
     return `${rank.charAt(0).toUpperCase() + rank.slice(1)} - RP: ${userRp}`;
@@ -86,19 +88,24 @@ export default function Profile() {
                       <h3>{getUserRank()}</h3>
                     </> : null
                   }
-                  <div className="d-flex justify-content-between">
-                    <h4>Rocks:</h4>
-                    <h4>{user[USER_KEYS.STATS][lobbyType][STATS_KEYS.ROCK]}</h4>
-                  </div>
-                  <div className="d-flex justify-content-between">
-                    <h4>Paper:</h4>
-                    <h4>{user[USER_KEYS.STATS][lobbyType][STATS_KEYS.PAPER]}</h4>
-                  </div>
-                  <div className="d-flex justify-content-between">
-                    <h4>Scissors:</h4>
-                    <h4>{user[USER_KEYS.STATS][lobbyType][STATS_KEYS.SCISSORS]}</h4>
-                  </div>
-                  {renderStatsWinLoss(lobbyType)}
+                  {user[USER_KEYS.STATS][lobbyType] ?
+                    <>
+                      <div className="d-flex justify-content-between">
+                        <h4>Rocks:</h4>
+                        <h4>{user[USER_KEYS.STATS][lobbyType][STATS_KEYS.ROCK]}</h4>
+                      </div>
+                      <div className="d-flex justify-content-between">
+                        <h4>Paper:</h4>
+                        <h4>{user[USER_KEYS.STATS][lobbyType][STATS_KEYS.PAPER]}</h4>
+                      </div>
+                      <div className="d-flex justify-content-between">
+                        <h4>Scissors:</h4>
+                        <h4>{user[USER_KEYS.STATS][lobbyType][STATS_KEYS.SCISSORS]}</h4>
+                      </div>
+                      {renderStatsWinLoss(lobbyType)}
+                    </> :
+                    <h4>Player hasn't played this mode yet</h4>
+                  }
                 </div>
                 <hr />
               </React.Fragment>
