@@ -11,6 +11,7 @@ import { USER_ACTIONS } from "../../redux/reducer";
 import { dbGetUserStatsRanked, dbLeaveLobby, dbUpdateUserRank } from "../../utils/rtdb";
 import Alert, { CustomButton } from "../Alert";
 import { useParams } from "react-router-dom";
+import { getRank } from "../../utils/calc-rp";
 
 export default function LobbyRoom() {
 
@@ -30,8 +31,9 @@ export default function LobbyRoom() {
   const [showOppQuitModal, setShowOppQuitModal] = useState<boolean>(false);
 
   const [p1, setP1] = useState<string>("");
+  const [p1Rp, setP1Rp] = useState<number>(-1);
   const [p2, setP2] = useState<string>("");
-  const [p2Stats, setP2Stats] = useState<ProfileInfo>({});
+  const [p2Rp, setP2Rp] = useState<number>(-1);
 
   const [isMatchFinished, setIsMatchFinished] = useState<boolean>(false);
 
@@ -57,7 +59,6 @@ export default function LobbyRoom() {
       if (username === user.username) setP1("You");
       else setP2(username);
     });
-
 
 
     // Always listen for opponent status for joining and leaving
@@ -122,6 +123,8 @@ export default function LobbyRoom() {
         // Null check
         if (!players) return;
 
+        const me = Object.keys(players)?.filter(player => player == user.username)[0];
+        // console.log("me?:", me);
         const newOpponent = Object.keys(players)?.filter(player => player != user.username)[0];
         // console.log("found opponent?:", newOpponent);
 
@@ -142,9 +145,12 @@ export default function LobbyRoom() {
           setP2(newOpponent);
           // Get the user's ranked stats
           if (lobbyType === LOBBY_TYPES.RANKED) {
+            const p1Stats = await dbGetUserStatsRanked(me);
+            setP1Rp(p1Stats[USER_KEYS.STATS][STATS_KEYS.RP]);
+
             const p2Stats = await dbGetUserStatsRanked(newOpponent);
-            // console.log("p2Stats:", p2Stats);
-            setP2Stats(p2Stats);
+            // console.log("p2Rp:", p2Rp);
+            setP2Rp(p2Stats[USER_KEYS.STATS][STATS_KEYS.RP]);
           }
 
         } else if (!newOpponent && p2Name) {
@@ -157,7 +163,7 @@ export default function LobbyRoom() {
 
             if (!isFinished) {
               setP2("");
-              setP2Stats({});
+              setP2Rp(-1);
               setShowOppQuitModal(true);
               await onConfirmLeaveMatch(true);
             } else {
@@ -167,7 +173,7 @@ export default function LobbyRoom() {
           } else {
             // If the opponent was in the lobby but then left, then notify the user
             setP2("");
-            setP2Stats({});
+            setP2Rp(-1);
             setAlertTitle("Opponent has left the match");
             setAlertBody("Waiting for another opponent to join");
             setAlertButton(null);
@@ -196,7 +202,7 @@ export default function LobbyRoom() {
         buttonColor: "button-negative",
         buttonText: "Yes, penalize me",
         onClickAction: async () => {
-          if (auth.currentUser?.uid) await dbUpdateUserRank(lobbyType, auth.currentUser.uid, p2Stats[STATS_KEYS.RP], false);
+          if (auth.currentUser?.uid) await dbUpdateUserRank(lobbyType, auth.currentUser.uid, p2Rp, false);
           onConfirmLeaveMatch()
         },
       });
@@ -324,7 +330,14 @@ export default function LobbyRoom() {
             <h3 id="player-1-name"><b>{p1}</b></h3>
             <h3 id="player-2-name"><b>{p2}</b></h3>
           </div>
-
+          <div className="players-names">
+            {p1Rp >= 0 ?
+              <h3 id="player-1-rank"><b>{getRank(p1Rp).charAt(0).toUpperCase() + getRank(p1Rp).slice(1)}</b></h3> : null
+            }
+            {p2Rp >= 0 ?
+              <h3 id="player-2-rank"><b>{getRank(p2Rp).charAt(0).toUpperCase() + getRank(p2Rp).slice(1)}</b></h3> : null
+            }
+          </div>
         </div>
 
         <hr />
@@ -332,7 +345,7 @@ export default function LobbyRoom() {
         {!lobby ? null :
           <>
             {p2 && lobby ?
-              <OnlineMatch lobbyType={getLobbyType()} lobbyInfo={lobby} opponentStats={p2Stats} isMatchFinished={isMatchFinished} setIsMatchFinished={setIsMatchFinished} /> :
+              <OnlineMatch lobbyType={getLobbyType()} lobbyInfo={lobby} opponentRp={p2Rp} isMatchFinished={isMatchFinished} setIsMatchFinished={setIsMatchFinished} /> :
               <>
                 <h4>Waiting for an opponent...</h4>
                 {getLobbyType() === LOBBY_TYPES.PRIVATE ?

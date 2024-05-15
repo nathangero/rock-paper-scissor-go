@@ -3,7 +3,7 @@ import "../../animations/swing-animation.css";
 import React, { useEffect, useState } from "react";
 import { ATTACK_TYPES, LOBBY_TYPES, LOCAL_STORAGE_KEYS, PLAYER_TYPES, ROUND_RESULT, ROUTER_LINKS } from "../../utils/enums";
 import { useAppDispatch, useAppSelector } from "../../redux/hooks";
-import { DB_DOC_KEYS, LOBBY_KEYS, STATS_KEYS } from "../../utils/db-keys";
+import { DB_DOC_KEYS, LOBBY_KEYS } from "../../utils/db-keys";
 import { dbHandleRoundDraw, dbLeaveLobby, dbUpdateMatch, dbUpdateRematch, dbUpdateUserAttack, dbUpdateUserRank, dbUpdateUserStats } from "../../utils/rtdb";
 import { off, onValue, ref } from "firebase/database";
 import { auth, db } from "../../../firebase";
@@ -18,7 +18,7 @@ import MatchProgressIcon from "../MatchProgressIcon";
 import MatchRoundFinished from "../MatchRoundFinished";
 import MatchFinished from "../MatchFinished";
 
-export default function OnlineMatch({ lobbyType, lobbyInfo, opponentStats, isMatchFinished, setIsMatchFinished }: OnlineMatch) {
+export default function OnlineMatch({ lobbyType, lobbyInfo, opponentRp, isMatchFinished, setIsMatchFinished }: OnlineMatch) {
   const ROUND_COUNT_MAX = 5;
   const ROUND_MAJORITY = Math.ceil(ROUND_COUNT_MAX / 2); // Amount of rounds needed to win
   const OPPONENT_AFK_TIME = 22; // Countdown till opponent forfeits. Just in case opponent disconnects without updating the db.
@@ -92,7 +92,7 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, opponentStats, isMat
 
   // Have a running timer for the opponent that will kick this 
   useEffect(() => {
-    // return; // DEBUG
+    return; // DEBUG
     if (!lobbyInfo) return;
     let timer: NodeJS.Timeout;
 
@@ -349,7 +349,7 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, opponentStats, isMat
       setRankedMatchWinner(didUserWin ? "** You win! **" : "You lost")
       setIsRankedMatchFinished(true);
       if (auth.currentUser?.uid) {
-        const pointChanges = await dbUpdateUserRank(lobbyType, auth.currentUser.uid, opponentStats[STATS_KEYS.RP], didUserWin);
+        const pointChanges = await dbUpdateUserRank(lobbyType, auth.currentUser.uid, opponentRp, didUserWin);
         if (pointChanges[1]) setRankedPointChange(`RP: ${pointChanges[0]} → ${pointChanges[1]}`);
         else setRankedPointChange("Couldn't update points, please contact dev");
       }
@@ -409,7 +409,7 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, opponentStats, isMat
     try {
       // If this is a ranked match and the user (not opponent) timed out, penalize their ranked points
       if (lobbyType === LOBBY_TYPES.RANKED && !opponentName) {
-        if (auth.currentUser?.uid) await dbUpdateUserRank(lobbyType, auth.currentUser.uid, opponentStats[STATS_KEYS.RP], false);
+        if (auth.currentUser?.uid) await dbUpdateUserRank(lobbyType, auth.currentUser.uid, opponentRp, false);
       }
       await dbLeaveLobby(lobbyType, lobbyInfo[LOBBY_KEYS.ID], opponentName || user.username);
 
@@ -640,7 +640,7 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, opponentStats, isMat
             />
           </> :
           <>
-            <ShotClock isActive={isTimerActive} isBetweenRounds={isBetweenRounds} onTimeout={() => onTimeout()} />
+            {/* <ShotClock isActive={isTimerActive} isBetweenRounds={isBetweenRounds} onTimeout={() => onTimeout()} /> */}
             {isRoundFinished ?
               <MatchRoundFinished
                 opponentAttackStr={opponentAttackStr}
@@ -701,7 +701,7 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, opponentStats, isMat
 interface OnlineMatch {
   lobbyType: LOBBY_TYPES;
   lobbyInfo: LobbyInfo;
-  opponentStats: ProfileInfo;
+  opponentRp: number;
   isMatchFinished: boolean;
   setIsMatchFinished: React.Dispatch<React.SetStateAction<boolean>>;
 }

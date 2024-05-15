@@ -103,7 +103,7 @@ export const dbGetUserFromUsername = async (username: string): Promise<ProfileIn
 export const dbGetUserStatsRanked = async (username: string): Promise<ProfileInfo> => {
   try {
     const user: any = {}; // eslint-disable-line @typescript-eslint/no-explicit-any
-    const usernameRef = `${DB_DOC_KEYS.USERNAMES}/${username}`;
+    const usernameRef = `${DB_DOC_KEYS.USERNAMES}/${username.toLowerCase()}`;
     // console.log("usernameRef:", usernameRef);
 
     const snapshotUsername = await get(child(ref(db), usernameRef));
