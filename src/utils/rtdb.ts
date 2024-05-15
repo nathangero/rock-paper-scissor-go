@@ -2,7 +2,7 @@ import { child, equalTo, get, limitToFirst, orderByChild, push, query, ref, remo
 import { db } from "../../firebase";
 import { DB_DOC_KEYS, LOBBY_KEYS, STATS_KEYS, USERNAME_KEYS, USER_KEYS } from "./db-keys";
 import { LOBBY_TYPES } from "./enums";
-import calcRp from "./calc-rp";
+import { calcRp } from "./calc-rp";
 
 
 /**

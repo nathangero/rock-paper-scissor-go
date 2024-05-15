@@ -88,4 +88,4 @@ const getBonus = (rankDiff: number): number => {
 }
 
 
-export default calcRp;
+export { calcRp, getRank };
