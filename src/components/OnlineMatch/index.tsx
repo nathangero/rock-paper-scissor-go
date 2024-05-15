@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import { ATTACK_TYPES, LOBBY_TYPES, LOCAL_STORAGE_KEYS, PLAYER_TYPES, ROUND_RESULT, ROUTER_LINKS } from "../../utils/enums";
 import { useAppDispatch, useAppSelector } from "../../redux/hooks";
 import { DB_DOC_KEYS, LOBBY_KEYS } from "../../utils/db-keys";
-import { dbHandleRoundDraw, dbLeaveLobby, dbUpdateMatch, dbUpdateRematch, dbUpdateUserAttack, dbUpdateUserRank, dbUpdateUserStats } from "../../utils/rtdb";
+import { dbHandleRoundDraw, dbLeaveLobby, dbUpdateMatch, dbUpdateMatchEndNum, dbUpdateMatchStartNum, dbUpdateRematch, dbUpdateUserAttack, dbUpdateUserRank, dbUpdateUserStats } from "../../utils/rtdb";
 import { off, onValue, ref } from "firebase/database";
 import { auth, db } from "../../../firebase";
 import AttackSelection from "../AttackSelection";
@@ -368,6 +368,8 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, opponentRp, isMatchF
    * @param didUserWin Determines if the user won the match or not.
    */
   const doCountdown = async (didUserWin: boolean) => {
+    if (auth.currentUser?.uid) await dbUpdateMatchEndNum(lobbyType, auth.currentUser.uid); // Count the match as complete
+
     const countdownInterval = 400;
     const text = ["SCISSORS", "PAPER", "ROCK"];
     let countdown = text.length;
@@ -478,7 +480,9 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, opponentRp, isMatchF
     await listenForRematch();
   }
 
-  const onConfirmRematch = () => {
+  const onConfirmRematch = async () => {
+    if (auth.currentUser?.uid) await dbUpdateMatchStartNum(lobbyType, auth.currentUser.uid); // Count the match as complete
+
     navigate(`${lobbyType}`, { replace: true });
     setMatchCount(matchCount + 1); // Increment the match count
     setIsRoundFinished(false);
