@@ -47,8 +47,9 @@ export default function Profile() {
   }
 
   const getUserRank = (): string => {
-    const rank = getRank(user[USER_KEYS.STATS][LOBBY_TYPES.RANKED][STATS_KEYS.RP]);
-    return rank.charAt(0).toUpperCase() + rank.slice(1);
+    const userRp = user[USER_KEYS.STATS][LOBBY_TYPES.RANKED][STATS_KEYS.RP];
+    const rank = getRank(userRp);
+    return `${rank.charAt(0).toUpperCase() + rank.slice(1)} - RP: ${userRp}`;
   }
 
   const organizeUserStats = (): object => {
@@ -82,7 +83,7 @@ export default function Profile() {
                   {lobbyType === LOBBY_TYPES.RANKED ?
                     <>
                       {/* TODO: Make images for each rank */}
-                      <h3><span className="fw-normal">Rank:</span> {getUserRank()}</h3>
+                      <h3>{getUserRank()}</h3>
                     </> : null
                   }
                   <div className="d-flex justify-content-between">
