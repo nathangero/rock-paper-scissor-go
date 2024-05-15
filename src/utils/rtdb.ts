@@ -411,6 +411,47 @@ export const dbUpdateRematch = async (lobbyType: LOBBY_TYPES, lobbyId: string, m
 
 // ************** USER STAT UPDATES ************** \\
 
+export const dbUpdateMatchStartNum = async (lobbyType: LOBBY_TYPES, userId: string) => {
+  try {
+    const dbRef = `${DB_DOC_KEYS.USERS}/${userId}/${USER_KEYS.STATS}/${lobbyType}/${STATS_KEYS.MATCH_START_NUM}`;
+
+    // Get the user's stats
+    const snapshot = await get(child(ref(db), dbRef));
+    const count = snapshot.val() || 0;
+
+    const newCount = { [STATS_KEYS.MATCH_START_NUM]: count + 1 };
+
+    const statsRef = `${DB_DOC_KEYS.USERS}/${userId}/${USER_KEYS.STATS}/${lobbyType}`;
+    await update(ref(db, statsRef), newCount);
+
+  } catch (error) {
+    console.log("Couldn't update match start num");
+    console.error(error);
+  }
+}
+
+
+export const dbUpdateMatchEndNum = async (lobbyType: LOBBY_TYPES, userId: string) => {
+  try {
+    const dbRef = `${DB_DOC_KEYS.USERS}/${userId}/${USER_KEYS.STATS}/${lobbyType}/${STATS_KEYS.MATCH_END_NUM}`;
+
+    // Get the user's stats
+    const snapshot = await get(child(ref(db), dbRef));
+    const count = snapshot.val() || 0;
+
+    const newCount = { [STATS_KEYS.MATCH_END_NUM]: count + 1 };
+    console.log("current count:", count);
+    console.log("new count:", newCount)
+
+    const statsRef = `${DB_DOC_KEYS.USERS}/${userId}/${USER_KEYS.STATS}/${lobbyType}`;
+    await update(ref(db, statsRef), newCount);
+
+  } catch (error) {
+    console.log("Couldn't update match end num");
+    console.error(error);
+  }
+}
+
 export const dbUpdateUserStats = async (lobbyType: LOBBY_TYPES, userId: string, rockCount: number, paperCount: number, scissorCount: number, didWin: boolean) => {
   try {
     const dbRef = `${DB_DOC_KEYS.USERS}/${userId}/${USER_KEYS.STATS}/${lobbyType}`;

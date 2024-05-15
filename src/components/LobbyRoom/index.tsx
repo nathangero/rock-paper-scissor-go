@@ -8,7 +8,7 @@ import OnlineMatch from "../OnlineMatch";
 import { off, onValue, ref } from "firebase/database";
 import { auth, db } from "../../../firebase";
 import { USER_ACTIONS } from "../../redux/reducer";
-import { dbGetUserStatsRanked, dbLeaveLobby, dbUpdateUserRank } from "../../utils/rtdb";
+import { dbGetUserStatsRanked, dbLeaveLobby, dbUpdateMatchStartNum, dbUpdateUserRank } from "../../utils/rtdb";
 import Alert, { CustomButton } from "../Alert";
 import { useParams } from "react-router-dom";
 import { getRank } from "../../utils/calc-rp";
@@ -152,6 +152,8 @@ export default function LobbyRoom() {
             // console.log("p2Rp:", p2Rp);
             setP2Rp(p2Stats[USER_KEYS.STATS][STATS_KEYS.RP]);
           }
+
+          if (auth.currentUser?.uid) await dbUpdateMatchStartNum(lobbyType, auth.currentUser.uid); // Count the match starting
 
         } else if (!newOpponent && p2Name) {
           console.log("opponent left");
@@ -332,10 +334,10 @@ export default function LobbyRoom() {
           </div>
           <div className="players-names">
             {p1Rp >= 0 ?
-              <h3 id="player-1-rank"><b>{getRank(p1Rp).charAt(0).toUpperCase() + getRank(p1Rp).slice(1)}</b></h3> : null
+              <h3 id="player-1-rank"><b>{getRank(p1Rp).charAt(0).toUpperCase() + getRank(p1Rp).slice(1)}</b></h3> : <h3>Wood</h3>
             }
             {p2Rp >= 0 ?
-              <h3 id="player-2-rank"><b>{getRank(p2Rp).charAt(0).toUpperCase() + getRank(p2Rp).slice(1)}</b></h3> : null
+              <h3 id="player-2-rank"><b>{getRank(p2Rp).charAt(0).toUpperCase() + getRank(p2Rp).slice(1)}</b></h3> : <h3>Wood</h3>
             }
           </div>
         </div>

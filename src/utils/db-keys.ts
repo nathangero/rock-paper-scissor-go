@@ -18,12 +18,14 @@ export enum LOBBY_KEYS {
 }
 
 export enum STATS_KEYS {
+  MATCH_START_NUM = "matchStartNum", // Count how many matches the user has been in
+  MATCH_END_NUM = "matchEndNum", // Count how many matches the user has completed
   LOSSES = "losses",
   PAPER = "paper",
   ROCK = "rock",
+  RP = "rp", // Ranked Points
   SCISSORS = "scissors",
   WINS = "wins",
-  RP = "rp", // Ranked Points
 }
 
 export enum USERNAME_KEYS {

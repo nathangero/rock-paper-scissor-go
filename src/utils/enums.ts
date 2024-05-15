@@ -78,4 +78,4 @@ export enum ROUTER_LINKS {
   FINISHED = "/finished",
 }
 
-export const VERSION_NUM = "0.80b";
+export const VERSION_NUM = "1.01";
