@@ -4,6 +4,8 @@ import { useAppSelector } from "../redux/hooks"
 import { useEffect, useState } from "react";
 import { dbGetUserFromUsername } from "../utils/rtdb";
 import { STATS_KEYS, USER_KEYS } from "../utils/db-keys";
+import { LOBBY_TYPES } from "../utils/enums";
+import { getRank } from "../utils/calc-rp";
 
 export default function Profile() {
 
@@ -44,6 +46,22 @@ export default function Profile() {
     return `Joined: ${month}/${year}`;
   }
 
+  const getUserRank = (): string => {
+    const userRp = user[USER_KEYS.STATS][LOBBY_TYPES.RANKED][STATS_KEYS.RP];
+    const rank = getRank(userRp);
+    return `${rank.charAt(0).toUpperCase() + rank.slice(1)} - RP: ${userRp}`;
+  }
+
+  const organizeUserStats = (): object => {
+    const userStats = { ...user[USER_KEYS.STATS] };
+    const organizedStats: any = {}; // eslint-disable-line @typescript-eslint/no-explicit-any
+    organizedStats[LOBBY_TYPES.RANKED] = userStats[LOBBY_TYPES.RANKED];
+    organizedStats[LOBBY_TYPES.CASUAL] = userStats[LOBBY_TYPES.CASUAL];
+    organizedStats[LOBBY_TYPES.PRIVATE] = userStats[LOBBY_TYPES.PRIVATE];
+
+    return organizedStats;
+  }
+
   const calcWinLossRatio = (wins: number, losses: number): string | number => {
     if (!wins || !losses) return 0; // If one isn't defined, just show 0
     else if (wins === 0) return 0;
@@ -58,10 +76,16 @@ export default function Profile() {
       <>
         {!user[USER_KEYS.STATS] ? <h4>No games played yet</h4> :
           <>
-            {Object.keys(user[USER_KEYS.STATS]).map((lobbyType, index) => (
+            {Object.keys(organizeUserStats()).map((lobbyType, index) => (
               <React.Fragment key={index}>
                 <h3><u>{lobbyType.charAt(0).toUpperCase() + lobbyType.slice(1)}</u></h3>
                 <div className="container-table">
+                  {lobbyType === LOBBY_TYPES.RANKED ?
+                    <>
+                      {/* TODO: Make images for each rank */}
+                      <h3>{getUserRank()}</h3>
+                    </> : null
+                  }
                   <div className="d-flex justify-content-between">
                     <h4>Rocks:</h4>
                     <h4>{user[USER_KEYS.STATS][lobbyType][STATS_KEYS.ROCK]}</h4>
@@ -76,6 +100,7 @@ export default function Profile() {
                   </div>
                   {renderStatsWinLoss(lobbyType)}
                 </div>
+                <hr />
               </React.Fragment>
             ))}
           </>
@@ -91,7 +116,7 @@ export default function Profile() {
 
     return (
       <>
-        <hr />
+        <br />
         <div className="d-flex justify-content-between">
           <h4>Wins:</h4>
           <h4>{wins ? wins : 0}</h4>
@@ -122,6 +147,7 @@ export default function Profile() {
               <br />
               <>
                 <h3>Player Match Statistics</h3>
+                <br />
                 {renderStatsAttack()}
               </>
             </>

@@ -3,13 +3,16 @@
   left: 50%;
   bottom: 50%;
   transform: translate(-50%, -50%);
-  animation: MoveUpDown .6s linear infinite;
+  animation: MoveUpDown .4s ease-in infinite;
 }
 
 @keyframes MoveUpDown {
-  0%, 100% {
+
+  0%,
+  100% {
     top: 65%;
   }
+
   80% {
     top: 45%;
   }
@@ -17,9 +20,12 @@
 
 @media screen and (max-width: 768px) {
   @keyframes MoveUpDown {
-    0%, 100% {
+
+    0%,
+    100% {
       top: 75%;
     }
+
     80% {
       top: 55%;
     }

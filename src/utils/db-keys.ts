@@ -23,6 +23,7 @@ export enum STATS_KEYS {
   ROCK = "rock",
   SCISSORS = "scissors",
   WINS = "wins",
+  RP = "rp", // Ranked Points
 }
 
 export enum USERNAME_KEYS {

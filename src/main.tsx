@@ -40,8 +40,18 @@ const router = createBrowserRouter([
         element: <Practice />
       },
       {
-        path: `${ROUTER_LINKS.LOBBY}/:lobbyType`,
-        element: <Lobby />
+        path: ROUTER_LINKS.LOBBY,
+        element: <Lobby />,
+        children: [
+          {
+            path: ":lobbyType",
+            element: <Lobby />
+          },
+          {
+            path: ":lobbyType/finished",
+            element: <Lobby />
+          }
+        ]
       },
     ]
   }
