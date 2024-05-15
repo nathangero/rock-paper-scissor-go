@@ -1,7 +1,7 @@
 import "./style.css";
 import { useAppDispatch, useAppSelector } from "../../redux/hooks";
 import { useEffect, useState } from "react";
-import { DB_DOC_KEYS, LOBBY_KEYS, STATS_KEYS } from "../../utils/db-keys";
+import { DB_DOC_KEYS, LOBBY_KEYS, STATS_KEYS, USER_KEYS } from "../../utils/db-keys";
 import { LOBBY_TYPES, LOCAL_STORAGE_KEYS, ROUTER_LINKS } from "../../utils/enums";
 import { Modal } from "bootstrap";
 import OnlineMatch from "../OnlineMatch";
@@ -324,6 +324,7 @@ export default function LobbyRoom() {
             <h3 id="player-1-name"><b>{p1}</b></h3>
             <h3 id="player-2-name"><b>{p2}</b></h3>
           </div>
+
         </div>
 
         <hr />

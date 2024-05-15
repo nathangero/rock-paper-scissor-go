@@ -54,7 +54,7 @@ export default function Profile() {
 
   const organizeUserStats = (): object => {
     const userStats = { ...user[USER_KEYS.STATS] };
-    const organizedStats = {};
+    const organizedStats: any = {}; // eslint-disable-line @typescript-eslint/no-explicit-any
     organizedStats[LOBBY_TYPES.RANKED] = userStats[LOBBY_TYPES.RANKED];
     organizedStats[LOBBY_TYPES.CASUAL] = userStats[LOBBY_TYPES.CASUAL];
     organizedStats[LOBBY_TYPES.PRIVATE] = userStats[LOBBY_TYPES.PRIVATE];

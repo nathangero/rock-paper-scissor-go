@@ -389,6 +389,10 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, opponentStats, isMat
         clearInterval(timer);
         setIsShowingCountdown(false);
         setMatchWinner(didUserWin ? "** You win! **" : "You lost");
+        if (lobbyType === LOBBY_TYPES.RANKED && !isRankedMatchFinished) {
+          // Keep the shot clock going in between ranked matches to prevent players from never rematching
+          setIsTimerActive(true);
+        }
       }
     }, countdownInterval);
   }
@@ -468,6 +472,7 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, opponentStats, isMat
   }
 
   const onClickRematch = async () => {
+    setIsTimerActive(false);
     setIsWaitingForRematch(true);
     await dbUpdateRematch(lobbyType, lobbyId, matchCount, user.username, true);
     await listenForRematch();
@@ -618,16 +623,22 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, opponentStats, isMat
         </div>
 
         {isMatchFinished ?
-          <MatchFinished
-            lobbyType={lobbyType}
-            matchWinner={matchWinner}
-            rankedMatchWinner={rankedMatchWinner}
-            rankedPointChange={rankedPointChange}
-            isRankedMatchFinished={isRankedMatchFinished}
-            isWaitingForRematch={isWaitingForRematch}
-            onClickLeave={onClickLeave}
-            onClickRematch={onClickRematch}
-          /> :
+          <>
+            {lobbyType === LOBBY_TYPES.RANKED && !isRankedMatchFinished ?
+              // Show shot clock on REMATCH screen for ongoing ranked matches
+              <ShotClock isActive={isTimerActive} isBetweenRounds={isBetweenRounds} onTimeout={() => onTimeout()} /> : null
+            }
+            <MatchFinished
+              lobbyType={lobbyType}
+              matchWinner={matchWinner}
+              rankedMatchWinner={rankedMatchWinner}
+              rankedPointChange={rankedPointChange}
+              isRankedMatchFinished={isRankedMatchFinished}
+              isWaitingForRematch={isWaitingForRematch}
+              onClickLeave={onClickLeave}
+              onClickRematch={onClickRematch}
+            />
+          </> :
           <>
             <ShotClock isActive={isTimerActive} isBetweenRounds={isBetweenRounds} onTimeout={() => onTimeout()} />
             {isRoundFinished ?
