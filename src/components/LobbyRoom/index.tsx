@@ -332,10 +332,10 @@ export default function LobbyRoom() {
           </div>
           <div className="players-names">
             {p1Rp >= 0 ?
-              <h3 id="player-1-rank"><b>{getRank(p1Rp).charAt(0).toUpperCase() + getRank(p1Rp).slice(1)}</b></h3> : null
+              <h3 id="player-1-rank"><b>{getRank(p1Rp).charAt(0).toUpperCase() + getRank(p1Rp).slice(1)}</b></h3> : <h3>Wood</h3>
             }
             {p2Rp >= 0 ?
-              <h3 id="player-2-rank"><b>{getRank(p2Rp).charAt(0).toUpperCase() + getRank(p2Rp).slice(1)}</b></h3> : null
+              <h3 id="player-2-rank"><b>{getRank(p2Rp).charAt(0).toUpperCase() + getRank(p2Rp).slice(1)}</b></h3> : <h3>Wood</h3>
             }
           </div>
         </div>

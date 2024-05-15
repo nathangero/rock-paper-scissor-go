@@ -350,7 +350,7 @@ export default function OnlineMatch({ lobbyType, lobbyInfo, opponentRp, isMatchF
       setIsRankedMatchFinished(true);
       if (auth.currentUser?.uid) {
         const pointChanges = await dbUpdateUserRank(lobbyType, auth.currentUser.uid, opponentRp, didUserWin);
-        if (pointChanges[1]) setRankedPointChange(`RP: ${pointChanges[0]} → ${pointChanges[1]}`);
+        if (pointChanges[1] >= 0) setRankedPointChange(`RP: ${pointChanges[0]} → ${pointChanges[1]}`);
         else setRankedPointChange("Couldn't update points, please contact dev");
       }
 
